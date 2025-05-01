@@ -11,6 +11,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 @SpringBootApplication
@@ -24,64 +25,52 @@ public class SweetTreatsApplication {
 	CommandLineRunner init(UserRepository userRepository) {
 		return args -> {
 
-			/* CREATE PERMISSIONS */
-			PermissionModel createPermission = PermissionModel.builder()
-					.name("CREATE")
-					.build();
+			// Verificar si ya existe el admin
+			Optional<UserModel> existingAdmin = userRepository.findUserModelByEmail("sofia@admin.com");
 
-			PermissionModel readPermission = PermissionModel.builder()
-					.name("READ")
-					.build();
+			if (existingAdmin.isEmpty()) {
+				// Permisos
+				PermissionModel create = PermissionModel.builder().name("CREATE").build();
+				PermissionModel read = PermissionModel.builder().name("READ").build();
+				PermissionModel update = PermissionModel.builder().name("UPDATE").build();
+				PermissionModel delete = PermissionModel.builder().name("DELETE").build();
 
-			PermissionModel updatePermission = PermissionModel.builder()
-					.name("UPDATE")
-					.build();
+				// Roles
+				RoleModel roleAdmin = RoleModel.builder()
+						.roleEnum(RoleEnum.ADMIN)
+						.permissionList(Set.of(create, read, update, delete))
+						.build();
 
-			PermissionModel deletePermission = PermissionModel.builder()
-					.name("DELETE")
-					.build();
+				RoleModel roleUser = RoleModel.builder()
+						.roleEnum(RoleEnum.USER)
+						.permissionList(Set.of(create, read))
+						.build();
 
-			/* Create ROLES */
+				// Usuarios
+				UserModel userAdmin = UserModel.builder()
+						.name("sofia")
+						.email("sofia@admin.com")
+						.password("$2a$10$S.UYJXQW4D/sZLwPRj5c4uPs.e5bjcqwmp06sZprUcrhmNwxgKa4K") // hashed
+						.isEnabled(true)
+						.accountNoExpired(true)
+						.accountNoLocked(true)
+						.credentialNoExpired(true)
+						.roles(Set.of(roleAdmin))
+						.build();
 
-			RoleModel roleAdmin = RoleModel.builder()
-					.roleEnum(RoleEnum.ADMIN)
-					.permissionList(Set.of(createPermission, readPermission, updatePermission, deletePermission))
-					.build();
+				UserModel userRafe = UserModel.builder()
+						.name("Rafe")
+						.email("rafe@user.com")
+						.password("$2a$10$S.UYJXQW4D/sZLwPRj5c4uPs.e5bjcqwmp06sZprUcrhmNwxgKa4K")
+						.isEnabled(true)
+						.accountNoExpired(true)
+						.accountNoLocked(true)
+						.credentialNoExpired(true)
+						.roles(Set.of(roleUser))
+						.build();
 
-			RoleModel roleUser = RoleModel.builder()
-					.roleEnum(RoleEnum.USER)
-					.permissionList(Set.of(createPermission, readPermission))
-					.build();
-
-			RoleModel roleVisitor = RoleModel.builder()
-					.roleEnum(RoleEnum.VISITOR)
-					.permissionList(Set.of(readPermission))
-					.build();
-
-			UserModel userAdmin = UserModel.builder()
-					.name("sofia")
-					.email("sofia@admin.com")
-					.password("$2a$10$S.UYJXQW4D/sZLwPRj5c4uPs.e5bjcqwmp06sZprUcrhmNwxgKa4K")
-					.isEnabled(true)
-					.accountNoExpired(true)
-					.accountNoLocked(true)
-					.credentialNoExpired(true)
-					.roles(Set.of(roleAdmin))
-					.build();
-
-			UserModel userRafe = UserModel.builder()
-					.name("Rafe")
-					.email("rafe@user.com")
-					.password("$2a$10$S.UYJXQW4D/sZLwPRj5c4uPs.e5bjcqwmp06sZprUcrhmNwxgKa4K")
-					.isEnabled(true)
-					.accountNoExpired(true)
-					.accountNoLocked(true)
-					.credentialNoExpired(true)
-					.roles(Set.of(roleUser))
-					.build();
-
-			userRepository.saveAll(List.of(userAdmin, userRafe));
-
+				userRepository.saveAll(List.of(userAdmin, userRafe));
+			}
 		};
 	}
 }

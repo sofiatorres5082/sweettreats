@@ -21,12 +21,12 @@ public class AuthenticationController {
     private CustomUserDetailsService userDetailService;
 
     @PostMapping("/sign-up")
-    public ResponseEntity<AuthResponse> register(@RequestBody @Valid AuthCreateUserRequest userRequest){
+    public ResponseEntity<AuthResponse> register(@Valid @RequestBody AuthCreateUserRequest userRequest){
         return new ResponseEntity<>(this.userDetailService.createUser(userRequest), HttpStatus.CREATED);
     }
 
     @PostMapping("/log-in")
-    public ResponseEntity<AuthResponse> login(@RequestBody @Valid AuthLoginRequest userRequest){
+    public ResponseEntity<AuthResponse> login(@Valid @RequestBody AuthLoginRequest userRequest){
         return new ResponseEntity<>(this.userDetailService.loginUser(userRequest), HttpStatus.OK);
     }
 

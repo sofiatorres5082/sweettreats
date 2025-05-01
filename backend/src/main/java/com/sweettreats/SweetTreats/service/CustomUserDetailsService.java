@@ -58,8 +58,8 @@ public class CustomUserDetailsService implements IUserDetailsService {
                 .flatMap(role -> role.getPermissionList().stream())
                 .forEach(permission -> authorityList.add(new SimpleGrantedAuthority(permission.getName())));
 
-        return new User(userModel.getName(),
-                userModel.getEmail(),
+        return new User(userModel.getEmail(),
+                userModel.getPassword(),
                 userModel.isEnabled(),
                 userModel.isAccountNoExpired(),
                 userModel.isCredentialNoExpired(),
@@ -74,12 +74,26 @@ public class CustomUserDetailsService implements IUserDetailsService {
         String name = createUserRequest.name();
         String email = createUserRequest.email();
         String password = createUserRequest.password();
-        List<String> rolesRequest = createUserRequest.roleRequest().roleListName();
 
-        Set<RoleModel> roleModels = new HashSet<>(roleRepository.findRoleEntitiesByRoleEnumIn(rolesRequest));
+        Set<RoleModel> roleModels;
 
-        if (roleModels.isEmpty()) {
-            throw new IllegalArgumentException("The roles specified do not exist.");
+        if (createUserRequest.roleRequest() != null &&
+                createUserRequest.roleRequest().roleListName() != null &&
+                !createUserRequest.roleRequest().roleListName().isEmpty()) {
+
+            roleModels = new HashSet<>(
+                    roleRepository.findRoleEntitiesByRoleEnumIn(createUserRequest.roleRequest().roleListName())
+            );
+
+            if (roleModels.isEmpty()) {
+                throw new IllegalArgumentException("Los roles especificados no existen.");
+            }
+
+        } else {
+            roleModels = Set.of(
+                    roleRepository.findByRoleEnum(RoleEnum.USER)
+                            .orElseThrow(() -> new RuntimeException("El rol USER no fue encontrado en la base de datos."))
+            );
         }
 
         UserModel user = UserModel.builder()
