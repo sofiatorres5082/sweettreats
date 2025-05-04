@@ -5,6 +5,7 @@ import com.sweettreats.SweetTreats.util.JwtUtil;
 import io.micrometer.common.lang.NonNull;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.http.HttpHeaders;
@@ -32,25 +33,41 @@ public class JwtTokenValidator extends OncePerRequestFilter {
                                     @NonNull HttpServletResponse response,
                                     @NonNull FilterChain filterChain) throws ServletException, IOException {
 
-        String jwtToken = request.getHeader(HttpHeaders.AUTHORIZATION);
+        String jwtToken = null;
 
-        // Si viene con token valido el token, si no , sigo con el siguiente filtro
-        if (jwtToken != null) {
-            jwtToken = jwtToken.substring(7);
+        // Buscar la cookie llamada "token"
+        if (request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
+                if (cookie.getName().equals("jwt")) {
+                    System.out.println("Cookie recibida: " + cookie.getName() + "=" + cookie.getValue());
 
-            DecodedJWT decodedJWT = jwtUtils.validateToken(jwtToken);
-
-            String username = jwtUtils.extractUsername(decodedJWT);
-            String stringAuthorities = jwtUtils.getSpecificClaim(decodedJWT, "authorities").asString();
-
-            Collection<? extends GrantedAuthority> authorities = AuthorityUtils.commaSeparatedStringToAuthorityList(stringAuthorities);
-
-            SecurityContext context = SecurityContextHolder.createEmptyContext();
-            Authentication authenticationToken = new UsernamePasswordAuthenticationToken(username, null, authorities);
-            context.setAuthentication(authenticationToken);
-            SecurityContextHolder.setContext(context);
-
+                    jwtToken = cookie.getValue();
+                    break;
+                }
+            }
         }
+
+        if (jwtToken != null) {
+            try {
+                DecodedJWT decodedJWT = jwtUtils.validateToken(jwtToken);
+
+                String username = jwtUtils.extractUsername(decodedJWT);
+                String stringAuthorities = jwtUtils.getSpecificClaim(decodedJWT, "authorities").asString();
+
+                Collection<? extends GrantedAuthority> authorities =
+                        AuthorityUtils.commaSeparatedStringToAuthorityList(stringAuthorities);
+
+                SecurityContext context = SecurityContextHolder.createEmptyContext();
+                Authentication authenticationToken = new UsernamePasswordAuthenticationToken(username, null, authorities);
+                context.setAuthentication(authenticationToken);
+                SecurityContextHolder.setContext(context);
+
+            } catch (Exception ex) {
+                // Puedes loguear o manejar la excepción si el token no es válido
+                System.out.println("Token inválido: " + ex.getMessage());
+            }
+        }
+
         filterChain.doFilter(request, response);
     }
 }
