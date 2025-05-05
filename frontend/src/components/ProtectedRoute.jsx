@@ -1,10 +1,37 @@
+import { useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
-import { Navigate, Outlet } from "react-router-dom";
+import { Navigate, Outlet, useLocation } from "react-router-dom";
 import Spinner from "../components/Spinner";
 
-export default function ProtectedRoute() {
-  const { user, loading } = useAuth();
+export default function ProtectedRoute({ roles = [], fallback = "/log-in" }) {
+  const { isAuth, user, loading, checkAuth } = useAuth();
+  const location = useLocation();
 
-  if (loading) return <Spinner />;
-  return user ? <Outlet /> : <Navigate to="/log-in" replace />;
+  useEffect(() => {
+    if (!isAuth && !loading) {
+      checkAuth();
+    }
+  }, []);
+
+  if (loading) return <Spinner fullScreen />;
+  
+  if (!isAuth || !user) return <Navigate to={fallback} replace />;
+
+  console.log("Roles del usuario:", user?.roles);
+
+  if (roles.length > 0) {
+    const userRoles = user.roles.map((role) => role.toUpperCase());
+    const requiredRoles = roles.map((role) => role.toUpperCase());
+
+    const hasRequiredRole = userRoles.some((role) =>
+      requiredRoles.includes(role)
+    );
+
+    if (!hasRequiredRole) {
+      console.log(`Acceso denegado. Se requiere: ${requiredRoles.join(", ")}`);
+      return <Navigate to="/unauthorized" replace />;
+    }
+  }
+
+  return <Outlet />;
 }

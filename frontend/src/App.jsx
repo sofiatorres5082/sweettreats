@@ -3,6 +3,7 @@ import "./App.css";
 import Login from "./pages/Login";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Home from "./pages/Home";
+import Dashboard from "./pages/Dashboard";
 
 function App() {
   return (
@@ -14,7 +15,11 @@ function App() {
           <Route path="/home" element={<Home />} />
         </Route>
 
-        <Route path="*" element={<Navigate to="/home" replace />} />
+        <Route element={<ProtectedRoute roles={["ADMIN"]} />}>
+          <Route path="/dashboard" element={<Dashboard />} />
+        </Route>
+
+        <Route path="*" element={<Navigate to="/log-in" replace />} />
       </Routes>
     </BrowserRouter>
   );

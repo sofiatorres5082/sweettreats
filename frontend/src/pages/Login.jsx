@@ -9,18 +9,23 @@ export default function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState(""); 
+  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-    
+
     try {
-      await login({ email, password }); 
-      navigate("/home");
+      const user = await login({ email, password });
+
+      if (user.roles.includes("ADMIN")) {
+        navigate("/dashboard");
+      } else {
+        navigate("/home");
+      }
     } catch (err) {
-      setError(err.message || "Credenciales inválidas"); 
+      setError(err.message || "Credenciales inválidas");
     }
   };
 
@@ -39,8 +44,8 @@ export default function Login() {
             />
             <Input
               placeholder="Contraseña"
-              value={password} 
-              onChange={(e) => setPassword(e.target.value)} 
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               required
               type="password"
             />
