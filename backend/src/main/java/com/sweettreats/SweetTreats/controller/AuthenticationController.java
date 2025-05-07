@@ -42,13 +42,7 @@ public class AuthenticationController {
         cookie.setPath("/");
         cookie.setMaxAge(7 * 24 * 60 * 60); // una semana
 
-        String cookieHeader = String.format(
-                "jwt=%s; Path=/; HttpOnly; SameSite=Lax; Max-Age=%d",
-                authResponse.jwt(),
-                604800
-        );
-        response.addHeader("Set-Cookie", cookieHeader);
-
+        response.addCookie(cookie);
 
         return new ResponseEntity<>(authResponse, HttpStatus.OK);
     }

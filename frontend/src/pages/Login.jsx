@@ -17,7 +17,9 @@ export default function Login() {
     setError("");
 
     try {
-      const user = await login({ email, password });
+      const user = await login({ email, password }, {
+        withCredentials: true,
+      });
 
       if (user.roles.includes("ADMIN")) {
         navigate("/dashboard");

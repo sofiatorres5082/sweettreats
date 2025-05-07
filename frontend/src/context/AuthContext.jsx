@@ -13,17 +13,11 @@ export function AuthProvider({ children }) {
   const login = async (credentials) => {
     try {
       setError(null);
-      const { data } = await axios.post("/log-in", credentials);
+      const { data } = await axios.post("/log-in", credentials, {
+        withCredentials: true, 
+      });
   
-      if (data.token) {
-        Cookies.set("jwt", data.token, {
-          expires: 7,
-          secure: true,
-          sameSite: "Lax",
-        });
-      }
-  
-      const user = await checkAuth(); // retorna formattedUser
+      const user = await checkAuth();
       return user;
     } catch (err) {
       setError(err.response?.data?.message || "Error de autenticación");
@@ -35,7 +29,9 @@ export function AuthProvider({ children }) {
 
   const checkAuth = async () => {
     try {
-      const { data } = await axios.get("/me");
+      const { data } = await axios.get("/me", {
+        withCredentials: true, 
+      });
   
       const formattedUser = {
         ...data,
@@ -67,17 +63,9 @@ export function AuthProvider({ children }) {
   };
 
   useEffect(() => {
-    const verifyToken = async () => {
-      const token = Cookies.get("jwt");
-      if (!token) {
-        setLoading(false);
-        return;
-      }
-      await checkAuth();
-    };
-    verifyToken();
+    checkAuth();
   }, []);
-
+  
   return (
     <AuthContext.Provider
       value={{

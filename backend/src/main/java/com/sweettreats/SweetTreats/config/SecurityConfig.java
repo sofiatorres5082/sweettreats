@@ -33,18 +33,22 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
        return httpSecurity
+               .cors(Customizer.withDefaults())
                .csrf(csrf -> csrf.disable())
                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                .authorizeHttpRequests(http -> {
                    // EndPoints publicos
                    http.requestMatchers(HttpMethod.POST, "/auth/**").permitAll();
-                   http.requestMatchers(HttpMethod.GET, "/auth/me").authenticated();
 
                    // EndPoints Privados
+                   http.requestMatchers(HttpMethod.GET, "/auth/me").authenticated();
                    http.requestMatchers(HttpMethod.GET, "/method/get").hasAuthority("READ");
                    http.requestMatchers(HttpMethod.POST, "/method/post").hasAuthority("CREATE");
                    http.requestMatchers(HttpMethod.DELETE, "/method/delete").hasAuthority("DELETE");
                    http.requestMatchers(HttpMethod.PUT, "/method/put").hasAuthority("UPDATE");
+
+                   http.requestMatchers(HttpMethod.GET, "/home").authenticated();  // O los roles que quieras
+                   http.requestMatchers(HttpMethod.GET, "/dashboard").hasAuthority("ADMIN");
 
                    http.anyRequest().denyAll();
                })

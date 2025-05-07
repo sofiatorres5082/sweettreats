@@ -4,20 +4,11 @@ import { Navigate, Outlet, useLocation } from "react-router-dom";
 import Spinner from "../components/Spinner";
 
 export default function ProtectedRoute({ roles = [], fallback = "/log-in" }) {
-  const { isAuth, user, loading, checkAuth } = useAuth();
-  const location = useLocation();
-
-  useEffect(() => {
-    if (!isAuth && !loading) {
-      checkAuth();
-    }
-  }, []);
+  const { isAuth, user, loading } = useAuth();
 
   if (loading) return <Spinner fullScreen />;
-  
-  if (!isAuth || !user) return <Navigate to={fallback} replace />;
 
-  console.log("Roles del usuario:", user?.roles);
+  if (!isAuth || !user) return <Navigate to={fallback} replace />;
 
   if (roles.length > 0) {
     const userRoles = user.roles.map((role) => role.toUpperCase());
@@ -28,10 +19,10 @@ export default function ProtectedRoute({ roles = [], fallback = "/log-in" }) {
     );
 
     if (!hasRequiredRole) {
-      console.log(`Acceso denegado. Se requiere: ${requiredRoles.join(", ")}`);
       return <Navigate to="/unauthorized" replace />;
     }
   }
 
   return <Outlet />;
 }
+
