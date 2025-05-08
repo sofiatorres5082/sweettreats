@@ -69,14 +69,14 @@ public class SweetTreatsApplication {
 				// ==== Productos ====
 				if (productRepository.count() == 0) {
 					productRepository.saveAll(List.of(
-							new ProductModel("Pastel de Chocolate", "Delicioso pastel húmedo", 1200.0, "choco1.png", 15),
-							new ProductModel("Pastel de Frutilla", "Con frutillas frescas y crema", 1350.0, "frutilla1.png", 10),
-							new ProductModel("Cheesecake", "Clásico cheesecake al horno", 1400.0, "cheesecake.png", 12),
-							new ProductModel("Pastel de Limón", "Refrescante y dulce", 1100.0, "limon1.png", 8),
-							new ProductModel("Pastel Oreo", "Con trozos de galleta", 1300.0, "oreo1.png", 9),
-							new ProductModel("Pastel de Zanahoria", "Con cobertura de queso crema", 1250.0, "zanahoria1.png", 7),
-							new ProductModel("Red Velvet", "Pastel rojo intenso con frosting", 1500.0, "redvelvet1.png", 6),
-							new ProductModel("Chocotorta", "Favorito argentino", 1450.0, "chocotorta.png", 5)
+							new ProductModel("Blueberry Cake", "Pastel esponjoso con arándanos frescos", 1300.0, "blueberry", 10),
+							new ProductModel("Cheesecake", "Clásico cheesecake al horno con base de galleta", 1400.0, "cheesecake", 12),
+							new ProductModel("Drip Cake de Chocolate", "Decorado con ganache y chispas", 1500.0, "chocolatedrip", 8),
+							new ProductModel("Confetti Cake", "Pastel festivo con confites de colores", 1250.0, "confetti", 10),
+							new ProductModel("Pastel de Frutos Rojos", "Con frambuesas, moras y arándanos", 1450.0, "frutosrojos", 9),
+							new ProductModel("Red Velvet", "Pastel rojo intenso con frosting de queso crema", 1500.0, "redvelvet", 6),
+							new ProductModel("Tiramisú", "Clásico postre italiano con café y cacao", 1350.0, "tiramisu", 7),
+							new ProductModel("Triple Chocolate", "Bizcocho de chocolate con mousse y cobertura", 1600.0, "triplechocolate", 5)
 					));
 				}
 

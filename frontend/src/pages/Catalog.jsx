@@ -3,6 +3,28 @@ import { Card, CardContent } from "../components/ui/card";
 import { Button } from "../components/ui/button";
 import MobileHeader from "../components/MobileHeader";
 import { getProductsRequest } from "../api/products";
+import SearchBar from "../components/SearchBar";
+import { ShoppingCart } from "lucide-react";
+
+import blueberry from "../assets/images/blueberry.jpg";
+import cheesecake from "../assets/images/cheesecake.jpg";
+import chocolatedrip from "../assets/images/chocolatedrip.jpg";
+import confetti from "../assets/images/confetti.jpg";
+import frutosrojos from "../assets/images/frutosrojos.jpg";
+import redvelvet from "../assets/images/redvelvet.jpg";
+import tiramisu from "../assets/images/tiramisu.jpg";
+import triplechocolate from "../assets/images/triplechocolate.jpg";
+
+const imageMap = {
+  blueberry,
+  cheesecake,
+  chocolatedrip,
+  confetti,
+  frutosrojos,
+  redvelvet,
+  tiramisu,
+  triplechocolate,
+};
 
 export default function Catalog() {
   const [products, setProducts] = useState([]);
@@ -26,6 +48,7 @@ export default function Catalog() {
     <>
       <MobileHeader />
       <div className="min-h-screen bg-[#F9E4CF] px-4 pt-16 pb-8">
+        <SearchBar></SearchBar>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
           {products.map((product) => (
             <Card
@@ -33,10 +56,10 @@ export default function Catalog() {
               className="bg-white rounded-3xl border-none transition"
             >
               <CardContent className="p-4 flex flex-col ml-5 mr-5">
-                <img
-                  src={product.imagen}
+              <img
+                  src={imageMap[product.imagen]}
                   alt={product.nombre}
-                  className="w-32 h-32 object-cover rounded-3xl mb-4"
+                  className="w-70 h-70 object-cover rounded-3xl mb-4 mx-auto"
                 />
                 <h3 className="font-[Comic_Neue] font-semibold text-[#67463B]">
                   {product.nombre}
