@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import axios from "../api/axios";
 import Cookies from "js-cookie";
+import { checkAuthRequest, loginRequest, registerRequest } from "@/api/auth";
 
 const AuthContext = createContext();
 
@@ -10,12 +11,30 @@ export function AuthProvider({ children }) {
   const [isAuth, setIsAuth] = useState(false);
   const [error, setError] = useState(null);
 
-  const login = async (credentials) => {
+  const register = async (userData) => {
     try {
       setError(null);
-      const { data } = await axios.post("/log-in", credentials, {
-        withCredentials: true, 
-      });
+      const { data } = await registerRequest(userData);
+  
+      const formattedUser = {
+        ...data,
+        roles: data?.roles?.map((r) => r.roleEnum?.toUpperCase()) || [], 
+      };
+  
+      setUser(formattedUser);
+      setIsAuth(true);
+      return formattedUser;
+    } catch (err) {
+      setError(err.response?.data?.message || "Error al registrarse");
+      setIsAuth(false);
+      throw err;
+    }
+  };
+  
+  const login = async (userData) => {
+    try {
+      setError(null);
+      const { data } = await loginRequest(userData);
   
       const user = await checkAuth();
       return user;
@@ -29,9 +48,7 @@ export function AuthProvider({ children }) {
 
   const checkAuth = async () => {
     try {
-      const { data } = await axios.get("/me", {
-        withCredentials: true, 
-      });
+      const { data } = await checkAuthRequest();
   
       const formattedUser = {
         ...data,
@@ -42,6 +59,10 @@ export function AuthProvider({ children }) {
       setIsAuth(true);
       return formattedUser;
     } catch (err) {
+      const status = err?.response?.status;
+      if (status !== 403 && status !== 401) {
+        console.error("Error inesperado en checkAuth:", err);
+      }
       Cookies.remove("jwt");
       setUser(null);
       setIsAuth(false);
@@ -75,7 +96,8 @@ export function AuthProvider({ children }) {
         error,
         login,
         logout,
-        checkAuth 
+        checkAuth,
+        register
       }}
     >
       {children}

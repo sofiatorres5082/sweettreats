@@ -28,9 +28,20 @@ public class AuthenticationController {
     private UserRepository userRepository;
 
     @PostMapping("/sign-up")
-    public ResponseEntity<AuthResponse> register(@Valid @RequestBody AuthCreateUserRequest userRequest){
-        return new ResponseEntity<>(this.userDetailService.createUser(userRequest), HttpStatus.CREATED);
+    public ResponseEntity<AuthResponse> register(@Valid @RequestBody AuthCreateUserRequest userRequest, HttpServletResponse response) {
+        AuthResponse authResponse = this.userDetailService.createUser(userRequest);
+
+        Cookie cookie = new Cookie("jwt", authResponse.jwt());
+        cookie.setHttpOnly(true);
+        cookie.setSecure(false);
+        cookie.setPath("/");
+        cookie.setMaxAge(7 * 24 * 60 * 60);
+
+        response.addCookie(cookie);
+
+        return new ResponseEntity<>(authResponse, HttpStatus.CREATED);
     }
+
 
     @PostMapping("/log-in")
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody AuthLoginRequest userRequest, HttpServletResponse response) {
