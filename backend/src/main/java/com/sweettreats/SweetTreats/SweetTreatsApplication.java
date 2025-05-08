@@ -1,9 +1,7 @@
 package com.sweettreats.SweetTreats;
 
-import com.sweettreats.SweetTreats.model.PermissionModel;
-import com.sweettreats.SweetTreats.model.RoleEnum;
-import com.sweettreats.SweetTreats.model.RoleModel;
-import com.sweettreats.SweetTreats.model.UserModel;
+import com.sweettreats.SweetTreats.model.*;
+import com.sweettreats.SweetTreats.repository.ProductRepository;
 import com.sweettreats.SweetTreats.repository.UserRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
@@ -22,20 +20,18 @@ public class SweetTreatsApplication {
 	}
 
 	@Bean
-	CommandLineRunner init(UserRepository userRepository) {
+	CommandLineRunner init(UserRepository userRepository, ProductRepository productRepository) {
 		return args -> {
 
-			// Verificar si ya existe el admin
+			// ==== Usuarios ====
 			Optional<UserModel> existingAdmin = userRepository.findUserModelByEmail("sofia@admin.com");
 
 			if (existingAdmin.isEmpty()) {
-				// Permisos
 				PermissionModel create = PermissionModel.builder().name("CREATE").build();
 				PermissionModel read = PermissionModel.builder().name("READ").build();
 				PermissionModel update = PermissionModel.builder().name("UPDATE").build();
 				PermissionModel delete = PermissionModel.builder().name("DELETE").build();
 
-				// Roles
 				RoleModel roleAdmin = RoleModel.builder()
 						.roleEnum(RoleEnum.ADMIN)
 						.permissionList(Set.of(create, read, update, delete))
@@ -46,7 +42,6 @@ public class SweetTreatsApplication {
 						.permissionList(Set.of(create, read))
 						.build();
 
-				// Usuarios
 				UserModel userAdmin = UserModel.builder()
 						.name("sofia")
 						.email("sofia@admin.com")
@@ -70,6 +65,21 @@ public class SweetTreatsApplication {
 						.build();
 
 				userRepository.saveAll(List.of(userAdmin, userRafe));
+
+				// ==== Productos ====
+				if (productRepository.count() == 0) {
+					productRepository.saveAll(List.of(
+							new ProductModel("Pastel de Chocolate", "Delicioso pastel húmedo", 1200.0, "choco1.png", 15),
+							new ProductModel("Pastel de Frutilla", "Con frutillas frescas y crema", 1350.0, "frutilla1.png", 10),
+							new ProductModel("Cheesecake", "Clásico cheesecake al horno", 1400.0, "cheesecake.png", 12),
+							new ProductModel("Pastel de Limón", "Refrescante y dulce", 1100.0, "limon1.png", 8),
+							new ProductModel("Pastel Oreo", "Con trozos de galleta", 1300.0, "oreo1.png", 9),
+							new ProductModel("Pastel de Zanahoria", "Con cobertura de queso crema", 1250.0, "zanahoria1.png", 7),
+							new ProductModel("Red Velvet", "Pastel rojo intenso con frosting", 1500.0, "redvelvet1.png", 6),
+							new ProductModel("Chocotorta", "Favorito argentino", 1450.0, "chocotorta.png", 5)
+					));
+				}
+
 			}
 		};
 	}

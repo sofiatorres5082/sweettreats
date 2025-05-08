@@ -135,7 +135,7 @@ export default function Register() {
 
               <Button
                 type="submit"
-                className="mt-2 w-full bg-[#E96D87] border-none rounded-3xl shadow-none"
+                className="mt-2 w-full bg-[#E96D87] border-none rounded-3xl shadow-none cursor-pointer"
               >
                 Registrarse
               </Button>

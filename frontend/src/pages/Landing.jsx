@@ -15,7 +15,7 @@ export default function Landing() {
         Descubre nuestra selección de cupcakes, pasteles y más, hechos para disfrutar en cualquier momento.
         </p>
         <Button
-          className="bg-[#E96D87] hover:bg-[#f08199] font-[Comic_Neue] font-semibold text-white rounded-full px-6 py-2"
+          className="bg-[#E96D87] hover:bg-[#f08199] font-[Comic_Neue] font-semibold text-white rounded-full px-6 py-2 cursor-pointer"
           onClick={() => navigate("/catalogo")}
         >
           Nuestro catálogo 

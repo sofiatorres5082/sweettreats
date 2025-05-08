@@ -8,6 +8,7 @@ import Landing from "./pages/Landing";
 import NotFound from "./pages/NotFound";
 import Register from "./pages/Register";
 import PublicRoute from "./components/PublicRoute";
+import Catalog from "./pages/Catalog";
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
         <Route element={<PublicRoute />}>
           <Route path="/log-in" element={<Login />} />
           <Route path="/sign-up" element={<Register />} />
+          <Route path="/catalogo" element={<Catalog />} />
         </Route>
 
         <Route element={<ProtectedRoute roles={["USER"]} fallback="/log-in" />}>
