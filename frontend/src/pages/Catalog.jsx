@@ -5,6 +5,8 @@ import MobileHeader from "../components/MobileHeader";
 import { getProductsRequest } from "../api/products";
 import SearchBar from "../components/SearchBar";
 import { ShoppingCart } from "lucide-react";
+import CartMenu from "@/components/CartMenu";
+import { useCart } from "../context/CartContext";
 
 import blueberry from "../assets/images/blueberry.jpg";
 import cheesecake from "../assets/images/cheesecake.jpg";
@@ -44,11 +46,16 @@ export default function Catalog() {
     fetchProducts();
   }, []);
 
+  const { dispatch } = useCart();
+
   return (
     <>
       <MobileHeader />
       <div className="min-h-screen bg-[#F9E4CF] px-4 pt-16 pb-8">
-        <SearchBar></SearchBar>
+        <div className="flex mb-4 max-w-6xl mx-auto">
+          <SearchBar />
+          <CartMenu />
+        </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
           {products.map((product) => (
             <Card
@@ -56,7 +63,7 @@ export default function Catalog() {
               className="bg-white rounded-3xl border-none transition"
             >
               <CardContent className="p-4 flex flex-col ml-5 mr-5">
-              <img
+                <img
                   src={imageMap[product.imagen]}
                   alt={product.nombre}
                   className="w-70 h-70 object-cover rounded-3xl mb-4 mx-auto"
@@ -71,7 +78,21 @@ export default function Catalog() {
                   {product.descripcion}
                 </p>
 
-                <Button className="font-[Comic_Neue] font-semibold mt-4 bg-[#E96D87] hover:bg-[#bb6678] text-white rounded-3xl w-full cursor-pointer">
+                <Button
+                  onClick={() =>
+                    dispatch({
+                      type: "ADD_ITEM",
+                      payload: {
+                        id: product.id,
+                        nombre: product.nombre,
+                        precio: product.precio,
+                        imagen: imageMap[product.imagen],
+                        cantidad: 1,
+                      },
+                    })
+                  }
+                  className="font-[Comic_Neue] font-semibold mt-4 bg-[#E96D87] hover:bg-[#bb6678] text-white rounded-3xl w-full cursor-pointer"
+                >
                   Agregar al carrito
                 </Button>
               </CardContent>
