@@ -4,9 +4,9 @@ import { Button } from "../components/ui/button";
 import MobileHeader from "../components/MobileHeader";
 import { getProductsRequest } from "../api/products";
 import SearchBar from "../components/SearchBar";
-import { ShoppingCart } from "lucide-react";
 import CartMenu from "@/components/CartMenu";
 import { useCart } from "../context/CartContext";
+import { toast } from "sonner";
 
 import blueberry from "../assets/images/blueberry.jpg";
 import cheesecake from "../assets/images/cheesecake.jpg";
@@ -79,7 +79,7 @@ export default function Catalog() {
                 </p>
 
                 <Button
-                  onClick={() =>
+                  onClick={() => {
                     dispatch({
                       type: "ADD_ITEM",
                       payload: {
@@ -89,8 +89,12 @@ export default function Catalog() {
                         imagen: imageMap[product.imagen],
                         cantidad: 1,
                       },
-                    })
-                  }
+                    });
+
+                    toast.success("🍰 ¡Agregado al carrito!", {
+                      description: `${product.nombre} está esperando por ti ❤️`,
+                    });
+                  }}
                   className="font-[Comic_Neue] font-semibold mt-4 bg-[#E96D87] hover:bg-[#bb6678] text-white rounded-3xl w-full cursor-pointer"
                 >
                   Agregar al carrito

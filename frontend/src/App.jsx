@@ -9,10 +9,36 @@ import NotFound from "./pages/NotFound";
 import Register from "./pages/Register";
 import PublicRoute from "./components/PublicRoute";
 import Catalog from "./pages/Catalog";
+import { Toaster } from "sonner";
 
 function App() {
   return (
     <BrowserRouter>
+      <Toaster
+        position="bottom-right"
+        theme="light"
+        toastOptions={{
+          classNames: {
+            toast:
+              "bg-[#67463B] text-[#FCF8EC] font-[Comic_Neue] font-semibold rounded-3xl shadow-lg px-6 py-4",
+            title: "text-[#FCF8EC] font-bold text-base",
+            description: "!text-[#FCF8EC] text-sm",
+            closeButton: "text-[#FCF8EC] hover:text-pink-200",
+          },
+          style: {
+            background: "#67463B",
+            color: "#FCF8EC",
+            borderRadius: "2rem",
+            fontFamily: "Comic Neue, cursive",
+            fontWeight: 600,
+            border: "none",
+            boxShadow: "0 5px 20px rgba(0, 0, 0, 0.15)",
+            padding: "1rem 1.5rem",
+          },
+          duration: 2500,
+        }}
+      />
+
       <Routes>
         <Route path="/" element={<Landing />} />
 
