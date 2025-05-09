@@ -1,7 +1,15 @@
-import { createContext, useReducer, useContext } from "react";
+import { createContext, useReducer, useContext, useEffect } from "react";
 
-const initialState = {
-  items: [],
+const initialState = { items: [] };
+
+const getInitialCart = () => {
+  try {
+    const saved = localStorage.getItem("cart");
+    return saved ? JSON.parse(saved) : initialState;
+  } catch (e) {
+    console.error("Error leyendo el carrito del localStorage", e);
+    return initialState;
+  }
 };
 
 const cartReducer = (state, action) => {
@@ -66,11 +74,20 @@ const cartReducer = (state, action) => {
 
 const CartContext = createContext();
 
+const getCartTotal = (items) =>
+  items.reduce((acc, item) => acc + item.precio * item.cantidad, 0);
+
 export const CartProvider = ({ children }) => {
-  const [state, dispatch] = useReducer(cartReducer, initialState);
+  const [state, dispatch] = useReducer(cartReducer, getInitialCart());
+
+  useEffect(() => {
+    localStorage.setItem("cart", JSON.stringify(state));
+  }, [state]);
+
+  const total = getCartTotal(state.items);
 
   return (
-    <CartContext.Provider value={{ cart: state.items, dispatch }}>
+    <CartContext.Provider value={{ cart: state.items, dispatch, total }}>
       {children}
     </CartContext.Provider>
   );
