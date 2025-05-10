@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { loginRequest, registerRequest, checkAuthRequest } from "../api/auth";
+import Cookies from "js-cookie";
 
 export const AuthContext = createContext();
 
@@ -18,7 +19,7 @@ export const AuthProvider = ({ children }) => {
   const login = async (userData) => {
     try {
       await loginRequest(userData);
-      const res = await checkAuthRequest(); 
+      const res = await checkAuthRequest();
       setUser(res.data);
       setIsAuth(true);
       return res;
@@ -53,6 +54,16 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const logout = async () => {
+    try {
+      Cookies.remove("jwt");
+      setUser(null);
+      setIsAuth(false);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
   useEffect(() => {
     checkAuth();
   }, []);
@@ -67,6 +78,7 @@ export const AuthProvider = ({ children }) => {
         login,
         register,
         checkAuth,
+        logout,
       }}
     >
       {children}
