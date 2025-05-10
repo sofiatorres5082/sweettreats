@@ -7,11 +7,15 @@ import com.sweettreats.SweetTreats.dto.UserResponse;
 import com.sweettreats.SweetTreats.model.UserModel;
 import com.sweettreats.SweetTreats.repository.UserRepository;
 import com.sweettreats.SweetTreats.service.CustomUserDetailsService;
+import com.sweettreats.SweetTreats.util.JwtUtil;
 import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -27,38 +31,62 @@ public class AuthenticationController {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private JwtUtil jwtUtil;
+
     @PostMapping("/sign-up")
     public ResponseEntity<AuthResponse> register(@Valid @RequestBody AuthCreateUserRequest userRequest, HttpServletResponse response) {
         AuthResponse authResponse = this.userDetailService.createUser(userRequest);
 
-        Cookie cookie = new Cookie("jwt", authResponse.jwt());
-        cookie.setHttpOnly(true);
-        cookie.setSecure(false);
-        cookie.setPath("/");
-        cookie.setMaxAge(7 * 24 * 60 * 60);
+        ResponseCookie cookie = ResponseCookie.from("jwt", authResponse.jwt())
+                .httpOnly(true)
+                .secure(false)
+                .path("/")
+                .maxAge(7 * 24 * 60 * 60)
+                .build();
 
-        response.addCookie(cookie);
+        response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
 
         return new ResponseEntity<>(authResponse, HttpStatus.CREATED);
     }
 
-
     @PostMapping("/log-in")
-    public ResponseEntity<AuthResponse> login(@Valid @RequestBody AuthLoginRequest userRequest, HttpServletResponse response) {
+    public ResponseEntity<UserResponse> login(@Valid @RequestBody AuthLoginRequest userRequest, HttpServletResponse response) {
         AuthResponse authResponse = this.userDetailService.loginUser(userRequest);
 
-        Cookie cookie = new Cookie("jwt", authResponse.jwt());
-        cookie.setHttpOnly(true);
-        cookie.setSecure(false);
-        cookie.setPath("/");
-        cookie.setMaxAge(7 * 24 * 60 * 60); // una semana
+        ResponseCookie cookie = ResponseCookie.from("jwt", authResponse.jwt())
+                .httpOnly(true)
+                .secure(false)
+                .path("/")
+                .maxAge(7 * 24 * 60 * 60)
+                .build();
 
-        response.addCookie(cookie);
+        response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
 
-        return new ResponseEntity<>(authResponse, HttpStatus.OK);
+        UserModel user = userRepository.findUserModelByEmail(userRequest.email())
+                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
+
+        UserResponse userResponse = new UserResponse(
+                user.getId(),
+                user.getName(),
+                user.getEmail(),
+                user.getRoles()
+        );
+
+        return ResponseEntity.ok(userResponse);
     }
 
-    // llamada al backend que lee el JWT desde la cookie y me devuelve los datos del usuario logueado
+    // Verificar si el JWT es válido
+    @GetMapping("/verify-session")
+    public ResponseEntity<Void> verifySession(HttpServletRequest request) {
+        String token = extractTokenFromCookies(request);
+        if (token != null && jwtUtil.validateToken(token) != null) {
+            return ResponseEntity.ok().build();
+        }
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    }
+
+    // Obtener datos del usuario actual usando el JWT
     @GetMapping("/me")
     public ResponseEntity<UserResponse> getCurrentUser(Authentication authentication) {
         UserModel user = userRepository.findUserModelByEmail(authentication.getName())
@@ -74,5 +102,16 @@ public class AuthenticationController {
         return ResponseEntity.ok(response);
     }
 
-
+    // Método auxiliar para extraer el token de las cookies
+    private String extractTokenFromCookies(HttpServletRequest request) {
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if ("jwt".equals(cookie.getName())) {
+                    return cookie.getValue();
+                }
+            }
+        }
+        return null;
+    }
 }

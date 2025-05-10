@@ -4,27 +4,19 @@ import Spinner from "../components/Spinner";
 
 export default function ProtectedRoute({ roles = [], fallback = "/log-in" }) {
   const { isAuth, user, loading } = useAuth();
-  const location = useLocation();
 
   if (loading) return <Spinner fullScreen />;
 
-  if (!isAuth || !user) {
-    return (
-      <Navigate to={fallback} replace state={{ from: location.pathname }} />
-    );
+  if (!isAuth) {
+    return <Navigate to="/log-in" state={{ from: location.pathname }} replace />;
   }
 
-  if (roles.length > 0) {
-    const userRoles = user.roles.map((role) => role.toUpperCase());
-    const requiredRoles = roles.map((role) => role.toUpperCase());
-
-    const hasRequiredRole = userRoles.some((role) =>
-      requiredRoles.includes(role)
-    );
-
-    if (!hasRequiredRole) {
-      return <Navigate to="/unauthorized" replace />;
-    }
+  if (
+    roles.length > 0 &&
+    !user?.roles?.some((r) => roles.includes(r.roleEnum))
+  ) {
+    console.warn("User doesn't have required roles:", user?.roles);
+    return <Navigate to="/unauthorized" />;
   }
 
   return <Outlet />;

@@ -14,7 +14,7 @@ import { Toaster } from "sonner";
 
 function App() {
   return (
-    <BrowserRouter>
+    <>
       <Toaster
         position="bottom-right"
         theme="light"
@@ -63,7 +63,7 @@ function App() {
 
         <Route path="*" element={<NotFound />} />
       </Routes>
-    </BrowserRouter>
+    </>
   );
 }
 

@@ -5,9 +5,12 @@ import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { toast } from "sonner";
 import Cookies from "js-cookie";
+import { useAuth } from "../context/AuthContext";
+import Spinner from "../components/Spinner";
 
 export default function Checkout() {
   const { cart, dispatch } = useCart();
+  const { isAuth, loading } = useAuth();
   const navigate = useNavigate();
   const [form, setForm] = useState({
     nombre: "",
@@ -26,13 +29,16 @@ export default function Checkout() {
     0
   );
 
+
   useEffect(() => {
-    const token = Cookies.get("jwt");
-    if (!token) {
+    if (!loading && !isAuth) {
       toast.error("Debes iniciar sesión para continuar");
-      navigate("/log-in");
+      navigate("/log-in");  
     }
-  }, [navigate]);
+  }, [loading, isAuth, navigate]);
+
+  
+    if (loading) return <Spinner fullScreen />;
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });

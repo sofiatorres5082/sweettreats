@@ -9,8 +9,8 @@ import { Button } from "./ui/button";
 import { ShoppingCart, Minus, Plus, Trash } from "lucide-react";
 import { useCart } from "../context/CartContext";
 import { toast } from "sonner";
-import Cookies from "js-cookie";
 import { useNavigate } from "react-router-dom";
+import { verifySessionRequest } from "@/api/auth";
 
 export default function CartMenu() {
   const { cart, dispatch } = useCart();
@@ -21,13 +21,21 @@ export default function CartMenu() {
     0
   );
 
-  const handleGoToCheckout = () => {
-    const token = Cookies.get("jwt");
-    if (token) {
-      navigate("/checkout");
-    } else {
+  const handleGoToCheckout = async () => {
+    try {
+      const res = await fetch("http://localhost:8080/auth/verify-session", {
+        method: "GET",
+        credentials: "include", 
+      });
+
+      if (res.ok) {
+        navigate("/checkout");
+      } else {
+        throw new Error("No autenticado");
+      }
+    } catch (error) {
       toast.error("Debes iniciar sesión para continuar");
-      navigate("/log-in");
+      navigate("/log-in", { state: { from: "/checkout" } });
     }
   };
 

@@ -16,16 +16,26 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const location = useLocation();
-  const from = location.state?.from || "/catalogo";
+  const from = location.state?.from || "/";
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
 
     try {
-      const user = await login({ email, password });
-      if (user) {
-        navigate(from, { replace: true });
+      const user = await login(
+        { email, password },
+        {
+          withCredentials: true,
+        }
+      );
+
+      console.log(user);
+
+       if (user?.data?.roles?.some((role) => role.roleEnum === "ADMIN")) {
+        navigate("/dashboard");
+      } else {
+        navigate(from || "/checkout");
       }
     } catch (err) {
       setError(err.message || "Credenciales inválidas");

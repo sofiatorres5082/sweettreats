@@ -39,15 +39,17 @@ public class SecurityConfig {
                .authorizeHttpRequests(http -> {
                    // 📌 ENDPOINTS PÚBLICOS
                    http.requestMatchers(HttpMethod.POST, "/auth/**").permitAll();              // login, register
-                   http.requestMatchers(HttpMethod.GET, "/api/products").permitAll();          // catálogo
+                   http.requestMatchers(HttpMethod.GET, "/api/products").permitAll();
+                   http.requestMatchers(HttpMethod.GET, "/auth/verify-session").permitAll();
+
 
                    // 🔒 ENDPOINTS AUTENTICADOS (cualquier usuario logueado)
                    http.requestMatchers(HttpMethod.GET, "/auth/me").authenticated();           // perfil
                    http.requestMatchers(HttpMethod.GET, "/home").authenticated();              // página protegida general
 
                    // 🛒 PEDIDOS - solo usuarios autenticados con rol USER
-                   http.requestMatchers(HttpMethod.POST, "/api/orders").hasAuthority("USER");      // crear pedido
-                   http.requestMatchers(HttpMethod.GET, "/api/orders/**").hasAuthority("USER");    // ver pedidos propios
+                   http.requestMatchers(HttpMethod.POST, "/api/orders").authenticated();      // crear pedido
+                   http.requestMatchers(HttpMethod.GET, "/api/orders/**").authenticated();    // ver pedidos propios
 
                    // ⚙️ MÉTODOS ADMIN O AVANZADOS (para test)
                    http.requestMatchers(HttpMethod.GET, "/method/get").hasAuthority("READ");
@@ -56,8 +58,8 @@ public class SecurityConfig {
                    http.requestMatchers(HttpMethod.PUT, "/method/put").hasAuthority("UPDATE");
 
                    // 📊 ADMINISTRACIÓN
-                   http.requestMatchers(HttpMethod.GET, "/dashboard").hasAuthority("ADMIN");
-                   http.requestMatchers(HttpMethod.GET, "/api/orders/admin/**").hasAuthority("ADMIN");
+                   http.requestMatchers(HttpMethod.GET, "/dashboard").hasRole("ADMIN");
+                   http.requestMatchers(HttpMethod.GET, "/api/orders/admin/**").hasRole("ADMIN");
 
 
                    // ❌ CUALQUIER OTRO REQUEST SE RECHAZA
