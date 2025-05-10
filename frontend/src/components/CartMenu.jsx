@@ -8,14 +8,28 @@ import {
 import { Button } from "./ui/button";
 import { ShoppingCart, Minus, Plus, Trash } from "lucide-react";
 import { useCart } from "../context/CartContext";
+import { toast } from "sonner";
+import Cookies from "js-cookie";
+import { useNavigate } from "react-router-dom";
 
 export default function CartMenu() {
   const { cart, dispatch } = useCart();
+  const navigate = useNavigate();
 
   const total = cart.reduce(
     (acc, item) => acc + item.precio * item.cantidad,
     0
   );
+
+  const handleGoToCheckout = () => {
+    const token = Cookies.get("jwt");
+    if (token) {
+      navigate("/checkout");
+    } else {
+      toast.error("Debes iniciar sesión para continuar");
+      navigate("/log-in");
+    }
+  };
 
   return (
     <Sheet>
@@ -63,7 +77,10 @@ export default function CartMenu() {
                           variant="outline"
                           className="h-8 w-8 rounded-full border-[#E96D87] text-[#E96D87] hover:bg-[#FEE9ED]"
                           onClick={() =>
-                            dispatch({ type: "DECREMENT_QUANTITY", payload: item.id })
+                            dispatch({
+                              type: "DECREMENT_QUANTITY",
+                              payload: item.id,
+                            })
                           }
                         >
                           <Minus className="w-4 h-4" />
@@ -76,7 +93,10 @@ export default function CartMenu() {
                           variant="outline"
                           className="h-8 w-8 rounded-full border-[#E96D87] text-[#E96D87] hover:bg-[#FEE9ED]"
                           onClick={() =>
-                            dispatch({ type: "INCREMENT_QUANTITY", payload: item.id })
+                            dispatch({
+                              type: "INCREMENT_QUANTITY",
+                              payload: item.id,
+                            })
                           }
                         >
                           <Plus className="w-4 h-4" />
@@ -114,7 +134,7 @@ export default function CartMenu() {
                 </Button>
                 <Button
                   className="flex-1 rounded-2xl bg-[#E96D87] hover:bg-[#d95c74] text-white font-[Comic_Neue]"
-                  onClick={() => console.log("Ir al checkout")}
+                  onClick={() => handleGoToCheckout()}
                 >
                   Pagar
                 </Button>

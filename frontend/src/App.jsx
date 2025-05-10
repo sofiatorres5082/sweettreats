@@ -9,6 +9,7 @@ import NotFound from "./pages/NotFound";
 import Register from "./pages/Register";
 import PublicRoute from "./components/PublicRoute";
 import Catalog from "./pages/Catalog";
+import Checkout from "./pages/Checkout";
 import { Toaster } from "sonner";
 
 function App() {
@@ -50,6 +51,8 @@ function App() {
 
         <Route element={<ProtectedRoute roles={["USER"]} fallback="/log-in" />}>
           <Route path="/home" element={<Home />} />
+          <Route path="/checkout" element={<Checkout />} />
+          {/* <Route path="/mis-pedidos" element={<MyOrders />} />  */}
         </Route>
 
         <Route

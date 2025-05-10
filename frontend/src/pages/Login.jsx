@@ -1,7 +1,7 @@
 import { useAuth } from "../context/AuthContext";
 import { Button } from "../components/ui/button";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Input } from "../components/ui/input";
 import { Card, CardContent } from "../components/ui/card";
 import { Eye, EyeOff } from "lucide-react";
@@ -15,23 +15,17 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
+  const location = useLocation();
+  const from = location.state?.from || "/catalogo";
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
 
     try {
-      const user = await login(
-        { email, password },
-        {
-          withCredentials: true,
-        }
-      );
-
-      if (user.roles.includes("ADMIN")) {
-        navigate("/dashboard");
-      } else {
-        navigate("/home");
+      const user = await login({ email, password });
+      if (user) {
+        navigate(from, { replace: true });
       }
     } catch (err) {
       setError(err.message || "Credenciales inválidas");

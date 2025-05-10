@@ -37,20 +37,30 @@ public class SecurityConfig {
                .csrf(csrf -> csrf.disable())
                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                .authorizeHttpRequests(http -> {
-                   // EndPoints publicos
-                   http.requestMatchers(HttpMethod.POST, "/auth/**").permitAll();
-                   http.requestMatchers(HttpMethod.GET, "/api/products").permitAll();
+                   // 📌 ENDPOINTS PÚBLICOS
+                   http.requestMatchers(HttpMethod.POST, "/auth/**").permitAll();              // login, register
+                   http.requestMatchers(HttpMethod.GET, "/api/products").permitAll();          // catálogo
 
-                   // EndPoints Privados
-                   http.requestMatchers(HttpMethod.GET, "/auth/me").authenticated();
+                   // 🔒 ENDPOINTS AUTENTICADOS (cualquier usuario logueado)
+                   http.requestMatchers(HttpMethod.GET, "/auth/me").authenticated();           // perfil
+                   http.requestMatchers(HttpMethod.GET, "/home").authenticated();              // página protegida general
+
+                   // 🛒 PEDIDOS - solo usuarios autenticados con rol USER
+                   http.requestMatchers(HttpMethod.POST, "/api/orders").hasAuthority("USER");      // crear pedido
+                   http.requestMatchers(HttpMethod.GET, "/api/orders/**").hasAuthority("USER");    // ver pedidos propios
+
+                   // ⚙️ MÉTODOS ADMIN O AVANZADOS (para test)
                    http.requestMatchers(HttpMethod.GET, "/method/get").hasAuthority("READ");
                    http.requestMatchers(HttpMethod.POST, "/method/post").hasAuthority("CREATE");
                    http.requestMatchers(HttpMethod.DELETE, "/method/delete").hasAuthority("DELETE");
                    http.requestMatchers(HttpMethod.PUT, "/method/put").hasAuthority("UPDATE");
 
-                   http.requestMatchers(HttpMethod.GET, "/home").authenticated();  // O los roles que quieras
+                   // 📊 ADMINISTRACIÓN
                    http.requestMatchers(HttpMethod.GET, "/dashboard").hasAuthority("ADMIN");
+                   http.requestMatchers(HttpMethod.GET, "/api/orders/admin/**").hasAuthority("ADMIN");
 
+
+                   // ❌ CUALQUIER OTRO REQUEST SE RECHAZA
                    http.anyRequest().denyAll();
                })
                .addFilterBefore(new JwtTokenValidator(jwtUtils), BasicAuthenticationFilter.class)
