@@ -1,65 +1,53 @@
 import { useCart } from "../context/CartContext";
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { toast } from "sonner";
 import { useAuth } from "../context/AuthContext";
 import Spinner from "../components/Spinner";
-
-// regex para validar email, teléfono y cvv
-const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const phoneRegex = /^\d{7,15}$/; // entre 7 y 15 dígitos
-const cvvRegex = /^\d{3,4}$/;     // 3 o 4 dígitos para CVV
-const expRegex = /^(0[1-9]|1[0-2])\/\d{2}$/; // MM/AA
-
-// Función para validar Luhn
-function isValidCardNumber(value) {
-  const digits = value.replace(/\D/g, "");
-  let sum = 0;
-  let shouldDouble = false;
-  for (let i = digits.length - 1; i >= 0; i--) {
-    let digit = parseInt(digits.charAt(i), 10);
-    if (shouldDouble) {
-      digit *= 2;
-      if (digit > 9) digit -= 9;
-    }
-    sum += digit;
-    shouldDouble = !shouldDouble;
-  }
-  return sum % 10 === 0;
-}
-
-const isValidExpirationDate = (input) => {
-  if (!expRegex.test(input)) return false;
-  const [monthStr, yearStr] = input.split("/");
-  const month = parseInt(monthStr, 10);
-  const year = parseInt("20" + yearStr, 10);
-  const now = new Date();
-  const currentMonth = now.getMonth() + 1;
-  const currentYear = now.getFullYear();
-  if (year < currentYear) return false;
-  if (year === currentYear && month < currentMonth) return false;
-  return true;
-};
+import { useForm, Controller } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { checkoutSchema } from "../schemas/checkoutSchema";
+import { createOrderRequest } from "@/api/orders";
+import { useState } from "react";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogTrigger,
+} from "../components/ui/alert-dialog";
 
 export default function Checkout() {
   const { cart, dispatch } = useCart();
   const { isAuth, loading } = useAuth();
   const navigate = useNavigate();
+  const [openSuccess, setOpenSuccess] = useState(false);
 
-  const [form, setForm] = useState({
-    nombre: "",
-    direccion: "",
-    telefono: "",
-    email: "",
-    tipoTarjeta: "",
-    nombreTitular: "",
-    numero: "",
-    vencimiento: "",
-    cvv: "",
+  const {
+    control,
+    handleSubmit,
+    formState: { errors, isValid },
+  } = useForm({
+    mode: "onBlur",
+    resolver: yupResolver(checkoutSchema),
+    defaultValues: {
+      nombre: "",
+      direccion: "",
+      telefono: "",
+      email: "",
+      tipoTarjeta: "",
+      nombreTitular: "",
+      numero: "",
+      vencimiento: "",
+      cvv: "",
+    },
   });
-  const [errors, setErrors] = useState({});
 
   const total = cart.reduce(
     (acc, item) => acc + item.precio * item.cantidad,
@@ -75,126 +63,172 @@ export default function Checkout() {
 
   if (loading) return <Spinner fullScreen />;
 
-  // Validaciones inline
-  const validateField = (name, value) => {
-    let error;
-    if (!value) {
-      error = "Este campo es obligatorio";
-    } else {
-      switch (name) {
-        case 'email':
-          if (!emailRegex.test(value)) error = 'Email inválido';
-          break;
-        case 'telefono':
-          if (!phoneRegex.test(value)) error = 'Teléfono inválido';
-          break;
-        case 'numero':
-          if (!isValidCardNumber(value)) error = 'Tarjeta inválida';
-          break;
-        case 'cvv':
-          if (!cvvRegex.test(value)) error = 'CVV inválido';
-          break;
-        case 'vencimiento':
-          if (!isValidExpirationDate(value)) error = 'Vencimiento inválido o expirado';
-          break;
-        default:
-          break;
-      }
-    }
-    setErrors(prev => ({ ...prev, [name]: error }));
-  };
+  const onSubmit = async (data) => {
+    const payload = {
+      direccionEnvio: data.direccion,
+      metodoPago: data.tipoTarjeta,
+      items: cart.map((item) => ({
+        productId: item.id,
+        cantidad: item.cantidad,
+        precioUnitario: item.precio,
+      })),
+    };
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setForm(prev => ({ ...prev, [name]: value }));
-    if (['email','telefono','numero','cvv','vencimiento'].includes(name)) {
-      validateField(name, value);
+    try {
+      await createOrderRequest(payload);
+      dispatch({ type: "CLEAR_CART" });
+      toast.success("🍰 Pedido realizado con éxito");
+      setOpenSuccess(true);
+    } catch {
+      toast.error("Hubo un error al crear el pedido");
     }
-  };
-
-  const isFormValid = () => {
-    const fields = Object.keys(form);
-    const missing = fields.some(key => !form[key]);
-    const hasErrors = Object.values(errors).some(err => err);
-    return !missing && !hasErrors;
-  };
-
-  const handleConfirm = () => {
-    if (!isFormValid()) {
-      toast.error("Revisa los errores del formulario antes de continuar");
-      return;
-    }
-    dispatch({ type: "CLEAR_CART" });
-    toast.success("🍰 Pedido realizado con éxito");
-    navigate("/success");
   };
 
   return (
-    <div className="min-h-screen bg-[#FFF6ED] px-4 py-12">
-      <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-8">
-        {/* Formulario de Envío + Pago */}
-        <div>
-          <h2 className="text-[#67463B] font-[Comic_Neue] text-2xl mb-4">Datos de Envío</h2>
-          {['nombre','direccion','telefono','email'].map(field => (
-            <div key={field} className="mb-4">
-              <label htmlFor={field} className="block mb-1 capitalize">{field}</label>
-              <Input
-                id={field} name={field}
-                value={form[field]} onChange={handleChange}
-                onBlur={() => validateField(field, form[field])}
-              />
-              {errors[field] && <p className="text-red-600 text-sm">{errors[field]}</p>}
-            </div>
-          ))}
+    <>
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        className="min-h-screen bg-[#FFF6ED] px-4 py-12"
+      >
+        <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-8">
+          {/* Envío + Pago */}
+          <div>
+            <h2 className="text-[#67463B] font-[Comic_Neue] text-2xl mb-4">
+              Datos de Envío
+            </h2>
+            {["nombre", "direccion", "telefono", "email"].map((field) => (
+              <div key={field} className="mb-4">
+                <label htmlFor={field} className="block mb-1 capitalize">
+                  {field}
+                </label>
+                <Controller
+                  name={field}
+                  control={control}
+                  render={({ field }) => <Input id={field.name} {...field} />}
+                />
+                {errors[field] && (
+                  <p className="text-red-600 text-sm">
+                    {errors[field].message}
+                  </p>
+                )}
+              </div>
+            ))}
 
-          <h2 className="text-[#67463B] font-[Comic_Neue] text-2xl mt-6 mb-4">Pago</h2>
-          <div className="mb-4">
-            <label className="block mb-1">Tipo de Tarjeta</label>
-            <select
-              name="tipoTarjeta" value={form.tipoTarjeta}
-              onChange={handleChange}
-              onBlur={() => validateField('tipoTarjeta', form.tipoTarjeta)}
+            <h2 className="text-[#67463B] font-[Comic_Neue] text-2xl mt-6 mb-4">
+              Pago
+            </h2>
+            <div className="mb-4">
+              <label htmlFor="tipoTarjeta" className="block mb-1">
+                Tipo de Tarjeta
+              </label>
+              <Controller
+                name="tipoTarjeta"
+                control={control}
+                render={({ field }) => (
+                  <select
+                    id="tipoTarjeta"
+                    {...field}
+                    className="w-full rounded-md border px-3 py-2"
+                  >
+                    <option value="">Selecciona</option>
+                    <option value="visa">Visa</option>
+                    <option value="mastercard">Mastercard</option>
+                  </select>
+                )}
+              />
+              {errors.tipoTarjeta && (
+                <p className="text-red-600 text-sm">
+                  {errors.tipoTarjeta.message}
+                </p>
+              )}
+            </div>
+
+            {["nombreTitular", "numero", "vencimiento", "cvv"].map((field) => (
+              <div key={field} className="mb-4">
+                <label htmlFor={field} className="block mb-1 capitalize">
+                  {field}
+                </label>
+                <Controller
+                  name={field}
+                  control={control}
+                  render={({ field }) => <Input id={field} {...field} />}
+                />
+                {errors[field] && (
+                  <p className="text-red-600 text-sm">
+                    {errors[field].message}
+                  </p>
+                )}
+              </div>
+            ))}
+          </div>
+
+          {/* Resumen + Botón */}
+          <div>
+            <h2 className="text-[#67463B] font-[Comic_Neue] text-2xl mb-4">
+              Resumen del Pedido
+            </h2>
+            {cart.map((item) => (
+              <div key={item.id} className="flex justify-between mb-2">
+                <span>
+                  {item.nombre} x{item.cantidad}
+                </span>
+                <span>${item.precio * item.cantidad}</span>
+              </div>
+            ))}
+            <div className="border-t mt-4 pt-4 flex justify-between text-lg">
+              <span>Total:</span>
+              <span>${total}</span>
+            </div>
+
+            <Button
+              type="submit"
+              disabled={!isValid}
+              className="mt-6 w-full bg-[#E96D87] rounded-3xl disabled:opacity-50 text-white"
             >
-              <option value="">Selecciona</option>
-              <option value="visa">Visa</option>
-              <option value="mastercard">Mastercard</option>
-            </select>
-            {errors.tipoTarjeta && <p className="text-red-600 text-sm">{errors.tipoTarjeta}</p>}
+              Confirmar Pedido
+            </Button>
           </div>
-
-          {['nombreTitular','numero','vencimiento','cvv'].map(field => (
-            <div key={field} className="mb-4">
-              <label htmlFor={field} className="block mb-1 capitalize">{field}</label>
-              <Input
-                id={field} name={field}
-                value={form[field]} onChange={handleChange}
-                onBlur={() => validateField(field, form[field])}
-              />
-              {errors[field] && <p className="text-red-600 text-sm">{errors[field]}</p>}
-            </div>
-          ))}
         </div>
+      </form>
 
-        {/* Resumen y botón */}
-        <div>
-          <h2 className="text-[#67463B] font-[Comic_Neue] text-2xl mb-4">Resumen del Pedido</h2>
-          {cart.map(item => (
-            <div key={item.id} className="flex justify-between mb-2">
-              <span>{item.nombre} x{item.cantidad}</span>
-              <span>${item.precio * item.cantidad}</span>
+      <AlertDialog open={openSuccess} onOpenChange={setOpenSuccess}>
+        <AlertDialogTrigger asChild>
+          {/* Botón invisible para disparar el diálogo programáticamente */}
+          <button className="hidden" />
+        </AlertDialogTrigger>
+        <AlertDialogContent className="bg-[#FCF8EC] text-[#67463B] border-[#D9B9A1] p-6 rounded-2xl shadow-lg">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-lg font-[Comic_Neue] text-center">
+              ¡Pedido realizado con éxito!
+            </AlertDialogTitle>
+            <AlertDialogDescription className="mt-2 font-[Comic_Neue] text-center">
+              Gracias por tu compra. ¿Qué deseas hacer ahora?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="">
+            <div className="flex flex-col items-center space-y-2 mt-4 w-full">
+              <AlertDialogAction
+                className="rounded-xl bg-[#E57F95] text-white hover:bg-pink-700 font-[Comic_Neue]"
+                onClick={() => {
+                  setOpenSuccess(false);
+                  navigate("/catalogo");
+                }}
+              >
+                Seguir comprando
+              </AlertDialogAction>
+              <AlertDialogCancel
+                className="rounded-xl bg-white border hover:bg-pink-100 font-[Comic_Neue]"
+                onClick={() => {
+                  setOpenSuccess(false);
+                  navigate("/mis-pedidos");
+                }}
+              >
+                Ver mis pedidos
+              </AlertDialogCancel>
             </div>
-          ))}
-          <div className="border-t mt-4 pt-4 flex justify-between text-lg">
-            <span>Total:</span><span>${total}</span>
-          </div>
-
-          <Button
-            disabled={!isFormValid()}
-            className="mt-6 w-full bg-[#E96D87] border-none rounded-3xl shadow-none cursor-pointer disabled:opacity-50 text-white"
-            onClick={handleConfirm}
-          >Confirmar Pedido</Button>
-        </div>
-      </div>
-    </div>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }

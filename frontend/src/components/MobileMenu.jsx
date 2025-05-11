@@ -107,16 +107,18 @@ export default function MobileMenu() {
                     Esta acción cerrará tu sesión y te devolverá al inicio.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel className="rounded-xl bg-white border hover:bg-pink-100">
-                    Cancelar
-                  </AlertDialogCancel>
-                  <AlertDialogAction
-                    className="rounded-xl bg-[#E57F95] text-white hover:bg-pink-700"
-                    onClick={handleLogout}
-                  >
-                    Confirmar
-                  </AlertDialogAction>
+                <AlertDialogFooter className="flex justify-center">
+                  <div className="flex gap-5">
+                    <AlertDialogCancel className="rounded-xl bg-white border hover:bg-pink-100">
+                      Cancelar
+                    </AlertDialogCancel>
+                    <AlertDialogAction
+                      className="rounded-xl bg-[#E57F95] text-white hover:bg-pink-700"
+                      onClick={handleLogout}
+                    >
+                      Confirmar
+                    </AlertDialogAction>
+                  </div>
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>

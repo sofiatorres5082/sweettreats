@@ -1,15 +1,20 @@
 package com.sweettreats.SweetTreats.service;
 
-import com.sweettreats.SweetTreats.dto.OrderItem;
+import com.sweettreats.SweetTreats.dto.OrderDetailResponse;
 import com.sweettreats.SweetTreats.dto.OrderRequest;
+import com.sweettreats.SweetTreats.dto.OrderResponse;
 import com.sweettreats.SweetTreats.model.*;
 import com.sweettreats.SweetTreats.repository.OrderRepository;
 import com.sweettreats.SweetTreats.repository.ProductRepository;
+import jakarta.transaction.Transactional;
+import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-
+import org.springframework.web.server.ResponseStatusException;
+import org.springframework.data.domain.Pageable;
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class OrderService implements IOrderService {
@@ -21,41 +26,152 @@ public class OrderService implements IOrderService {
         this.orderRepository = orderRepository;
         this.productRepository = productRepository;
     }
-
     @Override
-    public OrderModel crearPedido(OrderRequest request, UserModel usuario) {
-        OrderModel pedido = new OrderModel();
-        pedido.setUsermodel(usuario);
-        pedido.setDireccionEnvio(request.direccionEnvio());
-        pedido.setMetodoPago(request.metodoPago());
-        pedido.setEstado(OrderEnum.PENDIENTE);
+    @Transactional
+    public OrderResponse crearPedido(OrderRequest request, UserModel user) {
+        // Construir entidad OrderModel
+        OrderModel order = new OrderModel();
+        order.setUsermodel(user);
+        order.setDireccionEnvio(request.direccionEnvio());
+        order.setMetodoPago(request.metodoPago());
+        order.setEstado(OrderEnum.PENDIENTE);
 
-        List<OrderDetailModel> detalles = new ArrayList<>();
-        for (OrderItem item : request.items()) {
-            ProductModel producto = productRepository.findById(item.productId())
-                    .orElseThrow(() -> new RuntimeException("Producto no encontrado"));
-
-            OrderDetailModel detalle = new OrderDetailModel();
-            detalle.setOrderModel(pedido);
-            detalle.setProductModel(producto);
-            detalle.setCantidad(item.cantidad());
-            detalle.setPrecioUnitario(item.precioUnitario());
-
-            detalles.add(detalle);
-        }
+        // Crear detalles y calcular total
+        List<OrderDetailModel> detalles = request.items().stream()
+                .map(item -> {
+                    ProductModel prod = productRepository.findById(item.productId())
+                            .orElseThrow(() -> new ResponseStatusException(
+                                    HttpStatus.NOT_FOUND, "Producto no encontrado"));
+                    if (item.cantidad() > prod.getStock()) {
+                        throw new ResponseStatusException(
+                                HttpStatus.BAD_REQUEST, "Stock insuficiente para producto " + prod.getId());
+                    }
+                    OrderDetailModel det = new OrderDetailModel();
+                    det.setOrderModel(order);
+                    det.setProductModel(prod);
+                    det.setCantidad(item.cantidad());
+                    det.setPrecioUnitario(BigDecimal.valueOf(prod.getPrecio())); // precio real
+                    // opcional: prod.setStock(prod.getStock() - item.cantidad());
+                    return det;
+                })
+                .collect(Collectors.toList());
 
         BigDecimal total = detalles.stream()
-                .map(detalle -> detalle.getPrecioUnitario().multiply(BigDecimal.valueOf(detalle.getCantidad())))
+                .map(d -> d.getPrecioUnitario().multiply(BigDecimal.valueOf(d.getCantidad())))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
-        pedido.setTotal(total);
+        order.setTotal(total);
+        order.setDetalles(detalles);
 
-        pedido.setDetalles(detalles);
+        OrderModel saved = orderRepository.save(order);
 
-        return orderRepository.save(pedido);
+        // Mapear a DTO
+        List<OrderDetailResponse> detalleResp = saved.getDetalles().stream()
+                .map(d -> new OrderDetailResponse(
+                        d.getProductModel().getId(),
+                        d.getProductModel().getNombre(),
+                        d.getCantidad(),
+                        d.getPrecioUnitario()
+                ))
+                .collect(Collectors.toList());
+
+        return new OrderResponse(
+                saved.getId(),
+                saved.getDireccionEnvio(),
+                saved.getMetodoPago(),
+                saved.getTotal(),
+                saved.getEstado(),
+                saved.getCreatedAt(),
+                detalleResp
+        );
     }
 
-    public List<OrderModel> obtenerPedidosDeUsuario(UserModel user) {
-        return orderRepository.findAllByUsermodel(user);
+    @Override
+    public List<OrderResponse> obtenerPedidosDeUsuario(UserModel user) {
+        return orderRepository.findAllByUsermodel(user).stream()
+                .map(order -> {
+                    List<OrderDetailResponse> detalles = order.getDetalles().stream()
+                            .map(d -> new OrderDetailResponse(
+                                    d.getProductModel().getId(),
+                                    d.getProductModel().getNombre(),
+                                    d.getCantidad(),
+                                    d.getPrecioUnitario()
+                            ))
+                            .collect(Collectors.toList());
+                    return new OrderResponse(
+                            order.getId(),
+                            order.getDireccionEnvio(),
+                            order.getMetodoPago(),
+                            order.getTotal(),
+                            order.getEstado(),
+                            order.getCreatedAt(),
+                            detalles
+                    );
+                })
+                .collect(Collectors.toList());
+    }
+
+
+    @Override
+    public OrderResponse obtenerPedidoPorId(UserModel user, Long id) {
+        OrderModel order = orderRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Pedido no encontrado"));
+        if (!order.getUsermodel().getId().equals(user.getId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No tienes acceso a este pedido");
+        }
+        return mapToResponse(order);
+    }
+
+    @Override
+    public Page<OrderResponse> obtenerTodosLosPedidos(Pageable pageable) {
+        return orderRepository.findAll(pageable)
+                .map(this::mapToResponse);
+    }
+
+    private OrderModel buildOrderEntity(OrderRequest request, UserModel user) {
+        OrderModel order = new OrderModel();
+        order.setUsermodel(user);
+        order.setDireccionEnvio(request.direccionEnvio());
+        order.setMetodoPago(request.metodoPago());
+        order.setEstado(OrderEnum.PENDIENTE);
+
+        List<OrderDetailModel> detalles = request.items().stream().map(item -> {
+            ProductModel prod = productRepository.findById(item.productId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Producto no encontrado"));
+            if (item.cantidad() > prod.getStock()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Stock insuficiente para producto " + prod.getId());
+            }
+            OrderDetailModel det = new OrderDetailModel();
+            det.setOrderModel(order);
+            det.setProductModel(prod);
+            det.setCantidad(item.cantidad());
+            det.setPrecioUnitario(BigDecimal.valueOf(prod.getPrecio()));
+            return det;
+        }).collect(Collectors.toList());
+
+        BigDecimal total = detalles.stream()
+                .map(d -> d.getPrecioUnitario().multiply(BigDecimal.valueOf(d.getCantidad())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        order.setDetalles(detalles);
+        order.setTotal(total);
+        return order;
+    }
+
+    private OrderResponse mapToResponse(OrderModel saved) {
+        List<OrderDetailResponse> detalleResp = saved.getDetalles().stream()
+                .map(d -> new OrderDetailResponse(
+                        d.getProductModel().getId(),
+                        d.getProductModel().getNombre(),
+                        d.getCantidad(),
+                        d.getPrecioUnitario()))
+                .collect(Collectors.toList());
+        return new OrderResponse(
+                saved.getId(),
+                saved.getDireccionEnvio(),
+                saved.getMetodoPago(),
+                saved.getTotal(),
+                saved.getEstado(),
+                saved.getCreatedAt(),
+                detalleResp);
     }
 
 }
