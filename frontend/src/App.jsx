@@ -10,6 +10,8 @@ import Register from "./pages/Register";
 import PublicRoute from "./components/PublicRoute";
 import Catalog from "./pages/Catalog";
 import Checkout from "./pages/Checkout";
+import MyOrders from "./pages/MyOrders";
+import Profile from "./pages/Profile";
 import { Toaster } from "sonner";
 
 function App() {
@@ -52,7 +54,8 @@ function App() {
         <Route element={<ProtectedRoute roles={["USER"]} fallback="/log-in" />}>
           <Route path="/home" element={<Home />} />
           <Route path="/checkout" element={<Checkout />} />
-          {/* <Route path="/mis-pedidos" element={<MyOrders />} />  */}
+          <Route path="/mis-pedidos" element={<MyOrders />} /> 
+          <Route path="/perfil" element={<Profile />} /> 
         </Route>
 
         <Route

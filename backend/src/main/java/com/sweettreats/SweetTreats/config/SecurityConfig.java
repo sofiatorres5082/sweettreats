@@ -45,11 +45,14 @@ public class SecurityConfig {
 
                    // 🔒 ENDPOINTS AUTENTICADOS (cualquier usuario logueado)
                    http.requestMatchers(HttpMethod.GET, "/auth/me").authenticated();           // perfil
+                   http.requestMatchers(HttpMethod.PUT,  "/auth/me").authenticated();          // para editar su perfil
                    http.requestMatchers(HttpMethod.GET, "/home").authenticated();              // página protegida general
 
                    // 🛒 PEDIDOS - solo usuarios autenticados con rol USER
-                   http.requestMatchers(HttpMethod.POST, "/api/orders").authenticated();      // crear pedido
-                   http.requestMatchers(HttpMethod.GET, "/api/orders/**").authenticated();    // ver pedidos propios
+                   http.requestMatchers(HttpMethod.GET, "/api/orders").authenticated();
+                   http.requestMatchers(HttpMethod.POST, "/api/orders").authenticated();
+                   http.requestMatchers(HttpMethod.GET, "/api/orders/**").authenticated();
+
 
                    // ⚙️ MÉTODOS ADMIN O AVANZADOS (para test)
                    http.requestMatchers(HttpMethod.GET, "/method/get").hasAuthority("READ");
@@ -61,6 +64,11 @@ public class SecurityConfig {
                    http.requestMatchers(HttpMethod.GET, "/dashboard").hasRole("ADMIN");
                    http.requestMatchers(HttpMethod.GET, "/api/orders/admin/**").hasRole("ADMIN");
 
+                   // 🧑‍💼 CRUD Usuarios (solo ADMIN)
+                   http.requestMatchers(HttpMethod.GET,    "/api/users").hasRole("ADMIN");
+                   http.requestMatchers(HttpMethod.GET,    "/api/users/**").hasRole("ADMIN");
+                   http.requestMatchers(HttpMethod.PUT,    "/api/users/**").hasRole("ADMIN");
+                   http.requestMatchers(HttpMethod.DELETE, "/api/users/**").hasRole("ADMIN");
 
                    // ❌ CUALQUIER OTRO REQUEST SE RECHAZA
                    http.anyRequest().denyAll();

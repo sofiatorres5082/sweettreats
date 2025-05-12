@@ -7,3 +7,7 @@ export const registerRequest = (user) => axios.post("/auth/sign-up", user);
 export const checkAuthRequest = () => axios.get("/auth/me"); 
 
 export const verifySessionRequest = () => axios.get("/auth/verify-session");
+
+export const updateProfileRequest = (data) =>
+  axios.put("/auth/me", data);
+

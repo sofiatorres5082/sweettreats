@@ -43,7 +43,7 @@ export const AuthProvider = ({ children }) => {
 
   const checkAuth = async () => {
     try {
-      const res = await checkAuthRequest(); // usa axios conCredentials!
+      const res = await checkAuthRequest(); 
       setUser(res.data);
       setIsAuth(true);
     } catch (err) {
@@ -72,6 +72,7 @@ export const AuthProvider = ({ children }) => {
     <AuthContext.Provider
       value={{
         user,
+        setUser,
         isAuth,
         loading,
         errors,

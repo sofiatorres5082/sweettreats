@@ -1,12 +1,11 @@
 package com.sweettreats.SweetTreats.controller;
 
-import com.sweettreats.SweetTreats.dto.AuthCreateUserRequest;
-import com.sweettreats.SweetTreats.dto.AuthLoginRequest;
-import com.sweettreats.SweetTreats.dto.AuthResponse;
-import com.sweettreats.SweetTreats.dto.UserResponse;
+import com.sweettreats.SweetTreats.dto.*;
 import com.sweettreats.SweetTreats.model.UserModel;
 import com.sweettreats.SweetTreats.repository.UserRepository;
 import com.sweettreats.SweetTreats.service.CustomUserDetailsService;
+import com.sweettreats.SweetTreats.service.IUserService;
+import com.sweettreats.SweetTreats.service.UserService;
 import com.sweettreats.SweetTreats.util.JwtUtil;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -33,6 +32,9 @@ public class AuthenticationController {
 
     @Autowired
     private JwtUtil jwtUtil;
+
+    @Autowired
+    private UserService userService;
 
     @PostMapping("/sign-up")
     public ResponseEntity<AuthResponse> register(@Valid @RequestBody AuthCreateUserRequest userRequest, HttpServletResponse response) {
@@ -70,7 +72,9 @@ public class AuthenticationController {
                 user.getId(),
                 user.getName(),
                 user.getEmail(),
-                user.getRoles()
+                user.getRoles(),
+                user.getCreatedAt(),
+                user.getUpdatedAt()
         );
 
         return ResponseEntity.ok(userResponse);
@@ -96,10 +100,26 @@ public class AuthenticationController {
                 user.getId(),
                 user.getName(),
                 user.getEmail(),
-                user.getRoles()
+                user.getRoles(),
+                user.getCreatedAt(),
+                user.getUpdatedAt()
         );
 
         return ResponseEntity.ok(response);
+    }
+
+    @PutMapping("/me")
+    public ResponseEntity<UserResponse> updateMe(
+            Authentication authentication,
+            @Valid @RequestBody UserUpdateRequest request) {
+        // Buscamos al usuario autenticado
+        UserModel user = userRepository.findUserModelByEmail(authentication.getName())
+                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
+
+        // Delegamos en tu service de usuario para la actualización
+        UserResponse updated = userService.updateUser(user.getId(), request);
+
+        return ResponseEntity.ok(updated);
     }
 
     // Método auxiliar para extraer el token de las cookies
