@@ -16,9 +16,14 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/auth")
@@ -111,16 +116,37 @@ public class AuthenticationController {
     @PutMapping("/me")
     public ResponseEntity<UserResponse> updateMe(
             Authentication authentication,
-            @Valid @RequestBody UserUpdateRequest request) {
-        // Buscamos al usuario autenticado
+            @Valid @RequestBody UserUpdateRequest request,
+            HttpServletResponse response
+    ) {
         UserModel user = userRepository.findUserModelByEmail(authentication.getName())
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
 
-        // Delegamos en tu service de usuario para la actualización
         UserResponse updated = userService.updateUser(user.getId(), request);
 
+        List<SimpleGrantedAuthority> authorities = authentication.getAuthorities()
+                .stream()
+                .map(a -> new SimpleGrantedAuthority(a.getAuthority()))
+                .collect(Collectors.toList());
+        Authentication newAuth = new UsernamePasswordAuthenticationToken(
+                updated.email(),
+                null,
+                authorities
+        );
+
+        String newJwt = jwtUtil.createToken(newAuth);
+
+        ResponseCookie cookie = ResponseCookie.from("jwt", newJwt)
+                .httpOnly(true)
+                .secure(false)
+                .path("/")
+                .maxAge(7 * 24 * 60 * 60)
+                .build();
+        response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+        
         return ResponseEntity.ok(updated);
     }
+
 
     // Método auxiliar para extraer el token de las cookies
     private String extractTokenFromCookies(HttpServletRequest request) {

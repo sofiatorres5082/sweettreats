@@ -12,7 +12,6 @@ import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import Spinner from "../components/Spinner";
 
-// esquema de validación del perfil
 const profileSchema = yup.object({
   name: yup.string().required("El nombre es obligatorio"),
   email: yup
@@ -42,6 +41,12 @@ export default function Profile() {
   });
 
   useEffect(() => {
+    if (isEditing && user) {
+      reset({ name: user.name, email: user.email });
+    }
+  }, [isEditing, user, reset]);
+
+  useEffect(() => {
     if (user) {
       getUserOrdersRequest()
         .then((res) => setOrders(res.data.slice(0, 5))) // los 5 más recientes
@@ -61,7 +66,6 @@ export default function Profile() {
   };
 
   const handleCancel = () => {
-    reset({ name: user.name, email: user.email });
     setEditing(false);
   };
 
@@ -76,27 +80,31 @@ export default function Profile() {
   return (
     <>
       <MobileHeader />
-      <div className="min-h-screen bg-[#F9E4CF] px-4 pt-16 pb-8 space-y-8">
-        {/* Información del Perfil */}
-        <section className="max-w-md mx-auto bg-white p-6 rounded-2xl shadow space-y-4">
-          <h2 className="text-2xl font-semibold text-[#67463B]">
-            Información del Perfil
-          </h2>
+      <div className="min-h-screen bg-[#F9E4CF] px-4 pt-16 pb-8 space-y-6">
+        <h2 className="font-[Comic_Neue] text-2xl font-bold text-[#67463B] text-center pt-4">
+          Mi perfil
+        </h2>
+
+        {/* Información Personal */}
+        <section className="max-w-md mx-auto bg-white p-6 rounded-xl">
+          <h3 className="font-[Comic_Neue] text-lg font-semibold text-[#67463B] mb-4">
+            Información personal
+          </h3>
 
           {isEditing ? (
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               {["name", "email"].map((field) => (
-                <div key={field} className="space-y-1">
+                <div key={field} className="space-y-2">
                   <label
                     htmlFor={field}
-                    className="block capitalize text-[#67463B]"
+                    className="block font-[Comic_Neue]  text-[#67463B]"
                   >
-                    {field}:
+                    {field === "name" ? "Nombre:" : "Email:"}
                   </label>
                   <Controller
                     name={field}
                     control={control}
-                    render={({ field }) => <Input {...field} id={field} />}
+                    render={({ field }) => <Input {...field} id={field} className="w-full" />}
                   />
                   {errors[field] && (
                     <p className="text-red-600 text-sm">
@@ -106,32 +114,38 @@ export default function Profile() {
                 </div>
               ))}
 
-              <div className="flex justify-end gap-4">
-                <Button variant="outline" onClick={handleCancel}>
+              <div className="flex justify-center gap-4 mt-4">
+                <Button 
+                  variant="outline" 
+                  onClick={handleCancel}
+                  className="bg-gray-200 text-gray-700 hover:bg-gray-300 font-medium rounded-full px-6 py-2"
+                >
                   Cancelar
                 </Button>
                 <Button
                   type="submit"
                   disabled={!isValid}
-                  className="bg-[#E96D87] text-white"
+                  className="bg-[#FF6B85] hover:bg-[#E96D87] text-white font-medium rounded-full px-6 py-2"
                 >
                   Guardar Cambios
                 </Button>
               </div>
             </form>
           ) : (
-            <div className="space-y-3">
-              <p>
-                <span className="font-semibold text-[#67463B]">Nombre:</span>{" "}
-                {user.name}
-              </p>
-              <p>
-                <span className="font-semibold text-[#67463B]">Email:</span>{" "}
-                {user.email}
-              </p>
-              <div className="flex justify-end">
+            <div className="space-y-4">
+              <div className="flex items-baseline">
+                <p className="w-24 font-[Comic_Neue] font-semibold text-[#67463B]">Nombre:</p>
+                <p className="flex-1">{user.name}</p>
+              </div>
+              
+              <div className="flex items-baseline">
+                <p className="w-24 font-[Comic_Neue] font-semibold text-[#67463B]">Email:</p>
+                <p className="flex-1">{user.email}</p>
+              </div>
+              
+              <div className="flex justify-center mt-4">
                 <Button
-                  className="bg-[#E96D87] text-white"
+                  className="bg-[#FF6B85] hover:bg-[#E96D87] text-white font-semibold font-[Comic_Neue] rounded-full px-6 py-2"
                   onClick={() => setEditing(true)}
                 >
                   Editar Perfil
@@ -141,57 +155,65 @@ export default function Profile() {
           )}
         </section>
 
-        {/* Historial de pedidos recientes */}
-        <section className="max-w-md mx-auto bg-white p-6 rounded-2xl shadow space-y-4">
-          <h3 className="text-xl font-semibold text-[#67463B]">
-            Mis Pedidos Recientes
+        {/* Historial de Pedidos */}
+        <section className="max-w-md mx-auto bg-white p-6 rounded-xl">
+          <h3 className="font-[Comic_Neue] text-lg font-semibold text-[#67463B] mb-4">
+            Historial de pedidos
           </h3>
 
           {orders.length > 0 ? (
-            <ul className="space-y-3">
+            <div className="space-y-3">
               {orders.map((o) => (
-                <li
+                <div
                   key={o.id}
-                  className="flex justify-between items-center p-3 border rounded-lg"
+                  className="bg-[#FF6B85] text-white p-4 rounded-lg"
                 >
-                  <div>
-                    <p className="font-medium">
-                      Pedido #{o.id} –{" "}
-                      {new Date(o.createdAt).toLocaleDateString()}
-                    </p>
-                    <p className="text-sm text-[#67463B]">
-                      Estado: {o.estado} – Total: ${o.total}
-                    </p>
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <p className="font-[Comic_Neue] font-bold">
+                        Pedido #{o.id}
+                      </p>
+                      <p className="font-[Comic_Neue]">
+                        Fecha: {new Date(o.createdAt).toLocaleDateString()}
+                      </p>
+                    </div>
+                    <p className="font-[Comic_Neue] text-lg">${o.total}</p>
                   </div>
-                  <Button size="sm" onClick={() => navigate(`/order/${o.id}`)}>
-                    Ver detalles
-                  </Button>
-                </li>
+                </div>
               ))}
-            </ul>
+            </div>
           ) : (
-            <p className="text-center text-[#67463B]">No tienes pedidos aún.</p>
+            <p className="font-[Comic_Neue] text-center text-[#67463B]">No tienes pedidos aún.</p>
           )}
 
-          <Link
-            to="/mis-pedidos"
-            className="inline-block mt-2 text-[#E96D87] font-semibold"
-          >
-            Ver todos mis pedidos →
-          </Link>
+          <div className="text-center mt-4">
+            <Link
+              to="/mis-pedidos"
+              className="inline-block text-[#67463B] font-medium font-[Comic_Neue]"
+            >
+              Ver todos mis pedidos →
+            </Link>
+          </div>
         </section>
 
-        {/* Opciones adicionales */}
-        <section className="max-w-md mx-auto bg-white p-6 rounded-2xl shadow space-y-4">
-          <h3 className="text-xl font-semibold text-[#67463B]">Opciones</h3>
-          <div className="flex flex-col gap-3">
+        {/* Opciones */}
+        <section className="max-w-md mx-auto bg-white p-6 rounded-xl">
+          <h3 className="font-[Comic_Neue] text-lg font-semibold text-[#67463B] mb-4">
+            Opciones
+          </h3>
+          
+          <div className="flex flex-wrap justify-center gap-3">
             <Button
-              variant="outline"
               onClick={() => navigate("/cambiar-contraseña")}
+              className="bg-[#FF6B85] hover:bg-[#E96D87] font-[Comic_Neue]  text-white font-medium rounded-full px-6 py-2"
             >
               Cambiar Contraseña
             </Button>
-            <Button variant="outline" onClick={handleLogout}>
+            
+            <Button 
+              onClick={handleLogout}
+              className="bg-[#FF6B85] hover:bg-[#E96D87] font-[Comic_Neue] text-white font-medium rounded-full px-6 py-2"
+            >
               Cerrar Sesión
             </Button>
           </div>
