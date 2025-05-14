@@ -48,6 +48,10 @@ public class SecurityConfig {
                    http.requestMatchers(HttpMethod.PUT,  "/auth/me").authenticated();          // para editar su perfil
                    http.requestMatchers(HttpMethod.GET, "/home").authenticated();              // página protegida general
 
+                   // 🚀 Permitir a usuarios autenticados crear el PaymentIntent
+                   http.requestMatchers(HttpMethod.POST, "/api/payments/**")
+                           .authenticated();
+
                    // 🛒 PEDIDOS - solo usuarios autenticados con rol USER
                    http.requestMatchers(HttpMethod.GET, "/api/orders").authenticated();
                    http.requestMatchers(HttpMethod.POST, "/api/orders").authenticated();

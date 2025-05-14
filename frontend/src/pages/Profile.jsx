@@ -75,7 +75,7 @@ export default function Profile() {
     navigate("/");
   };
 
-  if (!user) return <Spinner fullScreen />;
+  if (!user) return <Spinner  />;
 
   return (
     <>

@@ -5,7 +5,7 @@ import Spinner from "../components/Spinner";
 export default function ProtectedRoute({ roles = [], fallback = "/log-in" }) {
   const { isAuth, user, loading } = useAuth();
 
-  if (loading) return <Spinner fullScreen />;
+  if (loading) return <Spinner />;
 
   if (!isAuth) {
     return <Navigate to="/log-in" state={{ from: location.pathname }} replace />;

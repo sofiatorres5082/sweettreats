@@ -63,7 +63,7 @@ export default function MyOrders() {
 
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
-  if (loading) return <Spinner fullscreen />;
+  if (loading) return <Spinner />;
 
   return (
     <>
