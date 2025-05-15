@@ -4,6 +4,8 @@ import com.sweettreats.SweetTreats.dto.UserResponse;
 import com.sweettreats.SweetTreats.dto.UserUpdateRequest;
 import com.sweettreats.SweetTreats.model.UserModel;
 import com.sweettreats.SweetTreats.repository.UserRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -22,10 +24,9 @@ public class UserService implements IUserService {
     }
 
     @Override
-    public List<UserResponse> getAllUsers() {
-        return userRepository.findAll().stream()
-                .map(this::toResponse)
-                .collect(Collectors.toList());
+    public Page<UserResponse> getAllUsers(Pageable pageable) {
+        return userRepository.findAll(pageable)
+                .map(this::toResponse);
     }
 
     @Override

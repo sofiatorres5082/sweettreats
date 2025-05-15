@@ -3,7 +3,12 @@ import "./App.css";
 import Login from "./pages/Login";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Home from "./pages/Home";
-import Dashboard from "./pages/Dashboard";
+import DashboardLayout from "./pages/admin/DashboardLayout";
+import DashboardHome from "./pages/admin/DashboardHome";
+import UsersAdmin from "./pages/admin/UsersAdmin";
+import ProductsAdmin from "./pages/admin/ProductsAdmin";
+import OrdersAdmin from "./pages/admin/OrdersAdmin";
+import ReportsAdmin from "./pages/admin/ReportsAdmin";
 import Landing from "./pages/Landing";
 import NotFound from "./pages/NotFound";
 import Register from "./pages/Register";
@@ -54,14 +59,20 @@ function App() {
         <Route element={<ProtectedRoute roles={["USER"]} fallback="/log-in" />}>
           <Route path="/home" element={<Home />} />
           <Route path="/checkout" element={<Checkout />} />
-          <Route path="/mis-pedidos" element={<MyOrders />} /> 
-          <Route path="/perfil" element={<Profile />} /> 
+          <Route path="/mis-pedidos" element={<MyOrders />} />
+          <Route path="/perfil" element={<Profile />} />
         </Route>
 
         <Route
           element={<ProtectedRoute roles={["ADMIN"]} fallback="/not-found" />}
         >
-          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/dashboard" element={<DashboardLayout />}>
+            <Route index element={<DashboardHome />} />
+            <Route path="users" element={<UsersAdmin />} />
+            <Route path="products" element={<ProductsAdmin />} />
+            <Route path="orders" element={<OrdersAdmin />} />
+            <Route path="reports" element={<ReportsAdmin />} />
+          </Route>
         </Route>
 
         <Route path="*" element={<NotFound />} />

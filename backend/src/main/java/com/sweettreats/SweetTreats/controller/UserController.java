@@ -4,6 +4,9 @@ import com.sweettreats.SweetTreats.dto.UserResponse;
 import com.sweettreats.SweetTreats.dto.UserUpdateRequest;
 import com.sweettreats.SweetTreats.service.IUserService;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -22,8 +25,13 @@ public class UserController {
     }
 
     @GetMapping
-    public ResponseEntity<List<UserResponse>> listUsers() {
-        return ResponseEntity.ok(userService.getAllUsers());
+    public ResponseEntity<Page<UserResponse>> listUsers(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<UserResponse> usuarios = userService.getAllUsers(pageable);
+        return ResponseEntity.ok(usuarios);
     }
 
     @GetMapping("/{id}")
