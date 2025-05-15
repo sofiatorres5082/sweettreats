@@ -9,12 +9,12 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/products")
-@PreAuthorize("hasRole('ADMIN')")
 public class ProductController {
     private final ProductService service;
     public ProductController(ProductService service) { this.service = service; }
 
-    // 📄 Listar paginado
+
+    // LISTADO PÚBLICO
     @GetMapping
     public ResponseEntity<Page<ProductModel>> list(
             @RequestParam(defaultValue = "0") int page,
@@ -22,24 +22,31 @@ public class ProductController {
         return ResponseEntity.ok(service.getAll(page, size));
     }
 
+    // CONSULTA PÚBLICA
     @GetMapping("/{id}")
     public ResponseEntity<ProductModel> get(@PathVariable Long id) {
         return ResponseEntity.ok(service.getById(id));
     }
 
+    // CREAR → sólo ADMIN
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ProductModel> create(@RequestBody ProductModel p) {
         return ResponseEntity.status(201).body(service.create(p));
     }
 
+    // ACTUALIZAR → sólo ADMIN
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ProductModel> update(
             @PathVariable Long id,
             @RequestBody ProductModel p) {
         return ResponseEntity.ok(service.update(id, p));
     }
 
+    // ELIMINAR → sólo ADMIN
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         service.delete(id);
         return ResponseEntity.noContent().build();

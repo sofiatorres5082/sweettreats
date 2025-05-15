@@ -32,13 +32,17 @@ export default function Catalog() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+ useEffect(() => {
     const fetchProducts = async () => {
       try {
         const res = await getProductsRequest();
-        setProducts(res.data);
+        const data = res.data;
+        // si viene paginado, usamos data.content, si no, asumimos array
+        const items = Array.isArray(data) ? data : data.content;
+        setProducts(items);
       } catch (error) {
         console.error("Error al cargar productos", error);
+        toast.error("No se pudieron cargar los productos");
       } finally {
         setLoading(false);
       }

@@ -40,6 +40,7 @@ public class SecurityConfig {
                    // 📌 ENDPOINTS PÚBLICOS
                    http.requestMatchers(HttpMethod.POST, "/auth/**").permitAll();              // login, register
                    http.requestMatchers(HttpMethod.GET, "/api/products").permitAll();
+                   http.requestMatchers(HttpMethod.GET, "/api/products/**").permitAll();
                    http.requestMatchers(HttpMethod.GET, "/auth/verify-session").permitAll();
 
 
