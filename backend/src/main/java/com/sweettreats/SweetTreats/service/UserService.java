@@ -2,7 +2,9 @@ package com.sweettreats.SweetTreats.service;
 
 import com.sweettreats.SweetTreats.dto.UserResponse;
 import com.sweettreats.SweetTreats.dto.UserUpdateRequest;
+import com.sweettreats.SweetTreats.model.RoleModel;
 import com.sweettreats.SweetTreats.model.UserModel;
+import com.sweettreats.SweetTreats.repository.RoleRepository;
 import com.sweettreats.SweetTreats.repository.UserRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -10,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -18,9 +21,11 @@ import java.util.stream.Collectors;
 public class UserService implements IUserService {
 
     private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
 
-    public UserService(UserRepository userRepository) {
+    public UserService(UserRepository userRepository, RoleRepository roleRepository) {
         this.userRepository = userRepository;
+        this.roleRepository = roleRepository;
     }
 
     @Override
@@ -40,11 +45,31 @@ public class UserService implements IUserService {
     public UserResponse updateUser(Long id, UserUpdateRequest req) {
         UserModel user = userRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado"));
+
+        // Actualizar nombre y email
         user.setName(req.name());
         user.setEmail(req.email());
+
+        // Convertir Set<RoleEnum> a List<String>
+        List<String> roleNames = req.roles()
+                .stream()
+                .map(Enum::name)
+                .toList();
+
+        // Buscar las entidades RoleModel por sus nombres
+        Set<RoleModel> nuevosRoles = new HashSet<>(
+                roleRepository.findRoleEntitiesByRoleEnumIn(roleNames)
+        );
+        if (nuevosRoles.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Roles inválidos");
+        }
+        user.setRoles(nuevosRoles);
+
         UserModel saved = userRepository.save(user);
         return toResponse(saved);
     }
+
+
 
     @Override
     public void deleteUser(Long id) {

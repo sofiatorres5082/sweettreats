@@ -22,12 +22,29 @@ import {
   AlertDialogAction,
   AlertDialogCancel,
 } from "../../components/ui/alert-dialog";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "../../components/ui/select";
 import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
 import { useForm, Controller } from "react-hook-form";
 import { toast } from "sonner";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
+
+const ROLE_LABELS = {
+  USER: "Usuario",
+  ADMIN: "Administrador",
+};
+
+const ROLE_OPTIONS = [
+  { value: "USER", label: ROLE_LABELS.USER },
+  { value: "ADMIN", label: ROLE_LABELS.ADMIN },
+];
 
 const editSchema = yup.object({
   name: yup.string().required("El nombre es obligatorio"),
@@ -84,15 +101,18 @@ export default function UsersAdmin() {
 
   const onEditSubmit = async (data) => {
     try {
-      await updateUserRequest(editingUser.id, data);
+      await updateUserRequest(editingUser.id, {
+        name: data.name,
+        email: data.email,
+        roles: data.roles, // ["USER","ADMIN"]
+      });
       toast.success("Usuario actualizado");
-      fetchUsers(page);
       setEditingUser(null);
+      fetchUsers(page);
     } catch {
       toast.error("Error al actualizar usuario");
     }
   };
-
   const confirmDelete = async () => {
     try {
       await deleteUserRequest(deletingUser.id);
@@ -147,7 +167,9 @@ export default function UsersAdmin() {
                   <TableCell>{u.name}</TableCell>
                   <TableCell>{u.email}</TableCell>
                   <TableCell>
-                    {u.roles.map((r) => r.roleEnum).join(", ")}
+                    {u.roles
+                      .map((r) => ROLE_LABELS[r.roleEnum] || r.roleEnum)
+                      .join(", ")}
                   </TableCell>
                   <TableCell>
                     {new Date(u.createdAt).toLocaleDateString()}
@@ -158,10 +180,12 @@ export default function UsersAdmin() {
                   <TableCell className="space-x-2">
                     <AlertDialog open={editingUser?.id === u.id}>
                       <AlertDialogTrigger asChild>
-                        <Button 
-                        className="bg-[#3690e4] border-none shadow-none cursor-pointer
+                        <Button
+                          className="bg-[#3690e4] border-none shadow-none cursor-pointer
                         font-[Nunito] text-base text-white"
-                        size="sm" onClick={() => openEdit(u)}>
+                          size="sm"
+                          onClick={() => openEdit(u)}
+                        >
                           Editar
                         </Button>
                       </AlertDialogTrigger>
@@ -199,6 +223,40 @@ export default function UsersAdmin() {
                               )}
                             </div>
                           ))}
+       
+                          <div>
+                            <label className="block mb-1">Roles</label>
+                            <Controller
+                              name="roles"
+                              control={control}
+                              render={({ field }) => (
+                                <Select
+                                  multiple
+                                  onValueChange={field.onChange}
+                                  value={field.value}
+                                >
+                                  <SelectTrigger className="w-full">
+                                    <SelectValue placeholder="Selecciona roles" />
+                                  </SelectTrigger>
+                                  <SelectContent className="bg-[#FCF8EC] text-[#67463B]">
+                                    {ROLE_OPTIONS.map((opt) => (
+                                      <SelectItem
+                                        key={opt.value}
+                                        value={opt.value}
+                                      >
+                                        {opt.label}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                              )}
+                            />
+                            {errors.roles && (
+                              <p className="text-red-600 text-sm">
+                                {errors.roles.message}
+                              </p>
+                            )}
+                          </div>
 
                           <AlertDialogFooter className="flex items-center w-full">
                             <AlertDialogCancel
@@ -250,7 +308,10 @@ export default function UsersAdmin() {
                           >
                             Cancelar
                           </AlertDialogCancel>
-                          <AlertDialogAction className="bg-[#E96D87] text-white px-4 py-2 rounded-lg" onClick={confirmDelete}>
+                          <AlertDialogAction
+                            className="bg-[#E96D87] text-white px-4 py-2 rounded-lg"
+                            onClick={confirmDelete}
+                          >
                             Eliminar
                           </AlertDialogAction>
                         </AlertDialogFooter>
