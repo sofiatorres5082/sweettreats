@@ -1,5 +1,6 @@
 package com.sweettreats.SweetTreats.service;
 
+import com.sweettreats.SweetTreats.dto.ProfileUpdateRequest;
 import com.sweettreats.SweetTreats.dto.UserResponse;
 import com.sweettreats.SweetTreats.dto.UserUpdateRequest;
 import com.sweettreats.SweetTreats.model.RoleModel;
@@ -69,6 +70,16 @@ public class UserService implements IUserService {
         return toResponse(saved);
     }
 
+    public UserResponse updateProfile(Long id, ProfileUpdateRequest req) {
+        UserModel user = userRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado"));
+
+        user.setName(req.name());
+        user.setEmail(req.email());
+
+        UserModel saved = userRepository.save(user);
+        return toResponse(saved);
+    }
 
 
     @Override

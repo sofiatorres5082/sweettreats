@@ -116,26 +116,26 @@ public class AuthenticationController {
     @PutMapping("/me")
     public ResponseEntity<UserResponse> updateMe(
             Authentication authentication,
-            @Valid @RequestBody UserUpdateRequest request,
+            @Valid @RequestBody ProfileUpdateRequest req,
             HttpServletResponse response
     ) {
-        UserModel user = userRepository.findUserModelByEmail(authentication.getName())
-                .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
+        // 1) obtener la entidad UserModel de la sesión
+        UserModel me = userRepository.findUserModelByEmail(authentication.getName())
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-        UserResponse updated = userService.updateUser(user.getId(), request);
+        // 2) delegar a UserService.updateProfile
+        UserResponse updated = userService.updateProfile(me.getId(), req);
 
-        List<SimpleGrantedAuthority> authorities = authentication.getAuthorities()
-                .stream()
+        // 3) generar nuevo JWT (mantener mismas authorities)
+        List<SimpleGrantedAuthority> authorities = authentication.getAuthorities().stream()
                 .map(a -> new SimpleGrantedAuthority(a.getAuthority()))
                 .collect(Collectors.toList());
         Authentication newAuth = new UsernamePasswordAuthenticationToken(
-                updated.email(),
-                null,
-                authorities
+                updated.email(), null, authorities
         );
-
         String newJwt = jwtUtil.createToken(newAuth);
 
+        // 4) sobreescribir cookie
         ResponseCookie cookie = ResponseCookie.from("jwt", newJwt)
                 .httpOnly(true)
                 .secure(false)
@@ -143,7 +143,7 @@ public class AuthenticationController {
                 .maxAge(7 * 24 * 60 * 60)
                 .build();
         response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
-        
+
         return ResponseEntity.ok(updated);
     }
 

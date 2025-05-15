@@ -38,7 +38,8 @@ public class SecurityConfig {
                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                .authorizeHttpRequests(http -> {
                    // 📌 ENDPOINTS PÚBLICOS
-                   http.requestMatchers(HttpMethod.POST, "/auth/**").permitAll();              // login, register
+                   http.requestMatchers(HttpMethod.POST, "/auth/**").permitAll();
+                   http.requestMatchers(HttpMethod.GET, "/api/products").permitAll();
                    http.requestMatchers(HttpMethod.GET, "/api/products/**").permitAll();
                    http.requestMatchers(HttpMethod.GET, "/auth/verify-session").permitAll();
 
@@ -64,11 +65,13 @@ public class SecurityConfig {
 
                    // 📊 ADMINISTRACIÓN
                    http.requestMatchers(HttpMethod.GET, "/dashboard").hasRole("ADMIN");
+                   http.requestMatchers(HttpMethod.GET, "/api/orders/admin/**").hasRole("ADMIN");
                    http.requestMatchers(HttpMethod.GET, "/api/orders/admin/all").hasRole("ADMIN");
                    http.requestMatchers(HttpMethod.GET,  "/api/orders/admin/{id:[0-9]+}").hasRole("ADMIN");
                    http.requestMatchers(HttpMethod.PUT,  "/api/orders/admin/{id:[0-9]+}").hasRole("ADMIN");
 
                    // 🧑‍💼 CRUD Usuarios (solo ADMIN)
+                   http.requestMatchers(HttpMethod.GET,    "/api/users").hasRole("ADMIN");
                    http.requestMatchers(HttpMethod.GET,    "/api/users/**").hasRole("ADMIN");
                    http.requestMatchers(HttpMethod.PUT,    "/api/users/**").hasRole("ADMIN");
                    http.requestMatchers(HttpMethod.DELETE, "/api/users/**").hasRole("ADMIN");
