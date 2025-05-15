@@ -8,6 +8,7 @@ import java.util.List;
 
 public record OrderResponse(
         Long id,
+        String email,
         String direccionEnvio,
         String metodoPago,
         BigDecimal total,

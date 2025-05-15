@@ -2,6 +2,7 @@ package com.sweettreats.SweetTreats.service;
 
 import com.sweettreats.SweetTreats.dto.OrderRequest;
 import com.sweettreats.SweetTreats.dto.OrderResponse;
+import com.sweettreats.SweetTreats.model.OrderEnum;
 import com.sweettreats.SweetTreats.model.OrderModel;
 import com.sweettreats.SweetTreats.model.UserModel;
 import org.springframework.data.domain.Page;
@@ -14,4 +15,5 @@ public interface IOrderService {
     List<OrderResponse> obtenerPedidosDeUsuario(UserModel user);
     OrderResponse obtenerPedidoPorId(UserModel user, Long id);
     Page<OrderResponse> obtenerTodosLosPedidos(Pageable pageable);
+    OrderResponse updateOrderStatus(Long id, OrderEnum nuevoEstado);
 }

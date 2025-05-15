@@ -39,7 +39,6 @@ public class SecurityConfig {
                .authorizeHttpRequests(http -> {
                    // 📌 ENDPOINTS PÚBLICOS
                    http.requestMatchers(HttpMethod.POST, "/auth/**").permitAll();              // login, register
-                   http.requestMatchers(HttpMethod.GET, "/api/products").permitAll();
                    http.requestMatchers(HttpMethod.GET, "/api/products/**").permitAll();
                    http.requestMatchers(HttpMethod.GET, "/auth/verify-session").permitAll();
 
@@ -48,8 +47,6 @@ public class SecurityConfig {
                    http.requestMatchers(HttpMethod.GET, "/auth/me").authenticated();           // perfil
                    http.requestMatchers(HttpMethod.PUT,  "/auth/me").authenticated();          // para editar su perfil
                    http.requestMatchers(HttpMethod.GET, "/home").authenticated();              // página protegida general
-
-                   // 🚀 Permitir a usuarios autenticados crear el PaymentIntent
                    http.requestMatchers(HttpMethod.POST, "/api/payments/**")
                            .authenticated();
 
@@ -57,7 +54,7 @@ public class SecurityConfig {
                    http.requestMatchers(HttpMethod.GET, "/api/orders").authenticated();
                    http.requestMatchers(HttpMethod.POST, "/api/orders").authenticated();
                    http.requestMatchers(HttpMethod.GET, "/api/orders/**").authenticated();
-
+                   http.requestMatchers(HttpMethod.GET,  "/api/orders/{id:[0-9]+}").authenticated();
 
                    // ⚙️ MÉTODOS ADMIN O AVANZADOS (para test)
                    http.requestMatchers(HttpMethod.GET, "/method/get").hasAuthority("READ");
@@ -67,10 +64,11 @@ public class SecurityConfig {
 
                    // 📊 ADMINISTRACIÓN
                    http.requestMatchers(HttpMethod.GET, "/dashboard").hasRole("ADMIN");
-                   http.requestMatchers(HttpMethod.GET, "/api/orders/admin/**").hasRole("ADMIN");
+                   http.requestMatchers(HttpMethod.GET, "/api/orders/admin/all").hasRole("ADMIN");
+                   http.requestMatchers(HttpMethod.GET,  "/api/orders/admin/{id:[0-9]+}").hasRole("ADMIN");
+                   http.requestMatchers(HttpMethod.PUT,  "/api/orders/admin/{id:[0-9]+}").hasRole("ADMIN");
 
                    // 🧑‍💼 CRUD Usuarios (solo ADMIN)
-                   http.requestMatchers(HttpMethod.GET,    "/api/users").hasRole("ADMIN");
                    http.requestMatchers(HttpMethod.GET,    "/api/users/**").hasRole("ADMIN");
                    http.requestMatchers(HttpMethod.PUT,    "/api/users/**").hasRole("ADMIN");
                    http.requestMatchers(HttpMethod.DELETE, "/api/users/**").hasRole("ADMIN");

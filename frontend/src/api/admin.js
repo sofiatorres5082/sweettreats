@@ -1,8 +1,12 @@
 import axios from "./axios";
 
 // Orders
-export const getAllOrdersRequest = () => axios.get("/api/orders");
-export const getOrderByIdRequest  = (id) => axios.get(`/api/orders/${id}`);
+export const getAllOrdersRequest = (page = 0, size = 10) =>
+  axios.get("/api/orders/admin/all", { params: { page, size } });
+export const updateOrderStatusRequest = (id, body) =>
+  axios.put(`/api/orders/admin/${id}`, body);
+export const getOrderAdminByIdRequest = id =>
+  axios.get(`/api/orders/admin/${id}`);
 
 // Users 
 export const getUsersRequest   = (page = 0, size = 10) =>

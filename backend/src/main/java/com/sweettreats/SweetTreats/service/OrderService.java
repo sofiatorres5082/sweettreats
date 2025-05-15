@@ -76,6 +76,7 @@ public class OrderService implements IOrderService {
 
         return new OrderResponse(
                 saved.getId(),
+                saved.getUsermodel().getEmail(),
                 saved.getDireccionEnvio(),
                 saved.getMetodoPago(),
                 saved.getTotal(),
@@ -99,6 +100,7 @@ public class OrderService implements IOrderService {
                             .collect(Collectors.toList());
                     return new OrderResponse(
                             order.getId(),
+                            order.getUsermodel().getEmail(),
                             order.getDireccionEnvio(),
                             order.getMetodoPago(),
                             order.getTotal(),
@@ -166,12 +168,40 @@ public class OrderService implements IOrderService {
                 .collect(Collectors.toList());
         return new OrderResponse(
                 saved.getId(),
+                saved.getUsermodel().getEmail(),
                 saved.getDireccionEnvio(),
                 saved.getMetodoPago(),
                 saved.getTotal(),
                 saved.getEstado(),
                 saved.getCreatedAt(),
                 detalleResp);
+    }
+
+    @Override
+    @Transactional
+    public OrderResponse updateOrderStatus(Long id, OrderEnum nuevoEstado) {
+        // Buscamos la orden o lanzamos 404
+        OrderModel order = orderRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Pedido no encontrado")
+                );
+
+        // Actualizamos el estado
+        order.setEstado(nuevoEstado);
+
+        // Guardamos
+        OrderModel saved = orderRepository.save(order);
+
+        // Mapeamos a DTO y devolvemos
+        return mapToResponse(saved);
+    }
+
+
+    public OrderResponse obtenerPedidoAdminPorId(Long id) {
+        OrderModel order = orderRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Pedido no encontrado"));
+        return mapToResponse(order);
     }
 
 }
