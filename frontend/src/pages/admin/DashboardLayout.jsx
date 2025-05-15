@@ -1,8 +1,8 @@
 // src/pages/admin/DashboardLayout.jsx
-import { Outlet, Link, useNavigate } from "react-router-dom"
-import { LogOut, Grid } from "lucide-react"
-import { Button } from "../../components/ui/button"
-import { Sheet, SheetContent, SheetTrigger } from "../../components/ui/sheet"
+import { Outlet, Link, useNavigate } from "react-router-dom";
+import { LogOut, Grid } from "lucide-react";
+import { Button } from "../../components/ui/button";
+import { Sheet, SheetContent, SheetTrigger } from "../../components/ui/sheet";
 import {
   AlertDialog,
   AlertDialogTrigger,
@@ -12,46 +12,88 @@ import {
   AlertDialogFooter,
   AlertDialogCancel,
   AlertDialogAction,
-} from "../../components/ui/alert-dialog"
-import { useAuth } from "../../context/AuthContext"
-import { toast } from "sonner"
+  AlertDialogDescription
+} from "../../components/ui/alert-dialog";
+import { useAuth } from "../../context/AuthContext";
+import { toast } from "sonner";
 
 export default function DashboardLayout() {
-  const { logout } = useAuth()
-  const navigate = useNavigate()
+  const { logout } = useAuth();
+  const navigate = useNavigate();
 
   const handleLogout = () => {
-    logout()
-    toast.success("Sesión cerrada")
-    navigate("/")
-  }
+    logout();
+    toast.success("Sesión cerrada", {
+      description: "Cerraste sesión exitosamente",
+    });
+    navigate("/");
+  };
 
   return (
     <div className="flex h-screen">
       {/* Sidebar fijo en pantallas grandes, y menú deslizante en móviles */}
       <aside className="hidden md:flex flex-col w-64 bg-[#FCF8EC] p-6">
-        <h1 className="text-2xl font-[Comic_Neue] text-[#67463B] mb-8">SweetTreats</h1>
+        <h1 className="text-2xl font-[Comic_Neue] text-[#67463B] mb-8">
+          SweetTreats
+        </h1>
         <nav className="flex flex-col gap-4 font-[Nunito] text-base">
-          <Link to="/dashboard"      className="px-4 py-2 hover:bg-pink-50 rounded">Resumen</Link>
-          <Link to="/dashboard/users"className="px-4 py-2 hover:bg-pink-50 rounded">Usuarios</Link>
-          <Link to="/dashboard/products" className="px-4 py-2 hover:bg-pink-50 rounded">Productos</Link>
-          <Link to="/dashboard/orders"   className="px-4 py-2 hover:bg-pink-50 rounded">Pedidos</Link>
-          <Link to="/dashboard/reports"  className="px-4 py-2 hover:bg-pink-50 rounded">Reportes</Link>
+          <Link to="/dashboard" className="px-4 py-2 hover:bg-pink-50 rounded">
+            Resumen
+          </Link>
+          <Link
+            to="/dashboard/users"
+            className="px-4 py-2 hover:bg-pink-50 rounded"
+          >
+            Usuarios
+          </Link>
+          <Link
+            to="/dashboard/products"
+            className="px-4 py-2 hover:bg-pink-50 rounded"
+          >
+            Productos
+          </Link>
+          <Link
+            to="/dashboard/orders"
+            className="px-4 py-2 hover:bg-pink-50 rounded"
+          >
+            Pedidos
+          </Link>
+          <Link
+            to="/dashboard/reports"
+            className="px-4 py-2 hover:bg-pink-50 rounded"
+          >
+            Reportes
+          </Link>
         </nav>
-        <div className="mt-auto">
+        <div className="mt-auto pt-6">
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <Button variant="outline" className="w-full flex items-center justify-center gap-2">
+              <Button
+                variant="outline"
+                className="w-full flex items-center justify-center gap-2"
+              >
                 <LogOut className="w-4 h-4" /> Cerrar Sesión
               </Button>
             </AlertDialogTrigger>
-            <AlertDialogContent>
+            <AlertDialogContent className="bg-[#FCF8EC] text-[#67463B] border-[#D9B9A1]">
               <AlertDialogHeader>
-                <AlertDialogTitle>¿Cerrar sesión?</AlertDialogTitle>
+                <AlertDialogTitle className="text-lg">
+                  ¿Cerrar sesión?
+                </AlertDialogTitle>
+                <AlertDialogDescription>
+                  Esta acción cerrará tu sesión y te devolverá al inicio.
+                </AlertDialogDescription>
               </AlertDialogHeader>
-              <AlertDialogFooter className="flex justify-end gap-2">
-                <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                <AlertDialogAction onClick={handleLogout}>Confirmar</AlertDialogAction>
+              <AlertDialogFooter className="flex justify-center gap-4">
+                <AlertDialogCancel className="rounded-xl bg-white border hover:bg-pink-100">
+                  Cancelar
+                </AlertDialogCancel>
+                <AlertDialogAction
+                  className="rounded-xl bg-[#E57F95] text-white hover:bg-pink-700"
+                  onClick={handleLogout}
+                >
+                  Confirmar
+                </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
@@ -67,16 +109,47 @@ export default function DashboardLayout() {
             </Button>
           </SheetTrigger>
           <SheetContent side="left" className="bg-[#FCF8EC] p-6">
-            <h1 className="text-2xl font-[Comic_Neue] text-[#67463B] mb-6">SweetTreats</h1>
+            <h1 className="text-2xl font-[Comic_Neue] text-[#67463B] mb-6">
+              SweetTreats
+            </h1>
             <nav className="flex flex-col gap-4">
-              <Link to="/dashboard"      className="px-4 py-2 hover:bg-pink-50 rounded">Resumen</Link>
-              <Link to="/dashboard/users"className="px-4 py-2 hover:bg-pink-50 rounded">Usuarios</Link>
-              <Link to="/dashboard/products" className="px-4 py-2 hover:bg-pink-50 rounded">Productos</Link>
-              <Link to="/dashboard/orders"   className="px-4 py-2 hover:bg-pink-50 rounded">Pedidos</Link>
-              <Link to="/dashboard/reports"  className="px-4 py-2 hover:bg-pink-50 rounded">Reportes</Link>
+              <Link
+                to="/dashboard"
+                className="px-4 py-2 hover:bg-pink-50 rounded"
+              >
+                Resumen
+              </Link>
+              <Link
+                to="/dashboard/users"
+                className="px-4 py-2 hover:bg-pink-50 rounded"
+              >
+                Usuarios
+              </Link>
+              <Link
+                to="/dashboard/products"
+                className="px-4 py-2 hover:bg-pink-50 rounded"
+              >
+                Productos
+              </Link>
+              <Link
+                to="/dashboard/orders"
+                className="px-4 py-2 hover:bg-pink-50 rounded"
+              >
+                Pedidos
+              </Link>
+              <Link
+                to="/dashboard/reports"
+                className="px-4 py-2 hover:bg-pink-50 rounded"
+              >
+                Reportes
+              </Link>
             </nav>
             <div className="mt-auto pt-6">
-              <Button variant="outline" onClick={handleLogout} className="w-full">
+              <Button
+                variant="outline"
+                onClick={handleLogout}
+                className="w-full"
+              >
                 <LogOut className="w-4 h-4 mr-2 inline" /> Cerrar Sesión
               </Button>
             </div>
@@ -89,5 +162,5 @@ export default function DashboardLayout() {
         <Outlet />
       </main>
     </div>
-  )
+  );
 }

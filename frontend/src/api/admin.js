@@ -12,3 +12,10 @@ export const updateUserRequest = (id, data) => axios.put(`/api/users/${id}`, dat
 export const deleteUserRequest = (id) => axios.delete(`/api/users/${id}`);
 
 
+export const getProductsRequest   = (page = 0, size = 10) =>
+  axios.get("/api/products", { params: { page, size } });
+export const getProductRequest    = (id) => axios.get(`/api/products/${id}`);
+export const createProductRequest = (data) => axios.post("/api/products", data);
+export const updateProductRequest = (id, data) =>
+  axios.put(`/api/products/${id}`, data);
+export const deleteProductRequest = (id) => axios.delete(`/api/products/${id}`);
