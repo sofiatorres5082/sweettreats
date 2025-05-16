@@ -15,57 +15,56 @@ const getInitialCart = () => {
 const cartReducer = (state, action) => {
   switch (action.type) {
     case "ADD_ITEM": {
-      const existingItem = state.items.find(
-        (item) => item.id === action.payload.id
-      );
-
-      if (existingItem) {
+      const existing = state.items.find(i => i.id === action.payload.id);
+      if (existing) {
+        const nuevaCant = Math.min(existing.cantidad + 1, existing.stock);
+        if (nuevaCant === existing.cantidad) {
+          // opcional: toast.error("No hay más stock disponible");
+        }
         return {
           ...state,
-          items: state.items.map((item) =>
-            item.id === action.payload.id
-              ? { ...item, cantidad: item.cantidad + 1 }
-              : item
-          ),
+          items: state.items.map(i =>
+            i.id === action.payload.id ? { ...i, cantidad: nuevaCant } : i
+          )
         };
       } else {
         return {
           ...state,
-          items: [...state.items, { ...action.payload, cantidad: 1 }],
+          items: [...state.items, action.payload]
         };
       }
     }
 
-    case "REMOVE_ITEM":
-      return {
-        ...state,
-        items: state.items.filter((item) => item.id !== action.payload),
-      };
-
     case "INCREMENT_QUANTITY":
       return {
         ...state,
-        items: state.items.map((item) =>
-          item.id === action.payload
-            ? { ...item, cantidad: item.cantidad + 1 }
-            : item
-        ),
+        items: state.items.map(i =>
+          i.id === action.payload
+            ? { ...i, cantidad: Math.min(i.cantidad + 1, i.stock) }
+            : i
+        )
       };
 
     case "DECREMENT_QUANTITY":
       return {
         ...state,
         items: state.items
-          .map((item) =>
-            item.id === action.payload
-              ? { ...item, cantidad: item.cantidad - 1 }
-              : item
+          .map(i =>
+            i.id === action.payload
+              ? { ...i, cantidad: i.cantidad - 1 }
+              : i
           )
-          .filter((item) => item.cantidad > 0),
+          .filter(i => i.cantidad > 0)
+      };
+
+    case "REMOVE_ITEM":
+      return {
+        ...state,
+        items: state.items.filter(i => i.id !== action.payload)
       };
 
     case "CLEAR_CART":
-      return initialState;
+      return { items: [] };
 
     default:
       return state;
@@ -74,9 +73,6 @@ const cartReducer = (state, action) => {
 
 const CartContext = createContext();
 
-const getCartTotal = (items) =>
-  items.reduce((acc, item) => acc + item.precio * item.cantidad, 0);
-
 export const CartProvider = ({ children }) => {
   const [state, dispatch] = useReducer(cartReducer, getInitialCart());
 
@@ -84,10 +80,8 @@ export const CartProvider = ({ children }) => {
     localStorage.setItem("cart", JSON.stringify(state));
   }, [state]);
 
-  const total = getCartTotal(state.items);
-
   return (
-    <CartContext.Provider value={{ cart: state.items, dispatch, total }}>
+    <CartContext.Provider value={{ cart: state.items, dispatch }}>
       {children}
     </CartContext.Provider>
   );

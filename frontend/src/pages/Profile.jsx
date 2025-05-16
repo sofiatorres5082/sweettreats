@@ -1,3 +1,4 @@
+// src/pages/Profile.jsx
 import { useEffect, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -34,22 +35,24 @@ export default function Profile() {
   } = useForm({
     resolver: yupResolver(profileSchema),
     mode: "onBlur",
-    defaultValues: {
-      name: "",
-      email: "",
-    },
+    defaultValues: { name: "", email: "" },
   });
 
+  // Prepara el formulario con los datos del usuario al entrar en edición
   useEffect(() => {
     if (isEditing && user) {
       reset({ name: user.name, email: user.email });
     }
   }, [isEditing, user, reset]);
 
+  // Carga los 5 pedidos más recientes
   useEffect(() => {
     if (user) {
       getUserOrdersRequest()
-        .then((res) => setOrders(res.data.slice(0, 5))) // los 5 más recientes
+        .then((res) => {
+          const all = Array.isArray(res.data) ? res.data : res.data.content || [];
+          setOrders(all.slice(0, 5));
+        })
         .catch(() => toast.error("No se pudieron cargar tus pedidos"));
     }
   }, [user]);
@@ -65,17 +68,7 @@ export default function Profile() {
     }
   };
 
-  const handleCancel = () => {
-    setEditing(false);
-  };
-
-  const handleLogout = () => {
-    logout();
-    toast.success("Sesión cerrada");
-    navigate("/");
-  };
-
-  if (!user) return <Spinner  />;
+  if (!user) return <Spinner />;
 
   return (
     <>
@@ -97,27 +90,27 @@ export default function Profile() {
                 <div key={field} className="space-y-2">
                   <label
                     htmlFor={field}
-                    className="block font-[Comic_Neue]  text-[#67463B]"
+                    className="block font-[Comic_Neue] text-[#67463B]"
                   >
                     {field === "name" ? "Nombre:" : "Email:"}
                   </label>
                   <Controller
                     name={field}
                     control={control}
-                    render={({ field }) => <Input {...field} id={field} className="w-full" />}
+                    render={({ field: f }) => (
+                      <Input {...f} id={field} className="w-full" />
+                    )}
                   />
                   {errors[field] && (
-                    <p className="text-red-600 text-sm">
-                      {errors[field].message}
-                    </p>
+                    <p className="text-red-600 text-sm">{errors[field].message}</p>
                   )}
                 </div>
               ))}
 
               <div className="flex justify-center gap-4 mt-4">
-                <Button 
-                  variant="outline" 
-                  onClick={handleCancel}
+                <Button
+                  variant="outline"
+                  onClick={() => setEditing(false)}
                   className="bg-gray-200 text-gray-700 hover:bg-gray-300 font-medium rounded-full px-6 py-2"
                 >
                   Cancelar
@@ -134,15 +127,17 @@ export default function Profile() {
           ) : (
             <div className="space-y-4">
               <div className="flex items-baseline">
-                <p className="w-24 font-[Comic_Neue] font-semibold text-[#67463B]">Nombre:</p>
+                <p className="w-24 font-[Comic_Neue] font-semibold text-[#67463B]">
+                  Nombre:
+                </p>
                 <p className="flex-1">{user.name}</p>
               </div>
-              
               <div className="flex items-baseline">
-                <p className="w-24 font-[Comic_Neue] font-semibold text-[#67463B]">Email:</p>
+                <p className="w-24 font-[Comic_Neue] font-semibold text-[#67463B]">
+                  Email:
+                </p>
                 <p className="flex-1">{user.email}</p>
               </div>
-              
               <div className="flex justify-center mt-4">
                 <Button
                   className="bg-[#FF6B85] hover:bg-[#E96D87] text-white font-semibold font-[Comic_Neue] rounded-full px-6 py-2"
@@ -163,27 +158,35 @@ export default function Profile() {
 
           {orders.length > 0 ? (
             <div className="space-y-3">
-              {orders.map((o) => (
+              {orders.map((o, idx) => (
                 <div
                   key={o.id}
                   className="bg-[#FF6B85] text-white p-4 rounded-lg"
                 >
                   <div className="flex justify-between items-center">
                     <div>
+                      {/* Número amigable en lugar de ID */}
                       <p className="font-[Comic_Neue] font-bold">
-                        Pedido #{o.id}
+                        Pedido #{idx + 1}
                       </p>
                       <p className="font-[Comic_Neue]">
-                        Fecha: {new Date(o.createdAt).toLocaleDateString()}
+                        Fecha:{" "}
+                        {o.createdAt
+                          ? new Date(o.createdAt).toLocaleDateString()
+                          : ""}
                       </p>
                     </div>
-                    <p className="font-[Comic_Neue] text-lg">${o.total}</p>
+                    <p className="font-[Comic_Neue] text-lg">
+                      ${o.total ?? ""}
+                    </p>
                   </div>
                 </div>
               ))}
             </div>
           ) : (
-            <p className="font-[Comic_Neue] text-center text-[#67463B]">No tienes pedidos aún.</p>
+            <p className="font-[Comic_Neue] text-center text-[#67463B]">
+              No tienes pedidos aún.
+            </p>
           )}
 
           <div className="text-center mt-4">
@@ -201,17 +204,19 @@ export default function Profile() {
           <h3 className="font-[Comic_Neue] text-lg font-semibold text-[#67463B] mb-4">
             Opciones
           </h3>
-          
           <div className="flex flex-wrap justify-center gap-3">
             <Button
               onClick={() => navigate("/cambiar-contraseña")}
-              className="bg-[#FF6B85] hover:bg-[#E96D87] font-[Comic_Neue]  text-white font-medium rounded-full px-6 py-2"
+              className="bg-[#FF6B85] hover:bg-[#E96D87] font-[Comic_Neue] text-white font-medium rounded-full px-6 py-2"
             >
               Cambiar Contraseña
             </Button>
-            
-            <Button 
-              onClick={handleLogout}
+            <Button
+              onClick={() => {
+                logout();
+                toast.success("Sesión cerrada");
+                navigate("/");
+              }}
               className="bg-[#FF6B85] hover:bg-[#E96D87] font-[Comic_Neue] text-white font-medium rounded-full px-6 py-2"
             >
               Cerrar Sesión

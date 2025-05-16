@@ -4,7 +4,7 @@ import { Button } from "../components/ui/button";
 import MobileHeader from "../components/MobileHeader";
 import { getProductsRequest } from "../api/products";
 import SearchBar from "../components/SearchBar";
-import CartMenu from "@/components/CartMenu";
+import CartMenu from "../components/CartMenu";
 import { useCart } from "../context/CartContext";
 import { toast } from "sonner";
 
@@ -31,26 +31,22 @@ const imageMap = {
 export default function Catalog() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { dispatch } = useCart();
 
- useEffect(() => {
-    const fetchProducts = async () => {
+  useEffect(() => {
+    (async () => {
       try {
         const res = await getProductsRequest();
         const data = res.data;
-        // si viene paginado, usamos data.content, si no, asumimos array
-        const items = Array.isArray(data) ? data : data.content;
-        setProducts(items);
+        setProducts(Array.isArray(data) ? data : data.content);
       } catch (error) {
         console.error("Error al cargar productos", error);
         toast.error("No se pudieron cargar los productos");
       } finally {
         setLoading(false);
       }
-    };
-    fetchProducts();
+    })();
   }, []);
-
-  const { dispatch } = useCart();
 
   return (
     <>
@@ -61,51 +57,63 @@ export default function Catalog() {
           <CartMenu />
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
-          {products.map((product) => (
-            <Card
-              key={product.id}
-              className="bg-white rounded-3xl border-none transition"
-            >
-              <CardContent className="p-4 flex flex-col ml-5 mr-5">
-                <img
-                  src={imageMap[product.imagen]}
-                  alt={product.nombre}
-                  className="w-70 h-70 object-cover rounded-3xl mb-4 mx-auto"
-                />
-                <h3 className="font-[Comic_Neue] font-semibold text-[#67463B]">
-                  {product.nombre}
-                </h3>
-                <span className="font-[Comic_Neue] font-semibold text-[#67463B]">
-                  ${product.precio}
-                </span>
-                <p className="font-[Comic_Neue] text-[#67463B]">
-                  {product.descripcion}
-                </p>
-
-                <Button
-                  onClick={() => {
-                    dispatch({
-                      type: "ADD_ITEM",
-                      payload: {
-                        id: product.id,
-                        nombre: product.nombre,
-                        precio: product.precio,
-                        imagen: imageMap[product.imagen],
-                        cantidad: 1,
-                      },
-                    });
-
-                    toast.success("🍰 ¡Agregado al carrito!", {
-                      description: `${product.nombre} está esperando por ti ❤️`,
-                    });
-                  }}
-                  className="font-[Comic_Neue] font-semibold mt-4 bg-[#E96D87] hover:bg-[#bb6678] text-white rounded-3xl w-full cursor-pointer"
-                >
-                  Agregar al carrito
-                </Button>
-              </CardContent>
-            </Card>
-          ))}
+          {products.map(product => {
+            const inStock = product.stock > 0;
+            return (
+              <Card
+                key={product.id}
+                className="bg-white rounded-3xl border-none transition"
+              >
+                <CardContent className="p-4 flex flex-col ml-5 mr-5">
+                  <img
+                    src={imageMap[product.imagen]}
+                    alt={product.nombre}
+                    className="w-full h-48 object-cover rounded-2xl mb-4"
+                  />
+                  <h3 className="font-[Comic_Neue] font-semibold text-[#67463B]">
+                    {product.nombre}
+                  </h3>
+                  <span className="font-[Comic_Neue] font-semibold text-[#67463B]">
+                    ${product.precio}
+                  </span>
+                  <p className="font-[Comic_Neue] text-[#67463B]">
+                    {product.descripcion}
+                  </p>
+                  {inStock ? (
+                    <p className="font-[Comic_Neue] text-[#67463B] mt-2">
+                      En stock: {product.stock}
+                    </p>
+                  ) : (
+                    <p className="font-[Comic_Neue] text-red-600 font-bold mt-2">
+                      Sin stock
+                    </p>
+                  )}
+                  <Button
+                    onClick={() => {
+                      dispatch({
+                        type: "ADD_ITEM",
+                        payload: {
+                          id: product.id,
+                          nombre: product.nombre,
+                          precio: product.precio,
+                          imagen: imageMap[product.imagen],
+                          stock: product.stock,
+                          cantidad: 1,
+                        },
+                      });
+                      toast.success("🍰 ¡Agregado al carrito!", {
+                        description: `${product.nombre} está esperando por ti ❤️`,
+                      });
+                    }}
+                    className="font-[Comic_Neue] font-semibold mt-4 bg-[#E96D87] hover:bg-[#bb6678] text-white rounded-3xl w-full"
+                    disabled={!inStock}
+                  >
+                    {inStock ? "Agregar al carrito" : "No disponible"}
+                  </Button>
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
       </div>
     </>

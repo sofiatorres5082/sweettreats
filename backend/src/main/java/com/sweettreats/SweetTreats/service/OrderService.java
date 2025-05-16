@@ -29,29 +29,33 @@ public class OrderService implements IOrderService {
     @Override
     @Transactional
     public OrderResponse crearPedido(OrderRequest request, UserModel user) {
-        // Construir entidad OrderModel
         OrderModel order = new OrderModel();
         order.setUsermodel(user);
         order.setDireccionEnvio(request.direccionEnvio());
         order.setMetodoPago(request.metodoPago());
         order.setEstado(OrderEnum.PENDIENTE);
 
-        // Crear detalles y calcular total
         List<OrderDetailModel> detalles = request.items().stream()
                 .map(item -> {
                     ProductModel prod = productRepository.findById(item.productId())
                             .orElseThrow(() -> new ResponseStatusException(
                                     HttpStatus.NOT_FOUND, "Producto no encontrado"));
+
                     if (item.cantidad() > prod.getStock()) {
                         throw new ResponseStatusException(
-                                HttpStatus.BAD_REQUEST, "Stock insuficiente para producto " + prod.getId());
+                                HttpStatus.BAD_REQUEST,
+                                "Stock insuficiente para producto " + prod.getId()
+                        );
                     }
+
+                    // ↓ Actualizamos el stock aquí
+                    prod.setStock(prod.getStock() - item.cantidad());
+
                     OrderDetailModel det = new OrderDetailModel();
                     det.setOrderModel(order);
                     det.setProductModel(prod);
                     det.setCantidad(item.cantidad());
-                    det.setPrecioUnitario(BigDecimal.valueOf(prod.getPrecio())); // precio real
-                    // opcional: prod.setStock(prod.getStock() - item.cantidad());
+                    det.setPrecioUnitario(BigDecimal.valueOf(prod.getPrecio()));
                     return det;
                 })
                 .collect(Collectors.toList());
@@ -59,12 +63,12 @@ public class OrderService implements IOrderService {
         BigDecimal total = detalles.stream()
                 .map(d -> d.getPrecioUnitario().multiply(BigDecimal.valueOf(d.getCantidad())))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
+
         order.setTotal(total);
         order.setDetalles(detalles);
 
         OrderModel saved = orderRepository.save(order);
 
-        // Mapear a DTO
         List<OrderDetailResponse> detalleResp = saved.getDetalles().stream()
                 .map(d -> new OrderDetailResponse(
                         d.getProductModel().getId(),

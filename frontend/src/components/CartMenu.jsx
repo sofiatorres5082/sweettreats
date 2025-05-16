@@ -10,30 +10,25 @@ import { ShoppingCart, Minus, Plus, Trash } from "lucide-react";
 import { useCart } from "../context/CartContext";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
-import { verifySessionRequest } from "@/api/auth";
 
 export default function CartMenu() {
   const { cart, dispatch } = useCart();
   const navigate = useNavigate();
 
-  const total = cart.reduce(
-    (acc, item) => acc + item.precio * item.cantidad,
-    0
-  );
+  const total = cart.reduce((sum, i) => sum + i.precio * i.cantidad, 0);
 
   const handleGoToCheckout = async () => {
+    if (cart.some((i) => i.cantidad > i.stock)) {
+      toast.error("Revisa las cantidades, superas el stock disponible");
+      return;
+    }
     try {
-      const res = await fetch("http://localhost:8080/auth/verify-session", {
-        method: "GET",
-        credentials: "include", 
+      const res = await fetch("/auth/verify-session", {
+        credentials: "include",
       });
-
-      if (res.ok) {
-        navigate("/checkout");
-      } else {
-        throw new Error("No autenticado");
-      }
-    } catch (error) {
+      if (res.ok) navigate("/checkout");
+      else throw new Error();
+    } catch {
       toast.error("Debes iniciar sesión para continuar");
       navigate("/log-in", { state: { from: "/checkout" } });
     }
@@ -61,69 +56,77 @@ export default function CartMenu() {
         ) : (
           <>
             <div className="flex-1 overflow-y-auto mt-3 space-y-4">
-              {cart.map((item) => (
-                <div
-                  key={item.id}
-                  className="flex items-start justify-between border-b pb-2"
-                >
-                  <div className="flex gap-5">
-                    <img
-                      src={item.imagen}
-                      alt={item.nombre}
-                      className="w-20 h-20 rounded-xl object-cover"
-                    />
-                    <div>
-                      <p className="font-[Comic_Neue] text-[#67463B]">
-                        {item.nombre}
-                      </p>
-                      <p className="text-sm font-[Comic_Neue] text-[#67463B]">
-                        ${item.precio * item.cantidad}
-                      </p>
-                      <div className="flex items-center gap-2 mt-1">
-                        <Button
-                          size="icon"
-                          variant="outline"
-                          className="h-8 w-8 rounded-full border-[#E96D87] text-[#E96D87] hover:bg-[#FEE9ED]"
-                          onClick={() =>
-                            dispatch({
-                              type: "DECREMENT_QUANTITY",
-                              payload: item.id,
-                            })
-                          }
-                        >
-                          <Minus className="w-4 h-4" />
-                        </Button>
-                        <span className="text-[#67463B] font-[Comic_Neue]">
-                          {item.cantidad}
-                        </span>
-                        <Button
-                          size="icon"
-                          variant="outline"
-                          className="h-8 w-8 rounded-full border-[#E96D87] text-[#E96D87] hover:bg-[#FEE9ED]"
-                          onClick={() =>
-                            dispatch({
-                              type: "INCREMENT_QUANTITY",
-                              payload: item.id,
-                            })
-                          }
-                        >
-                          <Plus className="w-4 h-4" />
-                        </Button>
+              {cart.map((item) => {
+                const isMax = item.cantidad >= item.stock;
+                return (
+                  <div
+                    key={item.id}
+                    className="flex items-start justify-between border-b pb-2"
+                  >
+                    <div className="flex gap-5">
+                      <img
+                        src={item.imagen}
+                        alt={item.nombre}
+                        className="w-20 h-20 rounded-xl object-cover"
+                      />
+                      <div>
+                        <p className="font-[Comic_Neue] text-[#67463B]">
+                          {item.nombre}
+                        </p>
+                        <p className="text-sm font-[Comic_Neue] text-[#67463B]">
+                          ${item.precio * item.cantidad}
+                        </p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <Button
+                            className="h-8 w-8 rounded-full border-[#E96D87] text-[#E96D87] hover:bg-[#FEE9ED]"
+                            size="icon"
+                            variant="outline"
+                            onClick={() =>
+                              dispatch({
+                                type: "DECREMENT_QUANTITY",
+                                payload: item.id,
+                              })
+                            }
+                          >
+                            <Minus className="w-4 h-4" />
+                          </Button>
+                          <span className="text-[#67463B] font-[Comic_Neue]">
+                            {item.cantidad}
+                          </span>
+                          <Button
+                            className="h-8 w-8 rounded-full border-[#E96D87] text-[#E96D87] hover:bg-[#FEE9ED]"
+                            size="icon"
+                            variant="outline"
+                            onClick={() => {
+                              if (isMax) {
+                                toast.error("No hay más stock disponible");
+                              } else {
+                                dispatch({
+                                  type: "INCREMENT_QUANTITY",
+                                  payload: item.id,
+                                });
+                              }
+                            }}
+                            disabled={isMax}
+                          >
+                            <Plus className="w-4 h-4" />
+                          </Button>
+                        </div>
                       </div>
                     </div>
+                    <Button
+                      className="text-[#E96D87] hover:text-red-600"
+                      size="icon"
+                      variant="ghost"
+                      onClick={() =>
+                        dispatch({ type: "REMOVE_ITEM", payload: item.id })
+                      }
+                    >
+                      <Trash className="w-6 h-6" />
+                    </Button>
                   </div>
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    className="text-[#E96D87] hover:text-red-600"
-                    onClick={() =>
-                      dispatch({ type: "REMOVE_ITEM", payload: item.id })
-                    }
-                  >
-                    <Trash className="w-6 h-6" />
-                  </Button>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             <div className="border-t pt-4 mt-4">
@@ -131,7 +134,6 @@ export default function CartMenu() {
                 <span>Total:</span>
                 <span>${total}</span>
               </div>
-
               <div className="flex gap-2 mt-4">
                 <Button
                   variant="destructive"
@@ -142,7 +144,7 @@ export default function CartMenu() {
                 </Button>
                 <Button
                   className="flex-1 rounded-2xl bg-[#E96D87] hover:bg-[#d95c74] text-white font-[Comic_Neue]"
-                  onClick={() => handleGoToCheckout()}
+                  onClick={handleGoToCheckout}
                 >
                   Pagar
                 </Button>

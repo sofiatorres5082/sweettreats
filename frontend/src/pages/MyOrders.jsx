@@ -1,3 +1,4 @@
+// src/pages/MyOrders.jsx
 import { useEffect, useState } from "react";
 import { getUserOrdersRequest } from "../api/orders";
 import { Card, CardContent } from "../components/ui/card";
@@ -52,16 +53,17 @@ export default function MyOrders() {
     }
   };
 
-  const capitalizeFirstLetter = (string) => {
-    return string.charAt(0).toUpperCase() + string.slice(1);
-  };
+  // 1) convertimos a string siempre, para no romper
+  const capitalizeFirstLetter = (str = "") =>
+    str.length > 0
+      ? str.charAt(0).toUpperCase() + str.slice(1)
+      : "";
 
+  // Paginación
   const indexOfLastOrder = currentPage * ordersPerPage;
   const indexOfFirstOrder = indexOfLastOrder - ordersPerPage;
   const currentOrders = orders.slice(indexOfFirstOrder, indexOfLastOrder);
   const totalPages = Math.ceil(orders.length / ordersPerPage);
-
-  const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
   if (loading) return <Spinner />;
 
@@ -73,91 +75,95 @@ export default function MyOrders() {
           Mis pedidos
         </h2>
         <div className="space-y-3 max-w-md mx-auto">
-          {currentOrders.map((order) => (
-            <Card
-              key={order.id}
-              className="bg-[#FFF7E9] border-none shadow-none rounded-xl"
-            >
-              <CardContent>
-                <div className="flex justify-between items-center mb-1">
-                  <div className="font-[Comic_Neue] font-semibold text-[#67463B]">
-                    Pedido #{order.id}
+          {currentOrders.map((order, idx) => {
+            const friendlyNumber =
+              (currentPage - 1) * ordersPerPage + idx + 1;
+            return (
+              <Card
+                key={order.id}
+                className="bg-[#FFF7E9] border-none shadow-none rounded-xl"
+              >
+                <CardContent>
+                  <div className="flex justify-between items-center mb-1">
+                    <div className="font-[Comic_Neue] font-semibold text-[#67463B]">
+                      Pedido #{friendlyNumber}
+                    </div>
+                    <div className="font-[Comic_Neue] font-semibold text-[#67463B]">
+                      ${order.total}
+                    </div>
                   </div>
-                  <div className="font-[Comic_Neue] font-semibold text-[#67463B]">
-                    ${order.total}
+                  <div className="font-[Comic_Neue] text-base text-[#67463B] mb-2">
+                    Fecha: {new Date(order.createdAt).toLocaleDateString()}
                   </div>
-                </div>
-                <div className="font-[Comic_Neue] text-base text-[#67463B] mb-2">
-                  Fecha: {new Date(order.createdAt).toLocaleDateString()}
-                </div>
-                <div className="flex justify-between items-center">
-                  <div
-                    className={`${getStatusColor(
-                      order.estado
-                    )} px-3 py-1 rounded-full text-sm font-medium`}
-                  >
-                    {order.estado}
-                  </div>
+                  <div className="flex justify-between items-center">
+                    <div
+                      className={`${getStatusColor(
+                        order.estado
+                      )} px-3 py-1 rounded-full text-sm font-medium`}
+                    >
+                      {capitalizeFirstLetter(order.estado)}
+                    </div>
 
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button
-                        onClick={() => setSelected(order)}
-                        className="bg-[#E96D87] hover:bg-[#d6627a] text-white font-[Comic_Neue] font-semibold px-5 py-1 rounded-full"
-                      >
-                        Detalles
-                      </Button>
-                    </AlertDialogTrigger>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          onClick={() => setSelected(order)}
+                          className="bg-[#E96D87] hover:bg-[#d6627a] text-white font-[Comic_Neue] font-semibold px-5 py-1 rounded-full"
+                        >
+                          Detalles
+                        </Button>
+                      </AlertDialogTrigger>
 
-                    <AlertDialogContent className="bg-[#FCF8EC] p-8 rounded-2xl max-w-lg w-full">
-                      <AlertDialogHeader className="mb-4">
-                        <AlertDialogTitle className="text-xl font-[Comic_Neue] font-bold text-[#67463B] mb-3 text-center">
-                          Detalles Pedido #{selected?.id}
-                        </AlertDialogTitle>
-                        <AlertDialogDescription className="mb-4 font-[Comic_Neue] text-[#67463B] text-center">
-                          Aquí puedes ver la información completa de tu pedido.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
+                      <AlertDialogContent className="bg-[#FCF8EC] p-8 rounded-2xl max-w-lg w-full">
+                        <AlertDialogHeader className="mb-4">
+                          <AlertDialogTitle className="text-xl font-[Comic_Neue] font-bold text-[#67463B] mb-3 text-center">
+                            Detalles Pedido #{friendlyNumber}
+                          </AlertDialogTitle>
+                          <AlertDialogDescription className="mb-4 font-[Comic_Neue] text-[#67463B] text-center">
+                            Aquí puedes ver la información completa de tu pedido.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
 
-                      <div className="font-[Comic_Neue] text-[#67463B]">
-                        <p className="mb-2">
-                          <strong>Dirección:</strong> {selected?.direccionEnvio}
-                        </p>
-                        <p className="mb-3">
-                          <strong>Método de pago:</strong>{" "}
-                          {selected?.metodoPago && capitalizeFirstLetter(selected.metodoPago)}
-                        </p>
-                        <ul className="mt-5 space-y-3">
-                          {selected?.detalles.map((d) => (
-                            <li
-                              key={d.productId}
-                              className="flex justify-between border-b border-gray-100 pb-2"
-                            >
-                              <span>
-                                {d.productName} x{d.cantidad}
-                              </span>
-                              <span>${d.precioUnitario * d.cantidad}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-
-                      <AlertDialogFooter className="mt-6">
-                        <div className="flex justify-center w-full">
-                          <AlertDialogCancel
-                            onClick={() => setSelected(null)}
-                            className="bg-[#E96D87] hover:bg-[#d6627a] text-white rounded-xl px-6 py-2 font-[Comic_Neue] font-semibold"
-                          >
-                            Cerrar
-                          </AlertDialogCancel>
+                        <div className="font-[Comic_Neue] text-[#67463B]">
+                          <p className="mb-2">
+                            <strong>Dirección:</strong> {selected?.direccionEnvio}
+                          </p>
+                          <p className="mb-3">
+                            <strong>Método de pago:</strong>{" "}
+                            {capitalizeFirstLetter(selected?.metodoPago)}
+                          </p>
+                          <ul className="mt-5 space-y-3">
+                            {selected?.detalles.map((d) => (
+                              <li
+                                key={d.productId}
+                                className="flex justify-between border-b border-gray-100 pb-2"
+                              >
+                                <span>
+                                  {d.productName} x{d.cantidad}
+                                </span>
+                                <span>${d.precioUnitario * d.cantidad}</span>
+                              </li>
+                            ))}
+                          </ul>
                         </div>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+
+                        <AlertDialogFooter className="mt-6">
+                          <div className="flex justify-center w-full">
+                            <AlertDialogCancel
+                              onClick={() => setSelected(null)}
+                              className="bg-[#E96D87] hover:bg-[#d6627a] text-white rounded-xl px-6 py-2 font-[Comic_Neue] font-semibold"
+                            >
+                              Cerrar
+                            </AlertDialogCancel>
+                          </div>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
 
           {/* Paginación */}
           {totalPages > 1 && (
@@ -166,7 +172,7 @@ export default function MyOrders() {
                 (number) => (
                   <button
                     key={number}
-                    onClick={() => paginate(number)}
+                    onClick={() => setCurrentPage(number)}
                     className={`w-8 h-8 rounded-full flex items-center justify-center font-medium ${
                       currentPage === number
                         ? "bg-[#E96D87] text-white"
