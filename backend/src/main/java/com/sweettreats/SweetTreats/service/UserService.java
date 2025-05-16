@@ -7,6 +7,7 @@ import com.sweettreats.SweetTreats.model.RoleModel;
 import com.sweettreats.SweetTreats.model.UserModel;
 import com.sweettreats.SweetTreats.repository.RoleRepository;
 import com.sweettreats.SweetTreats.repository.UserRepository;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -84,11 +85,21 @@ public class UserService implements IUserService {
 
     @Override
     public void deleteUser(Long id) {
-        if (!userRepository.existsById(id)) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado");
+        UserModel user = userRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado"));
+        try {
+            user.getRoles().clear();
+            userRepository.save(user);
+            userRepository.delete(user);
+        } catch (DataIntegrityViolationException ex) {
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "No se puede eliminar el usuario porque tiene datos relacionados"
+            );
         }
-        userRepository.deleteById(id);
     }
+
+
 
     private UserResponse toResponse(UserModel u) {
         Set<String> roles = u.getRoles().stream()

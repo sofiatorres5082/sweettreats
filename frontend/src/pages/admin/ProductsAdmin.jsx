@@ -33,10 +33,7 @@ import { toast } from "sonner";
 
 const schema = yup.object({
   nombre: yup.string().required("Nombre obligatorio"),
-  precio: yup
-    .number()
-    .min(0, "Precio inválido")
-    .required("Precio obligatorio"),
+  precio: yup.number().min(0, "Precio inválido").required("Precio obligatorio"),
   stock: yup.number().min(0, "Stock inválido").required("Stock obligatorio"),
   descripcion: yup.string().optional(),
 });
@@ -137,7 +134,7 @@ export default function ProductsAdmin() {
 
       <div className="mb-4 text-right">
         <Button
-          className="bg-white text-[#E96D87] font-[Nunito]"
+          className="bg-white text-[#E96D87] font-[Nunito] cursor-pointer"
           onClick={() => openForm()}
         >
           Nuevo Producto
@@ -174,10 +171,10 @@ export default function ProductsAdmin() {
                   <TableCell>{p.nombre}</TableCell>
                   <TableCell>${p.precio.toFixed(2)}</TableCell>
                   <TableCell>{p.stock}</TableCell>
-                  <TableCell className="space-x-2">
+                  <TableCell className="flex justify-center items-center gap-2">
                     {/* EDITAR */}
                     <Button
-                      className="bg-[#3690e4] border-none shadow-none font-[Nunito] text-white"
+                      className="bg-[#3690e4] border-none shadow-none font-[Nunito] text-white cursor-pointer"
                       size="sm"
                       onClick={() => openForm(p)}
                     >
@@ -191,7 +188,7 @@ export default function ProductsAdmin() {
                     >
                       <AlertDialogTrigger asChild>
                         <Button
-                          className="bg-[#c7002b] border-none shadow-none font-[Nunito] text-white"
+                          className="bg-[#c7002b] border-none shadow-none font-[Nunito] text-white cursor-pointer"
                           size="sm"
                           variant="destructive"
                           onClick={() => setDeletingId(p.id)}
@@ -208,21 +205,22 @@ export default function ProductsAdmin() {
                             Esta acción no se puede deshacer.
                           </AlertDialogDescription>
                         </AlertDialogHeader>
-                        <AlertDialogFooter className="flex justify-end space-x-2">
-                          <AlertDialogCancel onClick={() => setDeletingId(null)}>
+                        <div className="flex justify-center space-x-2 mt-4">
+                          <AlertDialogCancel
+                            className="cursor-pointer"
+                            onClick={() => setDeletingId(null)}
+                          >
                             Cancelar
                           </AlertDialogCancel>
                           <AlertDialogAction
-                            className="bg-[#E96D87] text-white px-4 py-2 rounded"
+                            className="bg-[#E96D87] text-white px-4 py-2 rounded cursor-pointer"
                             onClick={async () => {
                               try {
                                 await deleteProductRequest(p.id);
                                 toast.success("Producto eliminado");
                                 setDeletingId(null);
                                 fetch(
-                                  page === 0 && products.length === 1
-                                    ? 0
-                                    : page
+                                  page === 0 && products.length === 1 ? 0 : page
                                 );
                               } catch {
                                 toast.error("Error al eliminar");
@@ -231,7 +229,7 @@ export default function ProductsAdmin() {
                           >
                             Eliminar
                           </AlertDialogAction>
-                        </AlertDialogFooter>
+                        </div>
                       </AlertDialogContent>
                     </AlertDialog>
                   </TableCell>
@@ -268,9 +266,7 @@ export default function ProductsAdmin() {
           <AlertDialogContent className="max-w-md bg-[#FCF8EC] text-[#67463B] border-[#D9B9A1]">
             <AlertDialogHeader>
               <AlertDialogTitle className="text-center">
-                {creating
-                  ? "Nuevo Producto"
-                  : `Editar Producto #${editing.id}`}
+                {creating ? "Nuevo Producto" : `Editar Producto #${editing.id}`}
               </AlertDialogTitle>
               <AlertDialogDescription className="text-sm text-center">
                 {creating
@@ -310,7 +306,7 @@ export default function ProductsAdmin() {
                   )}
                 />
               </div>
-              <AlertDialogFooter className="flex justify-end space-x-2">
+              <div className="flex justify-center space-x-2 mt-4">
                 <AlertDialogCancel
                   onClick={() => {
                     setCreating(false);
@@ -328,7 +324,7 @@ export default function ProductsAdmin() {
                     Guardar
                   </button>
                 </AlertDialogAction>
-              </AlertDialogFooter>
+              </div>
             </form>
           </AlertDialogContent>
         </AlertDialog>

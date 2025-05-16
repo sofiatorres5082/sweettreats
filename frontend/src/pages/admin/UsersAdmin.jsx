@@ -1,3 +1,4 @@
+// src/pages/admin/UsersAdmin.jsx
 import { useEffect, useState } from "react";
 import {
   getUsersRequest,
@@ -52,6 +53,10 @@ const editSchema = yup.object({
     .string()
     .email("Email inválido")
     .required("El email es obligatorio"),
+  roles: yup
+    .array()
+    .of(yup.string().oneOf(Object.keys(ROLE_LABELS)))
+    .min(1, "Selecciona al menos un rol"),
 });
 
 export default function UsersAdmin() {
@@ -72,17 +77,20 @@ export default function UsersAdmin() {
   } = useForm({
     resolver: yupResolver(editSchema),
     mode: "onBlur",
-    defaultValues: { name: "", email: "" },
+    defaultValues: {
+      name: "",
+      email: "",
+      roles: [],
+    },
   });
 
   const fetchUsers = async (p = 0) => {
     setLoading(true);
     try {
-      const res = await getUsersRequest(p, size);
-      const pageData = res.data;
-      setUsers(pageData.content);
-      setTotal(pageData.totalPages);
-      setPage(pageData.number);
+      const { data } = await getUsersRequest(p, size);
+      setUsers(data.content);
+      setTotal(data.totalPages);
+      setPage(data.number);
     } catch {
       toast.error("Error al cargar usuarios");
     } finally {
@@ -96,7 +104,11 @@ export default function UsersAdmin() {
 
   const openEdit = (user) => {
     setEditingUser(user);
-    reset({ name: user.name, email: user.email });
+    // extrae solo los enums como strings
+    const roleValues = user.roles.map((r) =>
+      typeof r === "string" ? r : r.roleEnum
+    );
+    reset({ name: user.name, email: user.email, roles: roleValues });
   };
 
   const onEditSubmit = async (data) => {
@@ -104,7 +116,7 @@ export default function UsersAdmin() {
       await updateUserRequest(editingUser.id, {
         name: data.name,
         email: data.email,
-        roles: data.roles, // ["USER","ADMIN"]
+        roles: data.roles,
       });
       toast.success("Usuario actualizado");
       setEditingUser(null);
@@ -113,17 +125,23 @@ export default function UsersAdmin() {
       toast.error("Error al actualizar usuario");
     }
   };
+
   const confirmDelete = async () => {
     try {
       await deleteUserRequest(deletingUser.id);
       toast.success("Usuario eliminado");
+      setDeletingUser(null);
       if (users.length === 1 && page > 0) {
         fetchUsers(page - 1);
       } else {
         fetchUsers(page);
       }
-    } catch {
-      toast.error("Error al eliminar usuario");
+    } catch (err) {
+      if (err.response?.status === 409) {
+        toast.error("No se puede eliminar: el usuario tiene dependencias");
+      } else {
+        toast.error("Error al eliminar usuario");
+      }
     } finally {
       setDeletingUser(null);
     }
@@ -168,7 +186,7 @@ export default function UsersAdmin() {
                   <TableCell>{u.email}</TableCell>
                   <TableCell>
                     {u.roles
-                      .map((r) => ROLE_LABELS[r.roleEnum] || r.roleEnum)
+                      .map((r) => ROLE_LABELS[r.roleEnum] || r.roleEnum || r)
                       .join(", ")}
                   </TableCell>
                   <TableCell>
@@ -178,62 +196,70 @@ export default function UsersAdmin() {
                     {new Date(u.updatedAt).toLocaleDateString()}
                   </TableCell>
                   <TableCell className="space-x-2">
+                    {/* editar */}
                     <AlertDialog open={editingUser?.id === u.id}>
                       <AlertDialogTrigger asChild>
                         <Button
-                          className="bg-[#3690e4] border-none shadow-none cursor-pointer
-                        font-[Nunito] text-base text-white"
                           size="sm"
+                          className="bg-[#3690e4] border-none shadow-none font-[Nunito] text-white cursor-pointer"
                           onClick={() => openEdit(u)}
                         >
                           Editar
                         </Button>
                       </AlertDialogTrigger>
-                      <AlertDialogContent className="max-w-md bg-[#FCF8EC] text-[#67463B] border-[#D9B9A1] flex flex-col justify-center items-center">
+                      <AlertDialogContent className="max-w-md bg-[#FCF8EC] text-[#67463B] border-[#D9B9A1]">
                         <AlertDialogHeader>
                           <AlertDialogTitle className="text-center">
                             Editar Usuario #{u.id}
                           </AlertDialogTitle>
-                          <AlertDialogDescription>
-                            Modifica nombre y correo.
+                          <AlertDialogDescription className="text-center">
+                            Modifica nombre, email y roles.
                           </AlertDialogDescription>
                         </AlertDialogHeader>
-
                         <form
                           onSubmit={handleSubmit(onEditSubmit)}
                           className="space-y-4 p-4"
                         >
-                          {["name", "email"].map((field) => (
-                            <div key={field}>
+                          {["name", "email"].map((f) => (
+                            <div key={f}>
                               <Controller
-                                name={field}
+                                name={f}
                                 control={control}
-                                render={({ field: f }) => (
+                                render={({ field }) => (
                                   <Input
-                                    {...f}
-                                    placeholder={field}
+                                    {...field}
+                                    placeholder={
+                                      f.charAt(0).toUpperCase() + f.slice(1)
+                                    }
                                     className="w-full"
                                   />
                                 )}
                               />
-                              {errors[field] && (
+                              {errors[f] && (
                                 <p className="text-red-600 text-sm">
-                                  {errors[field].message}
+                                  {errors[f].message}
                                 </p>
                               )}
                             </div>
                           ))}
-       
+
                           <div>
-                            <label className="block mb-1">Roles</label>
+                            <label className="block mb-1 font-[Nunito]">
+                              Roles
+                            </label>
                             <Controller
                               name="roles"
                               control={control}
                               render={({ field }) => (
                                 <Select
-                                  multiple
-                                  onValueChange={field.onChange}
-                                  value={field.value}
+                                  value={
+                                    field.value.length
+                                      ? field.value[0]
+                                      : undefined
+                                  }
+                                  onValueChange={(value) =>
+                                    field.onChange([value])
+                                  }
                                 >
                                   <SelectTrigger className="w-full">
                                     <SelectValue placeholder="Selecciona roles" />
@@ -258,8 +284,9 @@ export default function UsersAdmin() {
                             )}
                           </div>
 
-                          <AlertDialogFooter className="flex items-center w-full">
+                          <div className="flex justify-center space-x-2 mt-4">
                             <AlertDialogCancel
+                              className="font-[Nunito] cursor-pointer"
                               onClick={() => setEditingUser(null)}
                             >
                               Cancelar
@@ -268,53 +295,54 @@ export default function UsersAdmin() {
                               <button
                                 type="submit"
                                 disabled={!isValid}
-                                className="bg-[#E96D87] text-white"
+                                className="bg-[#E96D87] text-white px-4 py-2 rounded cursor-pointer font-[Nunito]"
                               >
                                 Guardar
                               </button>
                             </AlertDialogAction>
-                          </AlertDialogFooter>
+                          </div>
                         </form>
                       </AlertDialogContent>
                     </AlertDialog>
 
+                    {/* eliminar */}
                     <AlertDialog
                       open={deletingUser?.id === u.id}
-                      onOpenChange={(o) => !o && setDeletingUser(null)}
+                      onOpenChange={(open) => !open && setDeletingUser(null)}
                     >
                       <AlertDialogTrigger asChild>
                         <Button
-                          className="bg-[#c7002b] border-none shadow-none cursor-pointer
-                        font-[Nunito] text-base text-white"
                           size="sm"
                           variant="destructive"
+                          className="bg-[#c7002b] border-none shadow-none font-[Nunito] text-white cursor-pointer"
                           onClick={() => setDeletingUser(u)}
                         >
                           Eliminar
                         </Button>
                       </AlertDialogTrigger>
-                      <AlertDialogContent className="max-w-md bg-[#FCF8EC] text-[#67463B] border-[#D9B9A1] flex flex-col justify-center items-center">
+                      <AlertDialogContent className="max-w-md bg-[#FCF8EC] text-[#67463B] border-[#D9B9A1]">
                         <AlertDialogHeader>
                           <AlertDialogTitle className="text-center">
                             ¿Eliminar Usuario #{u.id}?
                           </AlertDialogTitle>
-                          <AlertDialogDescription>
+                          <AlertDialogDescription className="text-center">
                             Esta acción no se puede deshacer.
                           </AlertDialogDescription>
                         </AlertDialogHeader>
-                        <AlertDialogFooter className="flex space-x-2">
+                        <div className="flex justify-center space-x-2 mt-4">
                           <AlertDialogCancel
+                            className="cursor-pointer font-[Nunito]"
                             onClick={() => setDeletingUser(null)}
                           >
                             Cancelar
                           </AlertDialogCancel>
                           <AlertDialogAction
-                            className="bg-[#E96D87] text-white px-4 py-2 rounded-lg"
+                            className="bg-[#E96D87] text-white px-4 py-2 rounded cursor-pointer font-[Nunito]"
                             onClick={confirmDelete}
                           >
                             Eliminar
                           </AlertDialogAction>
-                        </AlertDialogFooter>
+                        </div>
                       </AlertDialogContent>
                     </AlertDialog>
                   </TableCell>
@@ -325,6 +353,7 @@ export default function UsersAdmin() {
         </Table>
       </div>
 
+      {/* paginación */}
       <div className="flex justify-center items-center mt-4 space-x-4 text-white font-[Nunito] text-base">
         <Button
           size="sm"
