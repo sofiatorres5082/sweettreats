@@ -42,6 +42,7 @@ public class SecurityConfig {
                    http.requestMatchers(HttpMethod.GET, "/api/products").permitAll();
                    http.requestMatchers(HttpMethod.GET, "/api/products/**").permitAll();
                    http.requestMatchers(HttpMethod.GET, "/auth/verify-session").permitAll();
+                   http.requestMatchers("/uploads/**").permitAll();
 
 
                    // 🔒 ENDPOINTS AUTENTICADOS (cualquier usuario logueado)
@@ -69,6 +70,8 @@ public class SecurityConfig {
                    http.requestMatchers(HttpMethod.GET, "/api/orders/admin/all").hasRole("ADMIN");
                    http.requestMatchers(HttpMethod.GET,  "/api/orders/admin/{id:[0-9]+}").hasRole("ADMIN");
                    http.requestMatchers(HttpMethod.PUT,  "/api/orders/admin/{id:[0-9]+}").hasRole("ADMIN");
+                   http.requestMatchers(HttpMethod.POST, "/api/products").hasRole("ADMIN");
+                   http.requestMatchers(HttpMethod.PUT, "/api/products/**").hasRole("ADMIN");
 
                    // 🧑‍💼 CRUD Usuarios (solo ADMIN)
                    http.requestMatchers(HttpMethod.GET,    "/api/users").hasRole("ADMIN");

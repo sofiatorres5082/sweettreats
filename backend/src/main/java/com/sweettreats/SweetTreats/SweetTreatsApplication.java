@@ -69,14 +69,14 @@ public class SweetTreatsApplication {
 				// ==== Productos ====
 				if (productRepository.count() == 0) {
 					productRepository.saveAll(List.of(
-							new ProductModel("Blueberry Cake", "Pastel esponjoso con arándanos frescos", 1300.0, "blueberry", 10),
-							new ProductModel("Cheesecake", "Clásico cheesecake al horno con base de galleta", 1400.0, "cheesecake", 12),
-							new ProductModel("Drip Cake de Chocolate", "Decorado con ganache y chispas", 1500.0, "chocolatedrip", 8),
-							new ProductModel("Confetti Cake", "Pastel festivo con confites de colores", 1250.0, "confetti", 10),
-							new ProductModel("Pastel de Frutos Rojos", "Con frambuesas, moras y arándanos", 1450.0, "frutosrojos", 9),
-							new ProductModel("Red Velvet", "Pastel rojo intenso con frosting de queso crema", 1500.0, "redvelvet", 6),
-							new ProductModel("Tiramisú", "Clásico postre italiano con café y cacao", 1350.0, "tiramisu", 7),
-							new ProductModel("Triple Chocolate", "Bizcocho de chocolate con mousse y cobertura", 1600.0, "triplechocolate", 5)
+							new ProductModel("Blueberry Cake", "Pastel esponjoso con arándanos frescos", 1300.0, "/uploads/blueberry.jpg", 10),
+							new ProductModel("Cheesecake", "Clásico cheesecake al horno con base de galleta", 1400.0, "/uploads/cheesecake.jpg", 12),
+							new ProductModel("Drip Cake de Chocolate", "Decorado con ganache y chispas", 1500.0, "/uploads/chocolatedrip.jpg", 8),
+							new ProductModel("Confetti Cake", "Pastel festivo con confites de colores", 1250.0, "/uploads/confetti.jpg", 10),
+							new ProductModel("Pastel de Frutos Rojos", "Con frambuesas, moras y arándanos", 1450.0, "/uploads/frutosrojos.jpg", 9),
+							new ProductModel("Red Velvet", "Pastel rojo intenso con frosting de queso crema", 1500.0, "/uploads/redvelvet.jpg", 6),
+							new ProductModel("Tiramisú", "Clásico postre italiano con café y cacao", 1350.0, "/uploads/tiramisu.jpg", 7),
+							new ProductModel("Triple Chocolate", "Bizcocho de chocolate con mousse y cobertura", 1600.0, "/uploads/triplechocolate.jpg", 5)
 					));
 				}
 

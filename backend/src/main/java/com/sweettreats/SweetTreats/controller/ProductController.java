@@ -3,9 +3,12 @@ package com.sweettreats.SweetTreats.controller;
 import com.sweettreats.SweetTreats.model.ProductModel;
 import com.sweettreats.SweetTreats.service.ProductService;
 import org.springframework.data.domain.Page;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/products")
@@ -29,20 +32,35 @@ public class ProductController {
     }
 
     // CREAR → sólo ADMIN
-    @PostMapping
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ProductModel> create(@RequestBody ProductModel p) {
-        return ResponseEntity.status(201).body(service.create(p));
+    public ResponseEntity<ProductModel> create(
+            @RequestParam String nombre,
+            @RequestParam Double precio,
+            @RequestParam Integer stock,
+            @RequestParam(required = false) String descripcion,
+            @RequestPart(required = false) MultipartFile imagen
+    ) {
+        ProductModel saved = service.create(nombre, precio, stock, descripcion, imagen);
+        return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
 
     // ACTUALIZAR → sólo ADMIN
-    @PutMapping("/{id}")
+    @PutMapping(path = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ProductModel> update(
             @PathVariable Long id,
-            @RequestBody ProductModel p) {
-        return ResponseEntity.ok(service.update(id, p));
+            @RequestParam String nombre,
+            @RequestParam Double precio,
+            @RequestParam Integer stock,
+            @RequestParam(required = false) String descripcion,
+            @RequestPart(required = false) MultipartFile imagen,
+            @RequestParam(name="mantenerImagen", required = false, defaultValue = "true") boolean mantenerImagen
+    ) {
+        ProductModel updated = service.update(id, nombre, precio, stock, descripcion, imagen, mantenerImagen);
+        return ResponseEntity.ok(updated);
     }
+
 
     // ELIMINAR → sólo ADMIN
     @DeleteMapping("/{id}")

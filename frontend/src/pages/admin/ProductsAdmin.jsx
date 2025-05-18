@@ -1,4 +1,3 @@
-// src/pages/admin/ProductsAdmin.jsx
 import { useEffect, useState } from "react";
 import {
   getProductsRequest,
@@ -20,7 +19,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogDescription,
-  AlertDialogFooter,
   AlertDialogAction,
   AlertDialogCancel,
 } from "../../components/ui/alert-dialog";
@@ -33,10 +31,20 @@ import { toast } from "sonner";
 
 const schema = yup.object({
   nombre: yup.string().required("Nombre obligatorio"),
-  precio: yup.number().min(0, "Precio inválido").required("Precio obligatorio"),
-  stock: yup.number().min(0, "Stock inválido").required("Stock obligatorio"),
+  precio: yup
+    .number()
+    .typeError("Precio debe ser un número")
+    .min(0.01, "Precio debe ser mayor a 0")
+    .required("Precio obligatorio"),
+  stock: yup
+    .number()
+    .typeError("Stock debe ser un número")
+    .min(0, "Stock no puede ser negativo")
+    .required("Stock obligatorio"),
   descripcion: yup.string().optional(),
 });
+
+const API_URL = import.meta.env.VITE_API_URL || "";
 
 export default function ProductsAdmin() {
   const [products, setProducts] = useState([]);
@@ -44,24 +52,33 @@ export default function ProductsAdmin() {
   const [size] = useState(10);
   const [totalPages, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [authError, setAuthError] = useState(false);
 
   const [editing, setEditing] = useState(null);
   const [creating, setCreating] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
+  const [currentImageUrl, setCurrentImageUrl] = useState(null);
+  const [keepExistingImage, setKeepExistingImage] = useState(true);
+  const [previewUrl, setPreviewUrl] = useState(null); // preview a nivel global
 
   const {
     control,
     handleSubmit,
     reset,
     formState: { errors, isValid },
+    trigger,
+    setError,
   } = useForm({
-    resolver: yupResolver(schema),
-    mode: "onBlur",
+    resolver: yupResolver(schema, {
+      context: { creating, keepExistingImage },
+    }),
+    mode: "onChange",
     defaultValues: {
       nombre: "",
-      precio: 0,
-      stock: 0,
+      precio: "",
+      stock: "",
       descripcion: "",
+      imagen: null,
     },
   });
 
@@ -83,8 +100,14 @@ export default function ProductsAdmin() {
       setProducts(items);
       setTotal(pages);
       setPage(current);
-    } catch {
-      toast.error("Error al cargar productos");
+      setAuthError(false);
+    } catch (error) {
+      if (error.response?.status === 403) {
+        setAuthError(true);
+        toast.error("No tienes permisos para acceder a esta sección");
+      } else {
+        toast.error("Error al cargar productos");
+      }
     } finally {
       setLoading(false);
     }
@@ -97,34 +120,128 @@ export default function ProductsAdmin() {
   const openForm = (product = null) => {
     if (product) {
       setEditing(product);
+      setCreating(false);
+      setKeepExistingImage(true);
+
+      const originalImagePath = product.imagen || null;
+
+      const imageUrl = product.imagen ? `${API_URL}${product.imagen}` : null;
+      setCurrentImageUrl(originalImagePath);
+      setPreviewUrl(imageUrl);
+      setKeepExistingImage(true);
+
       reset({
         nombre: product.nombre,
         precio: product.precio,
         stock: product.stock,
         descripcion: product.descripcion || "",
+        imagen: null,
       });
+
+      setTimeout(() => {
+        trigger(["nombre", "precio", "stock"]);
+      }, 100);
     } else {
       setCreating(true);
-      reset({ nombre: "", precio: 0, stock: 0, descripcion: "" });
+      setEditing(null);
+      setCurrentImageUrl(null);
+      setPreviewUrl(null);
+      setKeepExistingImage(false);
+      reset({
+        nombre: "",
+        precio: "",
+        stock: "",
+        descripcion: "",
+        imagen: null,
+      });
     }
   };
 
   const onSubmit = async (data) => {
+    const needsImage = creating || (!creating && !keepExistingImage);
+
+    if (needsImage) {
+      const file = data.imagen?.[0];
+      if (!file) {
+        setError("imagen", {
+          type: "manual",
+          message: "Debes subir una imagen",
+        });
+        return;
+      }
+      // Tipo
+      if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+        setError("imagen", {
+          type: "manual",
+          message: "Formato no válido (solo JPG, PNG o WebP)",
+        });
+        return;
+      }
+      if (file.size > 2 * 1024 * 1024) {
+        setError("imagen", {
+          type: "manual",
+          message: `Imagen demasiado grande (${(
+            file.size /
+            (1024 * 1024)
+          ).toFixed(2)} MB > 2 MB)`,
+        });
+        return;
+      }
+    }
+
+    const formData = new FormData();
+    formData.append("nombre", data.nombre);
+    formData.append("precio", data.precio);
+    formData.append("stock", data.stock);
+    formData.append("descripcion", data.descripcion || "");
+    formData.append("mantenerImagen", keepExistingImage.toString());
+    if (data.imagen && data.imagen.length > 0) {
+      formData.append("imagen", data.imagen[0]);
+    }
+
     try {
       if (creating) {
-        await createProductRequest(data);
+        await createProductRequest(formData);
         toast.success("Producto creado");
       } else {
-        await updateProductRequest(editing.id, data);
+        await updateProductRequest(editing.id, formData);
         toast.success("Producto actualizado");
       }
       setEditing(null);
       setCreating(false);
+      setCurrentImageUrl(null);
       fetch(page);
-    } catch {
-      toast.error("Error en operación");
+    } catch (err) {
+      const msg = err.response?.data?.message || "Error en operación";
+      setError("imagen", { type: "server", message: msg });
+      toast.error(msg);
     }
   };
+
+  if (authError) {
+    return (
+      <div className="min-h-screen p-6 bg-gradient-to-b from-[#E96D87] to-[#F9A1B0] flex items-center justify-center">
+        <div className="bg-white p-8 rounded-lg shadow-lg text-center">
+          <h2 className="text-2xl font-bold text-[#E96D87] mb-4">
+            Error de Acceso
+          </h2>
+          <p className="mb-4">
+            No tienes los permisos necesarios (ROLE_ADMIN) para acceder a esta
+            sección.
+          </p>
+          <Button
+            className="bg-[#E96D87] text-white"
+            onClick={() => {
+              setAuthError(false);
+              fetch(0);
+            }}
+          >
+            Reintentar
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen p-6 bg-gradient-to-b from-[#E96D87] to-[#F9A1B0]">
@@ -149,17 +266,18 @@ export default function ProductsAdmin() {
               <TableCell>Nombre</TableCell>
               <TableCell>Precio</TableCell>
               <TableCell>Stock</TableCell>
+              <TableCell>Imagen</TableCell>
               <TableCell>Acciones</TableCell>
             </TableRow>
           </TableHeader>
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={5}>Cargando…</TableCell>
+                <TableCell colSpan={6}>Cargando…</TableCell>
               </TableRow>
             ) : products.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5}>No hay productos.</TableCell>
+                <TableCell colSpan={6}>No hay productos.</TableCell>
               </TableRow>
             ) : (
               products.map((p) => (
@@ -171,8 +289,20 @@ export default function ProductsAdmin() {
                   <TableCell>{p.nombre}</TableCell>
                   <TableCell>${p.precio.toFixed(2)}</TableCell>
                   <TableCell>{p.stock}</TableCell>
+                  <TableCell>
+                    {p.imagen ? (
+                      // En la visualización de imágenes de la tabla
+                      <img
+                        src={`${API_URL}${p.imagen}`}
+                        alt={p.nombre}
+                        className="w-20 h-20 object-cover rounded"
+                      />
+                    ) : (
+                      <span className="text-gray-500">Sin imagen</span>
+                    )}
+                  </TableCell>
+
                   <TableCell className="flex justify-center items-center gap-2">
-                    {/* EDITAR */}
                     <Button
                       className="bg-[#3690e4] border-none shadow-none font-[Nunito] text-white cursor-pointer"
                       size="sm"
@@ -180,8 +310,6 @@ export default function ProductsAdmin() {
                     >
                       Editar
                     </Button>
-
-                    {/* ELIMINAR */}
                     <AlertDialog
                       open={deletingId === p.id}
                       onOpenChange={(open) => !open && setDeletingId(null)}
@@ -222,8 +350,15 @@ export default function ProductsAdmin() {
                                 fetch(
                                   page === 0 && products.length === 1 ? 0 : page
                                 );
-                              } catch {
-                                toast.error("Error al eliminar");
+                              } catch (err) {
+                                if (err.response?.status === 403) {
+                                  toast.error(
+                                    "No tienes permisos para eliminar productos"
+                                  );
+                                  setAuthError(true);
+                                } else {
+                                  toast.error("Error al eliminar");
+                                }
                               }
                             }}
                           >
@@ -285,8 +420,24 @@ export default function ProductsAdmin() {
                         {...f}
                         type={field === "nombre" ? "text" : "number"}
                         placeholder={
-                          field.charAt(0).toUpperCase() + field.slice(1)
+                          field === "nombre"
+                            ? "Nombre del producto"
+                            : field === "precio"
+                            ? "Precio"
+                            : "Stock"
                         }
+                        min={
+                          field === "precio"
+                            ? "0.01"
+                            : field === "stock"
+                            ? "0"
+                            : undefined
+                        }
+                        step={field === "precio" ? "0.01" : undefined}
+                        onChange={(e) => {
+                          f.onChange(e);
+                          setTimeout(() => trigger(field), 100);
+                        }}
                       />
                     )}
                   />
@@ -297,20 +448,92 @@ export default function ProductsAdmin() {
                   )}
                 </div>
               ))}
+
+              {/* Descripción */}
               <div>
                 <Controller
                   name="descripcion"
                   control={control}
                   render={({ field }) => (
-                    <Input {...field} placeholder="Descripción (opcional)" />
+                    <Input
+                      {...field}
+                      placeholder="Descripción (opcional)"
+                      onChange={(e) => {
+                        field.onChange(e);
+                        setTimeout(() => trigger("descripcion"), 100);
+                      }}
+                    />
                   )}
                 />
               </div>
+
+              {/* Campo de imagen con vista previa */}
+              <div>
+                <Controller
+                  name="imagen"
+                  control={control}
+                  render={({ field }) => (
+                    <div className="space-y-4">
+                      {/* Preview */}
+                      {previewUrl && (
+                        <img
+                          src={previewUrl}
+                          alt="Vista previa"
+                          className="h-32 w-32 object-cover rounded border"
+                        />
+                      )}
+
+                      {editing && (
+                        <label className="inline-flex items-center space-x-2">
+                          <input
+                            type="checkbox"
+                            checked={keepExistingImage}
+                            onChange={(e) => {
+                              const keep = e.target.checked;
+                              setKeepExistingImage(keep);
+                              setPreviewUrl(
+                                keep ? `${API_URL}${currentImageUrl}` : null
+                              );
+                              if (keep) field.onChange(null);
+                              trigger("imagen");
+                            }}
+                          />
+                          <span>Mantener imagen actual</span>
+                        </label>
+                      )}
+
+                      {/* Input file */}
+                      <input
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp"
+                        disabled={editing && keepExistingImage}
+                        onChange={(e) => {
+                          const files = e.target.files;
+                          if (files && files.length > 0) {
+                            field.onChange(files);
+                            setPreviewUrl(URL.createObjectURL(files[0]));
+                            setKeepExistingImage(false);
+                            trigger("imagen");
+                          }
+                        }}
+                        className="block w-full text-sm text-gray-700"
+                      />
+                      {errors.imagen && (
+                        <p className="text-red-600 text-sm">
+                          {errors.imagen.message}
+                        </p>
+                      )}
+                    </div>
+                  )}
+                />
+              </div>
+
               <div className="flex justify-center space-x-2 mt-4">
                 <AlertDialogCancel
                   onClick={() => {
                     setCreating(false);
                     setEditing(null);
+                    setCurrentImageUrl(null);
                   }}
                 >
                   Cancelar
@@ -319,7 +542,16 @@ export default function ProductsAdmin() {
                   <button
                     type="submit"
                     disabled={!isValid}
-                    className="bg-[#E96D87] text-white px-4 py-2 rounded"
+                    className={`px-4 py-2 rounded transition-colors ${
+                      isValid
+                        ? "bg-[#E96D87] text-white cursor-pointer hover:bg-[#d65a74]"
+                        : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                    }`}
+                    onClick={() => {
+                      if (!isValid) {
+                        trigger(["nombre", "precio", "stock", "imagen"]);
+                      }
+                    }}
                   >
                     Guardar
                   </button>
