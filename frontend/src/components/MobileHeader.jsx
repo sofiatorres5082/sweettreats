@@ -1,10 +1,15 @@
-// src/components/MobileHeader.tsx
 import MobileMenu from "./MobileMenu";
+import DesktopMenu from "./DesktopMenu";
 
 export default function MobileHeader() {
   return (
-    <header className="flex items-center justify-end px-4 py-4 bg-[#F9E4CF]">
-      <MobileMenu />
+    <header className="bg-[#F9E4CF] px-4 py-6 shadow-md">
+      <div className="hidden md:flex justify-center">
+        <DesktopMenu />
+      </div>
+      <div className="flex md:hidden justify-end items-center">
+        <MobileMenu />
+      </div>
     </header>
   );
 }
