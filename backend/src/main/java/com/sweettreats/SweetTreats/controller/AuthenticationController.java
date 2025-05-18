@@ -85,6 +85,17 @@ public class AuthenticationController {
         return ResponseEntity.ok(userResponse);
     }
 
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(HttpServletResponse response) {
+        ResponseCookie cookie = ResponseCookie.from("jwt", "")
+                .httpOnly(true)
+                .path("/")
+                .maxAge(0)
+                .build();
+        response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+        return ResponseEntity.ok().build();
+    }
+
     // Verificar si el JWT es válido
     @GetMapping("/verify-session")
     public ResponseEntity<Void> verifySession(HttpServletRequest request) {

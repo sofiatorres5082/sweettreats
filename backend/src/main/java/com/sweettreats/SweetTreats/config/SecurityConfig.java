@@ -39,6 +39,7 @@ public class SecurityConfig {
                .authorizeHttpRequests(http -> {
                    // 📌 ENDPOINTS PÚBLICOS
                    http.requestMatchers(HttpMethod.POST, "/auth/**").permitAll();
+                   http.requestMatchers(HttpMethod.POST, "/auth/logout").permitAll();
                    http.requestMatchers(HttpMethod.GET, "/api/products").permitAll();
                    http.requestMatchers(HttpMethod.GET, "/api/products/**").permitAll();
                    http.requestMatchers(HttpMethod.GET, "/auth/verify-session").permitAll();

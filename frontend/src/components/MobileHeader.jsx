@@ -3,7 +3,7 @@ import DesktopMenu from "./DesktopMenu";
 
 export default function MobileHeader() {
   return (
-    <header className="bg-[#F9E4CF] px-4 py-6 shadow-md">
+    <header className="bg-[#F9E4CF] px-4 py-6">
       <div className="hidden md:flex justify-center">
         <DesktopMenu />
       </div>
