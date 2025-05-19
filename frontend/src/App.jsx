@@ -17,6 +17,7 @@ import Catalog from "./pages/Catalog";
 import Checkout from "./pages/Checkout";
 import MyOrders from "./pages/MyOrders";
 import Profile from "./pages/Profile";
+import ChangePassword from "./pages/ChangePassword";
 import { Toaster } from "sonner";
 
 function App() {
@@ -61,6 +62,7 @@ function App() {
           <Route path="/checkout" element={<Checkout />} />
           <Route path="/mis-pedidos" element={<MyOrders />} />
           <Route path="/perfil" element={<Profile />} />
+          <Route path="/cambiar-contraseña" element={<ChangePassword />} />
         </Route>
 
         <Route

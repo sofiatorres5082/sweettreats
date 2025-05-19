@@ -1,5 +1,6 @@
 package com.sweettreats.SweetTreats.service;
 
+import com.sweettreats.SweetTreats.dto.ChangePasswordRequest;
 import com.sweettreats.SweetTreats.dto.ProfileUpdateRequest;
 import com.sweettreats.SweetTreats.dto.UserResponse;
 import com.sweettreats.SweetTreats.dto.UserUpdateRequest;
@@ -11,6 +12,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -24,10 +26,12 @@ public class UserService implements IUserService {
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository userRepository, RoleRepository roleRepository) {
+    public UserService(UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder encoder) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
+        this.passwordEncoder = encoder;
     }
 
     @Override
@@ -48,17 +52,14 @@ public class UserService implements IUserService {
         UserModel user = userRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado"));
 
-        // Actualizar nombre y email
         user.setName(req.name());
         user.setEmail(req.email());
 
-        // Convertir Set<RoleEnum> a List<String>
         List<String> roleNames = req.roles()
                 .stream()
                 .map(Enum::name)
                 .toList();
 
-        // Buscar las entidades RoleModel por sus nombres
         Set<RoleModel> nuevosRoles = new HashSet<>(
                 roleRepository.findRoleEntitiesByRoleEnumIn(roleNames)
         );
@@ -99,7 +100,16 @@ public class UserService implements IUserService {
         }
     }
 
+    public void changePassword(Long userId, ChangePasswordRequest req) {
+        UserModel user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado"));
 
+        if (!passwordEncoder.matches(req.oldPassword(), user.getPassword())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Contraseña actual incorrecta");
+        }
+        user.setPassword(passwordEncoder.encode(req.newPassword()));
+        userRepository.save(user);
+    }
 
     private UserResponse toResponse(UserModel u) {
         Set<String> roles = u.getRoles().stream()

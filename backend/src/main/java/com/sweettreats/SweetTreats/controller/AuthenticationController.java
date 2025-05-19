@@ -16,13 +16,16 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
@@ -130,14 +133,11 @@ public class AuthenticationController {
             @Valid @RequestBody ProfileUpdateRequest req,
             HttpServletResponse response
     ) {
-        // 1) obtener la entidad UserModel de la sesión
         UserModel me = userRepository.findUserModelByEmail(authentication.getName())
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-        // 2) delegar a UserService.updateProfile
         UserResponse updated = userService.updateProfile(me.getId(), req);
 
-        // 3) generar nuevo JWT (mantener mismas authorities)
         List<SimpleGrantedAuthority> authorities = authentication.getAuthorities().stream()
                 .map(a -> new SimpleGrantedAuthority(a.getAuthority()))
                 .collect(Collectors.toList());
@@ -145,8 +145,7 @@ public class AuthenticationController {
                 updated.email(), null, authorities
         );
         String newJwt = jwtUtil.createToken(newAuth);
-
-        // 4) sobreescribir cookie
+        
         ResponseCookie cookie = ResponseCookie.from("jwt", newJwt)
                 .httpOnly(true)
                 .secure(false)
@@ -156,6 +155,24 @@ public class AuthenticationController {
         response.setHeader(HttpHeaders.SET_COOKIE, cookie.toString());
 
         return ResponseEntity.ok(updated);
+    }
+
+    @PostMapping("/change-password")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<?> changePassword(
+            Authentication authentication,
+            @Valid @RequestBody ChangePasswordRequest req
+    ) {
+        try {
+            UserModel me = userRepository.findUserModelByEmail(authentication.getName())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado"));
+            userService.changePassword(me.getId(), req);
+            return ResponseEntity.ok(Map.of("message", "Contraseña cambiada correctamente"));
+        } catch (ResponseStatusException ex) {
+            return ResponseEntity
+                    .status(ex.getStatusCode())
+                    .body(Map.of("message", ex.getReason()));
+        }
     }
 
 
