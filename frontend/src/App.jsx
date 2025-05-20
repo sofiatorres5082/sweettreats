@@ -18,6 +18,7 @@ import Checkout from "./pages/Checkout";
 import MyOrders from "./pages/MyOrders";
 import Profile from "./pages/Profile";
 import ChangePassword from "./pages/ChangePassword";
+import AboutUs from "./pages/AboutUs";
 import { Toaster } from "sonner";
 
 function App() {
@@ -55,6 +56,7 @@ function App() {
           <Route path="/log-in" element={<Login />} />
           <Route path="/sign-up" element={<Register />} />
           <Route path="/catalogo" element={<Catalog />} />
+          <Route path="/sobre-nosotros" element={<AboutUs />} />
         </Route>
 
         <Route element={<ProtectedRoute roles={["USER"]} fallback="/log-in" />}>

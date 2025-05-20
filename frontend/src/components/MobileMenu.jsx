@@ -54,10 +54,10 @@ export default function MobileMenu() {
             Catálogo
           </Link>
           <Link
-            to="/contacto"
+            to="/sobre-nosotros"
             className="w-full text-center font-[Comic_Neue] font-semibold text-[#67463B] bg-[#FCF8EC] border rounded-3xl py-2.5 hover:bg-pink-100 transition"
           >
-            Contacto
+            Sobre nosotros
           </Link>
 
           {isAuth && (

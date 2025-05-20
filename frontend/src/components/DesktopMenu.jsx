@@ -27,8 +27,8 @@ export default function DesktopMenu() {
       <Link to="/catalogo" className={menuItemClass}>
         Catálogo
       </Link>
-      <Link to="/contacto" className={menuItemClass}>
-        Contacto
+      <Link to="/sobre-nosotros" className={menuItemClass}>
+        Sobre nosotros
       </Link>
 
       {isAuth && (

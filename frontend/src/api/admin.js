@@ -37,3 +37,24 @@ export function updateProductRequest(id, formData) {
 }
 
 export const deleteProductRequest = (id) => axios.delete(`/api/products/${id}`);
+
+export const salesRequest = (period) =>
+  axios.get(`/api/reports/sales?period=${period}`);
+
+export const salesTrendRequest = (period) =>
+  axios.get(`/api/reports/sales-trend?period=${period}`);
+
+export const ticketAverageRequest = (period) =>
+  axios.get(`/api/reports/ticket-average?period=${period}`);
+
+export const salesGrowthRequest = (period) =>
+  axios.get(`/api/reports/sales-growth?period=${period}`);
+
+export const topProductsRequest = () =>
+  axios.get(`/api/reports/top-products`);
+
+export const lowStockRequest = () =>
+  axios.get(`/api/reports/low-stock`);
+
+export const noSalesRequest = (sinceDays) =>
+  axios.get(`/api/reports/no-sales?sinceDays=${sinceDays}`);

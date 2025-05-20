@@ -75,6 +75,8 @@ public class SecurityConfig {
                    http.requestMatchers(HttpMethod.POST, "/api/products").hasRole("ADMIN");
                    http.requestMatchers(HttpMethod.PUT, "/api/products/**").hasRole("ADMIN");
                    http.requestMatchers(HttpMethod.DELETE, "/api/products/**").hasRole("ADMIN");
+                   http.requestMatchers(HttpMethod.GET, "/api/reports/**").hasRole("ADMIN");
+
 
                    // 🧑‍💼 CRUD Usuarios (solo ADMIN)
                    http.requestMatchers(HttpMethod.GET,    "/api/users").hasRole("ADMIN");
