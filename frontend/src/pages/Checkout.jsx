@@ -67,15 +67,26 @@ function CheckoutForm() {
     if (!loading && !isAuth) {
       toast.error("Debes iniciar sesión para continuar");
       navigate("/log-in");
+      return;
     }
-  }, [loading, isAuth, navigate]);
+
+    const hasValidProducts = cart.some(
+      (item) => item.precio > 0 && item.cantidad > 0
+    );
+    if (!hasValidProducts) {
+      toast.error(
+        "El carrito debe tener al menos un producto válido para continuar"
+      );
+      navigate("/catalogo");
+    }
+  }, [loading, isAuth, cart, navigate]);
 
   if (loading) {
     return <Spinner />;
   }
 
   const onSubmit = async (data) => {
-    setProcessing(true); 
+    setProcessing(true);
     try {
       const {
         data: { clientSecret },
@@ -112,13 +123,17 @@ function CheckoutForm() {
       console.error(err);
       toast.error("Hubo un error al procesar el pedido");
     } finally {
-      setProcessing(false); 
+      setProcessing(false);
     }
   };
 
   const onError = (formErrors) => {
     console.warn("Errores de validación:", formErrors);
   };
+
+  const hasValidProducts = cart.some(
+    (item) => item.precio > 0 && item.cantidad > 0
+  );
 
   return (
     <>
@@ -223,7 +238,7 @@ function CheckoutForm() {
             </div>
             <Button
               type="submit"
-              disabled={processing || !stripe || !elements}
+              disabled={processing || !stripe || !elements || !hasValidProducts}
               className="mt-6 w-full bg-[#E96D87] rounded-3xl text-white disabled:opacity-50"
             >
               {processing ? "Procesando…" : "Confirmar Pedido"}

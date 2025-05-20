@@ -145,7 +145,7 @@ public class AuthenticationController {
                 updated.email(), null, authorities
         );
         String newJwt = jwtUtil.createToken(newAuth);
-        
+
         ResponseCookie cookie = ResponseCookie.from("jwt", newJwt)
                 .httpOnly(true)
                 .secure(false)
