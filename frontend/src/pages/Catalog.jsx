@@ -85,6 +85,7 @@ export default function Catalog() {
                     <ImageWithSkeleton
                       src={imageUrl}
                       alt={product.nombre}
+                      loading="lazy"
                       className="w-24 h-24 sm:w-32 sm:h-32 md:w-72 md:h-72"
                     />
                   </div>

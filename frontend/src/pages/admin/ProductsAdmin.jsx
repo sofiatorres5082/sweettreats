@@ -28,6 +28,7 @@ import { useForm, Controller } from "react-hook-form";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { toast } from "sonner";
+import { ImageWithSkeleton } from "../../components/ImageWithSkeleton";
 
 const schema = yup.object({
   nombre: yup.string().required("Nombre obligatorio"),
@@ -53,13 +54,12 @@ export default function ProductsAdmin() {
   const [totalPages, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [authError, setAuthError] = useState(false);
-
   const [editing, setEditing] = useState(null);
   const [creating, setCreating] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
   const [currentImageUrl, setCurrentImageUrl] = useState(null);
   const [keepExistingImage, setKeepExistingImage] = useState(true);
-  const [previewUrl, setPreviewUrl] = useState(null); // preview a nivel global
+  const [previewUrl, setPreviewUrl] = useState(null); 
 
   const {
     control,
@@ -169,7 +169,7 @@ export default function ProductsAdmin() {
         });
         return;
       }
-      // Tipo
+
       if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
         setError("imagen", {
           type: "manual",
@@ -291,11 +291,11 @@ export default function ProductsAdmin() {
                   <TableCell>{p.stock}</TableCell>
                   <TableCell>
                     {p.imagen ? (
-                      // En la visualización de imágenes de la tabla
-                      <img
+                      <ImageWithSkeleton
                         src={`${API_URL}${p.imagen}`}
                         alt={p.nombre}
-                        className="w-20 h-20 object-cover rounded"
+                        className="w-20 h-20"
+                        loading="lazy" 
                       />
                     ) : (
                       <span className="text-gray-500">Sin imagen</span>
@@ -380,7 +380,6 @@ export default function ProductsAdmin() {
         </Table>
       </div>
 
-      {/* Paginación */}
       <div className="flex justify-center items-center mt-4 space-x-4 text-white font-[Nunito] text-base">
         <Button size="sm" disabled={page === 0} onClick={() => fetch(page - 1)}>
           ← Anterior
@@ -454,7 +453,6 @@ export default function ProductsAdmin() {
                 </div>
               ))}
 
-              {/* Descripción */}
               <div>
                 <Controller
                   name="descripcion"
@@ -472,19 +470,18 @@ export default function ProductsAdmin() {
                 />
               </div>
 
-              {/* Campo de imagen con vista previa */}
               <div>
                 <Controller
                   name="imagen"
                   control={control}
                   render={({ field }) => (
                     <div className="space-y-4">
-                      {/* Preview */}
                       {previewUrl && (
-                        <img
+                        <ImageWithSkeleton
                           src={previewUrl}
                           alt="Vista previa"
-                          className="h-32 w-32 object-cover rounded border"
+                          className="h-32 w-32"
+                          loading="lazy"
                         />
                       )}
 

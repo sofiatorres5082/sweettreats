@@ -1,14 +1,8 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import "./App.css";
+import { Suspense, lazy } from "react";
 import Login from "./pages/Login";
 import ProtectedRoute from "./components/ProtectedRoute";
-import Home from "./pages/Home";
-import DashboardLayout from "./pages/admin/DashboardLayout";
-import DashboardHome from "./pages/admin/DashboardHome";
-import UsersAdmin from "./pages/admin/UsersAdmin";
-import ProductsAdmin from "./pages/admin/ProductsAdmin";
-import OrdersAdmin from "./pages/admin/OrdersAdmin";
-import ReportsAdmin from "./pages/admin/ReportsAdmin";
 import Landing from "./pages/Landing";
 import NotFound from "./pages/NotFound";
 import Register from "./pages/Register";
@@ -20,6 +14,14 @@ import Profile from "./pages/Profile";
 import ChangePassword from "./pages/ChangePassword";
 import AboutUs from "./pages/AboutUs";
 import { Toaster } from "sonner";
+import Spinner from "./components/Spinner";
+
+const DashboardLayout = lazy(() => import("./pages/admin/DashboardLayout"));
+const DashboardHome = lazy(() => import("./pages/admin/DashboardHome"));
+const UsersAdmin = lazy(() => import("./pages/admin/UsersAdmin"));
+const ProductsAdmin = lazy(() => import("./pages/admin/ProductsAdmin"));
+const OrdersAdmin = lazy(() => import("./pages/admin/OrdersAdmin"));
+const ReportsAdmin = lazy(() => import("./pages/admin/ReportsAdmin"));
 
 function App() {
   return (
@@ -69,12 +71,54 @@ function App() {
         <Route
           element={<ProtectedRoute roles={["ADMIN"]} fallback="/not-found" />}
         >
-          <Route path="/dashboard" element={<DashboardLayout />}>
-            <Route index element={<DashboardHome />} />
-            <Route path="users" element={<UsersAdmin />} />
-            <Route path="products" element={<ProductsAdmin />} />
-            <Route path="orders" element={<OrdersAdmin />} />
-            <Route path="reports" element={<ReportsAdmin />} />
+          <Route
+            path="/dashboard"
+            element={
+              <Suspense fallback={<Spinner />}>
+                <DashboardLayout />
+              </Suspense>
+            }
+          >
+            <Route
+              index
+              element={
+                <Suspense fallback={<Spinner />}>
+                  <DashboardHome />
+                </Suspense>
+              }
+            />
+            <Route
+              path="users"
+              element={
+                <Suspense fallback={<Spinner />}>
+                  <UsersAdmin />
+                </Suspense>
+              }
+            />
+            <Route
+              path="products"
+              element={
+                <Suspense fallback={<Spinner />}>
+                  <ProductsAdmin />
+                </Suspense>
+              }
+            />
+            <Route
+              path="orders"
+              element={
+                <Suspense fallback={<Spinner />}>
+                  <OrdersAdmin />
+                </Suspense>
+              }
+            />
+            <Route
+              path="reports"
+              element={
+                <Suspense fallback={<Spinner />}>
+                  <ReportsAdmin />
+                </Suspense>
+              }
+            />
           </Route>
         </Route>
 
