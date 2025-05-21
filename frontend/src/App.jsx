@@ -60,7 +60,6 @@ function App() {
         </Route>
 
         <Route element={<ProtectedRoute roles={["USER"]} fallback="/log-in" />}>
-          <Route path="/home" element={<Home />} />
           <Route path="/checkout" element={<Checkout />} />
           <Route path="/mis-pedidos" element={<MyOrders />} />
           <Route path="/perfil" element={<Profile />} />

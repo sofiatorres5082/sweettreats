@@ -37,49 +37,32 @@ public class SecurityConfig {
                .csrf(csrf -> csrf.disable())
                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                .authorizeHttpRequests(http -> {
-                   // 📌 ENDPOINTS PÚBLICOS
-                   http.requestMatchers(HttpMethod.POST, "/auth/**").permitAll();
-                   http.requestMatchers(HttpMethod.POST, "/auth/logout").permitAll();
-                   http.requestMatchers(HttpMethod.GET, "/api/products").permitAll();
+                   //  ENDPOINTS PÚBLICOS
+                   http.requestMatchers(HttpMethod.POST, "/auth/sign-up").permitAll();
+                   http.requestMatchers(HttpMethod.POST, "/auth/log-in").permitAll();
                    http.requestMatchers(HttpMethod.GET, "/api/products/**").permitAll();
                    http.requestMatchers(HttpMethod.GET, "/auth/verify-session").permitAll();
                    http.requestMatchers("/uploads/**").permitAll();
 
-
                    // 🔒 ENDPOINTS AUTENTICADOS (cualquier usuario logueado)
-                   http.requestMatchers(HttpMethod.GET, "/auth/me").authenticated();           // perfil
-                   http.requestMatchers(HttpMethod.PUT,  "/auth/me").authenticated();          // para editar su perfil
-                   http.requestMatchers(HttpMethod.GET, "/home").authenticated();              // página protegida general
-                   http.requestMatchers(HttpMethod.POST, "/api/payments/**")
-                           .authenticated();
+                   http.requestMatchers(HttpMethod.GET, "/auth/me").authenticated();
+                   http.requestMatchers(HttpMethod.PUT,  "/auth/me").authenticated();
+                   http.requestMatchers(HttpMethod.POST, "/auth/logout").authenticated();
+                   http.requestMatchers(HttpMethod.POST, "/api/payments/**").authenticated();
                    http.requestMatchers(HttpMethod.PUT,  "/auth/change-password").authenticated();
 
                    // 🛒 PEDIDOS - solo usuarios autenticados con rol USER
-                   http.requestMatchers(HttpMethod.GET, "/api/orders").authenticated();
                    http.requestMatchers(HttpMethod.POST, "/api/orders").authenticated();
                    http.requestMatchers(HttpMethod.GET, "/api/orders/**").authenticated();
                    http.requestMatchers(HttpMethod.GET,  "/api/orders/{id:[0-9]+}").authenticated();
 
-                   // ⚙️ MÉTODOS ADMIN O AVANZADOS (para test)
-                   http.requestMatchers(HttpMethod.GET, "/method/get").hasAuthority("READ");
-                   http.requestMatchers(HttpMethod.POST, "/method/post").hasAuthority("CREATE");
-                   http.requestMatchers(HttpMethod.DELETE, "/method/delete").hasAuthority("DELETE");
-                   http.requestMatchers(HttpMethod.PUT, "/method/put").hasAuthority("UPDATE");
-
                    // 📊 ADMINISTRACIÓN
-                   http.requestMatchers(HttpMethod.GET, "/dashboard").hasRole("ADMIN");
                    http.requestMatchers(HttpMethod.GET, "/api/orders/admin/**").hasRole("ADMIN");
-                   http.requestMatchers(HttpMethod.GET, "/api/orders/admin/all").hasRole("ADMIN");
-                   http.requestMatchers(HttpMethod.GET,  "/api/orders/admin/{id:[0-9]+}").hasRole("ADMIN");
                    http.requestMatchers(HttpMethod.PUT,  "/api/orders/admin/{id:[0-9]+}").hasRole("ADMIN");
                    http.requestMatchers(HttpMethod.POST, "/api/products").hasRole("ADMIN");
                    http.requestMatchers(HttpMethod.PUT, "/api/products/**").hasRole("ADMIN");
                    http.requestMatchers(HttpMethod.DELETE, "/api/products/**").hasRole("ADMIN");
                    http.requestMatchers(HttpMethod.GET, "/api/reports/**").hasRole("ADMIN");
-
-
-                   // 🧑‍💼 CRUD Usuarios (solo ADMIN)
-                   http.requestMatchers(HttpMethod.GET,    "/api/users").hasRole("ADMIN");
                    http.requestMatchers(HttpMethod.GET,    "/api/users/**").hasRole("ADMIN");
                    http.requestMatchers(HttpMethod.PUT,    "/api/users/**").hasRole("ADMIN");
                    http.requestMatchers(HttpMethod.DELETE, "/api/users/**").hasRole("ADMIN");

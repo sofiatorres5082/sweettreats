@@ -13,5 +13,5 @@ export const verifySessionRequest = () => axios.get("/auth/verify-session");
 export const updateProfileRequest = (data) =>
   axios.put("/auth/me", data);
 
-export const changePasswordRequest  = (data) => axios.post("/auth/change-password", data);
+export const changePasswordRequest  = (data) => axios.put("/auth/change-password", data);
 

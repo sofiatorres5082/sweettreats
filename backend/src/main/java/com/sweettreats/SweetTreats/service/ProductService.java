@@ -4,6 +4,7 @@ package com.sweettreats.SweetTreats.service;
 import com.sweettreats.SweetTreats.model.ProductModel;
 import com.sweettreats.SweetTreats.repository.ProductRepository;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -88,7 +89,14 @@ public class ProductService implements IProductService {
         if (!repo.existsById(id)) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Producto no encontrado");
         }
-        repo.deleteById(id);
+        try {
+            repo.deleteById(id);
+        } catch (DataIntegrityViolationException ex) {
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "No se puede eliminar el producto porque tiene pedidos asociados"
+            );
+        }
     }
 
     private String saveImage(MultipartFile file) {

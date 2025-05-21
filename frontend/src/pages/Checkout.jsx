@@ -39,6 +39,7 @@ function CheckoutForm() {
   const stripe = useStripe();
   const elements = useElements();
   const [openSuccess, setOpenSuccess] = useState(false);
+  const [orderDone, setOrderDone] = useState(false);
   const [processing, setProcessing] = useState(false);
 
   const {
@@ -62,24 +63,23 @@ function CheckoutForm() {
     (acc, item) => acc + item.precio * item.cantidad,
     0
   );
-
   useEffect(() => {
     if (!loading && !isAuth) {
       toast.error("Debes iniciar sesión para continuar");
-      navigate("/log-in");
-      return;
+      return navigate("/log-in");
     }
 
-    const hasValidProducts = cart.some(
-      (item) => item.precio > 0 && item.cantidad > 0
-    );
+    // si ya completé el pedido, no vuelvas a redirigir
+    if (orderDone) return;
+
+    const hasValidProducts = cart.some((i) => i.precio > 0 && i.cantidad > 0);
     if (!hasValidProducts) {
       toast.error(
         "El carrito debe tener al menos un producto válido para continuar"
       );
       navigate("/catalogo");
     }
-  }, [loading, isAuth, cart, navigate]);
+  }, [loading, isAuth, cart, navigate, orderDone]);
 
   if (loading) {
     return <Spinner />;
@@ -117,6 +117,7 @@ function CheckoutForm() {
         })),
       });
       dispatch({ type: "CLEAR_CART" });
+      setOrderDone(true);
       toast.success("🍰 Pedido realizado con éxito");
       setOpenSuccess(true);
     } catch (err) {

@@ -157,7 +157,7 @@ public class AuthenticationController {
         return ResponseEntity.ok(updated);
     }
 
-    @PostMapping("/change-password")
+    @PutMapping("/change-password")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> changePassword(
             Authentication authentication,

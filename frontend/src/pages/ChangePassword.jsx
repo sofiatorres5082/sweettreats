@@ -56,13 +56,16 @@ const onSubmit = async (data) => {
     toast.success("Contraseña cambiada correctamente");
     navigate("/perfil");
   } catch (err) {
-    const msg = err;
-     
+    const msg =
+      typeof err?.response?.data === "string"
+        ? err.response.data
+        : err?.response?.data?.message || "Error al cambiar la contraseña";
+
     toast.error(msg);
 
     setError("currentPassword", {
       type: "server",
-      message: err,
+      message: msg, 
     });
   }
 };

@@ -6,11 +6,9 @@ const instance = axios.create({
 });
 
 instance.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    return Promise.reject(
-      error.response?.data?.message || "Error de conexión"
-    );
+  response => response,
+  error => {
+    return Promise.reject(error);
   }
 );
 

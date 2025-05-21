@@ -16,6 +16,7 @@ export default function Login() {
   const from = location.state?.from || "/";
 
   const [showPassword, setShowPassword] = useState(false);
+  const [serverError, setServerError] = useState(""); // 👈 nuevo estado
 
   const {
     register,
@@ -27,18 +28,25 @@ export default function Login() {
   });
 
   const onSubmit = async (data) => {
+    setServerError("");
     try {
       const user = await login(
         { email: data.email, password: data.password },
         { withCredentials: true }
       );
+
       if (user?.data?.roles?.some((r) => r.roleEnum === "ADMIN")) {
         navigate("/dashboard");
       } else {
         navigate(from);
       }
     } catch (err) {
-      alert(err.message || "Credenciales inválidas");
+      const msg =
+        typeof err?.response?.data === "string"
+          ? err.response.data
+          : err?.response?.data?.message || "Credenciales inválidas";
+
+      setServerError(msg);
     }
   };
 
@@ -96,6 +104,11 @@ export default function Login() {
               </p>
             )}
           </div>
+
+          {/* 👇 mensaje de error general del backend */}
+          {serverError && (
+            <p className="text-red-500 text-sm text-center">{serverError}</p>
+          )}
 
           <Button
             type="submit"

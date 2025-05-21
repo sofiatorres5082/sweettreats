@@ -351,13 +351,18 @@ export default function ProductsAdmin() {
                                   page === 0 && products.length === 1 ? 0 : page
                                 );
                               } catch (err) {
-                                if (err.response?.status === 403) {
+                                const msg =
+                                  err?.response?.data?.message ||
+                                  "Error al eliminar";
+
+                                if (err?.response?.status === 409) {
+                                  toast.error(msg);
+                                } else if (err?.response?.status === 403) {
                                   toast.error(
                                     "No tienes permisos para eliminar productos"
                                   );
-                                  setAuthError(true);
                                 } else {
-                                  toast.error("Error al eliminar");
+                                  toast.error(msg);
                                 }
                               }
                             }}
