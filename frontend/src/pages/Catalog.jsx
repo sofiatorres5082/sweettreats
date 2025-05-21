@@ -7,13 +7,14 @@ import { getProductsRequest } from "../api/products";
 import CartMenu from "../components/CartMenu";
 import { useCart } from "../context/CartContext";
 import { toast } from "sonner";
+import { ImageWithSkeleton } from "@/components/ImageWithSkeleton";
 
 const API_URL = import.meta.env.VITE_API_URL || "";
 
 export default function Catalog() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [sortBy, setSortBy] = useState("nombre");      // ← estado para ordenar
+  const [sortBy, setSortBy] = useState("nombre");
   const { dispatch } = useCart();
 
   useEffect(() => {
@@ -30,7 +31,6 @@ export default function Catalog() {
     })();
   }, []);
 
-  // hacemos una copia ordenada según sortBy
   const sortedProducts = [...products].sort((a, b) => {
     switch (sortBy) {
       case "nombre":
@@ -49,10 +49,11 @@ export default function Catalog() {
       <MobileHeader />
 
       <div className="min-h-screen bg-[#F9E4CF] px-4 pt-16 pb-8">
-        {/* Barra superior con dropdown y carrito */}
         <div className="flex mb-5 max-w-6xl mx-auto justify-between items-center">
           <div className="flex items-center space-x-2">
-            <label htmlFor="sort" className="font-[Comic_Neue]">Ordenar por:</label>
+            <label htmlFor="sort" className="font-[Comic_Neue]">
+              Ordenar por:
+            </label>
             <select
               id="sort"
               value={sortBy}
@@ -67,7 +68,6 @@ export default function Catalog() {
           <CartMenu />
         </div>
 
-        {/* Grid de productos */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
           {sortedProducts.map((product) => {
             const inStock = product.stock > 0;
@@ -82,10 +82,10 @@ export default function Catalog() {
               >
                 <CardContent className="p-4 flex flex-col">
                   <div className="flex justify-center flex-shrink-0 mb-5">
-                    <img
+                    <ImageWithSkeleton
                       src={imageUrl}
                       alt={product.nombre}
-                      className="object-cover rounded-2xl w-24 h-24 sm:w-32 sm:h-32 md:w-72 md:h-72"
+                      className="w-24 h-24 sm:w-32 sm:h-32 md:w-72 md:h-72"
                     />
                   </div>
                   <div className="flex-1 ml-5 mr-5">
