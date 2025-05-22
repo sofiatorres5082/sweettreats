@@ -2,6 +2,10 @@ package com.sweettreats.SweetTreats.controller;
 
 import com.sweettreats.SweetTreats.model.ProductModel;
 import com.sweettreats.SweetTreats.service.ProductService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -13,62 +17,94 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Map;
 
+@Tag(name = "Productos", description = "CRUD de productos (público y ADMIN)")
 @RestController
 @RequestMapping("/api/products")
 public class ProductController {
     private final ProductService service;
     public ProductController(ProductService service) { this.service = service; }
 
-
-    // LISTADO PÚBLICO
+    @Operation(
+            summary     = "Listar productos",
+            description = "Obtiene una página de productos disponibles"
+    )
+    @ApiResponse(responseCode = "200", description = "Página de productos retornada")
     @GetMapping
     public ResponseEntity<Page<ProductModel>> list(
+            @Parameter(description = "Número de página (0-index)", example = "0")
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
+            @Parameter(description = "Tamaño de página", example = "10")
+            @RequestParam(defaultValue = "10") int size
+    ) {
         return ResponseEntity.ok(service.getAll(page, size));
     }
 
-    // CONSULTA PÚBLICA
+    @Operation(
+            summary     = "Obtener detalle de un producto",
+            description = "Devuelve los datos de un producto por su ID"
+    )
+    @ApiResponse(responseCode = "200", description = "Producto encontrado")
+    @ApiResponse(responseCode = "404", description = "Producto no existe")
+    @Parameter(name = "id", description = "ID del producto", required = true, example = "42")
     @GetMapping("/{id}")
-    public ResponseEntity<ProductModel> get(@PathVariable Long id) {
+    public ResponseEntity<ProductModel> get(
+            @PathVariable Long id
+    ) {
         return ResponseEntity.ok(service.getById(id));
     }
 
-    // CREAR → sólo ADMIN
-    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(
+            summary     = "Crear producto",
+            description = "Crea un nuevo producto (solo ADMIN). Permite opcionalmente subir una imagen."
+    )
+    @ApiResponse(responseCode = "201", description = "Producto creado correctamente")
+    @ApiResponse(responseCode = "403", description = "Acceso denegado para usuarios no administradores")
     @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ProductModel> create(
-            @RequestParam String nombre,
-            @RequestParam Double precio,
-            @RequestParam Integer stock,
-            @RequestParam(required = false) String descripcion,
-            @RequestPart(required = false) MultipartFile imagen
+            @Parameter(description = "Nombre del producto", required = true)  @RequestParam String nombre,
+            @Parameter(description = "Precio del producto", required = true)  @RequestParam Double precio,
+            @Parameter(description = "Stock inicial", required = true)       @RequestParam Integer stock,
+            @Parameter(description = "Descripción (opcional)")              @RequestParam(required = false) String descripcion,
+            @Parameter(description = "Imagen del producto (opcional)")      @RequestPart(required = false) MultipartFile imagen
     ) {
         ProductModel saved = service.create(nombre, precio, stock, descripcion, imagen);
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
 
-    // ACTUALIZAR → sólo ADMIN
-    @PutMapping(path = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @Operation(
+            summary     = "Actualizar producto",
+            description = "Modifica un producto existente (solo ADMIN). Puede mantener o reemplazar la imagen."
+    )
+    @ApiResponse(responseCode = "200", description = "Producto actualizado correctamente")
+    @ApiResponse(responseCode = "403", description = "Acceso denegado para usuarios no administradores")
     @PreAuthorize("hasRole('ADMIN')")
+    @PutMapping(path = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ProductModel> update(
-            @PathVariable Long id,
-            @RequestParam String nombre,
-            @RequestParam Double precio,
-            @RequestParam Integer stock,
-            @RequestParam(required = false) String descripcion,
-            @RequestPart(required = false) MultipartFile imagen,
-            @RequestParam(name="mantenerImagen", required = false, defaultValue = "true") boolean mantenerImagen
+            @Parameter(description = "ID del producto", required = true, example = "42") @PathVariable Long id,
+            @Parameter(description = "Nuevo nombre", required = true)                   @RequestParam String nombre,
+            @Parameter(description = "Nuevo precio", required = true)                   @RequestParam Double precio,
+            @Parameter(description = "Nuevo stock", required = true)                    @RequestParam Integer stock,
+            @Parameter(description = "Nueva descripción (opcional)")                    @RequestParam(required = false) String descripcion,
+            @Parameter(description = "Nueva imagen (opcional)")                        @RequestPart(required = false) MultipartFile imagen,
+            @Parameter(description = "Mantener imagen existente", example = "true")      @RequestParam(name="mantenerImagen", defaultValue = "true") boolean mantenerImagen
     ) {
         ProductModel updated = service.update(id, nombre, precio, stock, descripcion, imagen, mantenerImagen);
         return ResponseEntity.ok(updated);
     }
 
-
-    // ELIMINAR → sólo ADMIN
-    @DeleteMapping("/{id}")
+    @Operation(
+            summary     = "Eliminar producto",
+            description = "Elimina un producto (solo ADMIN). Falla si hay pedidos asociados."
+    )
+    @ApiResponse(responseCode = "204", description = "Producto eliminado")
+    @ApiResponse(responseCode = "409", description = "No se puede eliminar; pedidos asociados")
+    @ApiResponse(responseCode = "403", description = "Acceso denegado para usuarios no administradores")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<?> delete(@PathVariable Long id) {
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> delete(
+            @Parameter(description = "ID del producto", required = true, example = "42") @PathVariable Long id
+    ) {
         try {
             service.delete(id);
             return ResponseEntity.noContent().build();
