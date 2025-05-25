@@ -1,4 +1,3 @@
-// src/pages/ChangePassword.jsx
 import { useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -47,154 +46,105 @@ export default function ChangePassword() {
     },
   });
 
-const onSubmit = async (data) => {
-  try {
-    await changePasswordRequest({
-      oldPassword: data.currentPassword,
-      newPassword: data.newPassword,
-    });
-    toast.success("Contraseña cambiada correctamente");
-    navigate("/perfil");
-  } catch (err) {
-    const msg =
-      typeof err?.response?.data === "string"
-        ? err.response.data
-        : err?.response?.data?.message || "Error al cambiar la contraseña";
-
-    toast.error(msg);
-
-    setError("currentPassword", {
-      type: "server",
-      message: msg, 
-    });
-  }
-};
-
+  const onSubmit = async (data) => {
+    try {
+      await changePasswordRequest({
+        oldPassword: data.currentPassword,
+        newPassword: data.newPassword,
+      });
+      toast.success("Contraseña cambiada correctamente");
+      navigate("/perfil");
+    } catch (err) {
+      const msg =
+        typeof err?.response?.data === "string"
+          ? err.response.data
+          : err?.response?.data?.message || "Error al cambiar la contraseña";
+      toast.error(msg);
+      setError("currentPassword", { type: "server", message: msg });
+    }
+  };
 
   return (
     <>
       <MobileHeader />
-      <div className="min-h-screen bg-[#F9E4CF] px-4 pt-16 pb-8">
-        <div className="max-w-md mx-auto bg-white p-6 rounded-xl space-y-4">
-          <h2 className="font-[Comic_Neue] text-2xl font-bold text-[#67463B] text-center">
-            Cambiar Contraseña
-          </h2>
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            <div className="space-y-1">
-              <label className="block font-[Comic_Neue] text-[#67463B]">
-                Contraseña actual
-              </label>
-              <div className="relative">
-                <Controller
-                  name="currentPassword"
-                  control={control}
-                  render={({ field }) => (
-                    <Input
-                      {...field}
-                      value={field.value ?? ""}
-                      type={showCurrent ? "text" : "password"}
-                      placeholder="••••••••"
-                      className="pr-10"
+      <div className="min-h-screen flex flex-col items-center bg-[#F9E4CF] px-4 pt-16 pb-8">
+        <div className="w-full max-w-md">
+          <div className="bg-white rounded-3xl shadow-sm p-8">
+            <h2 className="font-[Comic_Neue] text-2xl font-bold text-[#67463B] text-center mb-6">
+              Cambiar Contraseña
+            </h2>
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+              {[
+                {
+                  name: "currentPassword",
+                  label: "Contraseña actual",
+                  show: showCurrent,
+                  toggle: () => setShowCurrent((v) => !v),
+                },
+                {
+                  name: "newPassword",
+                  label: "Nueva contraseña",
+                  show: showNew,
+                  toggle: () => setShowNew((v) => !v),
+                },
+                {
+                  name: "confirmPassword",
+                  label: "Confirmar contraseña",
+                  show: showConfirm,
+                  toggle: () => setShowConfirm((v) => !v),
+                },
+              ].map(({ name, label, show, toggle }) => (
+                <div key={name} className="space-y-1">
+                  <label className="block font-[Comic_Neue] text-sm font-semibold text-[#67463B]">
+                    {label}
+                  </label>
+                  <div className="relative">
+                    <Controller
+                      name={name}
+                      control={control}
+                      render={({ field }) => (
+                        <Input
+                          {...field}
+                          type={show ? "text" : "password"}
+                          placeholder="••••••••"
+                          className="font-[Comic_Neue] w-full px-4 py-3 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#E96D87] focus:border-transparent bg-gray-50 pr-10"
+                        />
+                      )}
                     />
+                    <button
+                      type="button"
+                      onClick={toggle}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-[#E96D87] transition-colors"
+                    >
+                      {show ? <EyeOff size={20} /> : <Eye size={20} />}
+                    </button>
+                  </div>
+                  {errors[name] && (
+                    <p className="font-[Comic_Neue] text-red-500 text-sm mt-1">
+                      {errors[name]?.message}
+                    </p>
                   )}
-                />
+                </div>
+              ))}
 
-                <button
-                  type="button"
-                  onClick={() => setShowCurrent((v) => !v)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+              <div className="flex justify-center gap-4 pt-4">
+                <Button
+                  variant="outline"
+                  onClick={() => navigate("/perfil")}
+                  className="font-[Comic_Neue] rounded-3xl bg-gray-200 text-gray-700 hover:bg-gray-300 px-6 py-2"
                 >
-                  {showCurrent ? <EyeOff size={18} /> : <Eye size={18} />}
-                </button>
-              </div>
-              {errors.currentPassword && (
-                <p className="text-red-600 text-sm">
-                  {errors.currentPassword.message}
-                </p>
-              )}
-            </div>
-
-            <div className="space-y-1">
-              <label className="block font-[Comic_Neue] text-[#67463B]">
-                Nueva contraseña
-              </label>
-              <div className="relative">
-                <Controller
-                  name="newPassword"
-                  control={control}
-                  render={({ field }) => (
-                    <Input
-                      {...field}
-                      type={showNew ? "text" : "password"}
-                      placeholder="••••••••"
-                      className="pr-10"
-                    />
-                  )}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowNew((v) => !v)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+                  Cancelar
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={!isValid}
+                  className="font-[Comic_Neue] bg-[#E96D87] hover:bg-[#d6627a] text-white rounded-3xl px-6 py-2"
                 >
-                  {showNew ? <EyeOff size={18} /> : <Eye size={18} />}
-                </button>
+                  Cambiar
+                </Button>
               </div>
-              {errors.newPassword && (
-                <p className="text-red-600 text-sm">
-                  {errors.newPassword.message}
-                </p>
-              )}
-            </div>
-
-            <div className="space-y-1">
-              <label className="block font-[Comic_Neue] text-[#67463B]">
-                Confirmar contraseña
-              </label>
-              <div className="relative">
-                <Controller
-                  name="confirmPassword"
-                  control={control}
-                  render={({ field }) => (
-                    <Input
-                      {...field}
-                      type={showConfirm ? "text" : "password"}
-                      placeholder="••••••••"
-                      className="pr-10"
-                    />
-                  )}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowConfirm((v) => !v)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
-                >
-                  {showConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
-                </button>
-              </div>
-              {errors.confirmPassword && (
-                <p className="text-red-600 text-sm">
-                  {errors.confirmPassword.message}
-                </p>
-              )}
-            </div>
-
-            <div className="flex justify-center gap-4 mt-4">
-              <Button
-                variant="outline"
-                onClick={() => navigate("/perfil")}
-                className="bg-gray-200 text-gray-700 hover:bg-gray-300 rounded-full px-6 py-2"
-              >
-                Cancelar
-              </Button>
-              <Button
-                type="submit"
-                disabled={!isValid}
-                className="bg-[#FF6B85] hover:bg-[#E96D87] text-white rounded-full px-6 py-2"
-              >
-                Cambiar
-              </Button>
-            </div>
-          </form>
+            </form>
+          </div>
         </div>
       </div>
     </>

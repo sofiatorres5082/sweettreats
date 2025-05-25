@@ -1,4 +1,3 @@
-// src/pages/Catalog.jsx
 import { useEffect, useState } from "react";
 import { Card, CardContent } from "../components/ui/card";
 import { Button } from "../components/ui/button";
@@ -51,19 +50,32 @@ export default function Catalog() {
       <div className="min-h-screen bg-[#F9E4CF] px-4 pt-16 pb-8">
         <div className="flex mb-5 max-w-6xl mx-auto justify-between items-center">
           <div className="flex items-center space-x-2">
-            <label htmlFor="sort" className="font-[Comic_Neue]">
-              Ordenar por:
-            </label>
-            <select
-              id="sort"
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
-              className="font-[Comic_Neue] p-1 rounded border"
-            >
-              <option value="nombre">Nombre (A → Z)</option>
-              <option value="precio">Precio (menor → mayor)</option>
-              <option value="stock">Stock (mayor → menor)</option>
-            </select>
+            <div className="flex flex-col md:flex-row md:items-center gap-2">
+              <label
+                htmlFor="sort"
+                className="font-[Comic_Neue] text-[#67463B]"
+              >
+                Ordenar por:
+              </label>
+              <select
+                id="sort"
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="
+      font-[Comic_Neue] text-[#67463B] 
+      bg-white px-3 py-2 mr-2 pr-2
+      border border-gray-200 
+      rounded-2xl 
+      focus:outline-none focus:ring-2 focus:ring-[#E96D87] focus:border-transparent
+      transition 
+      ease-in-out duration-200
+    "
+              >
+                <option value="nombre">Nombre (A → Z)</option>
+                <option value="precio">Precio (menor → mayor)</option>
+                <option value="stock">Stock (mayor → menor)</option>
+              </select>
+            </div>
           </div>
           <CartMenu />
         </div>

@@ -45,115 +45,124 @@ export default function Register() {
   return (
     <>
       <MobileHeader />
-      <div className="h-screen flex flex-col items-center bg-[#F9E4CF] px-4 pt-16">
-        <form
-          onSubmit={handleSubmit(onSubmit)}
-          className="w-full max-w-md bg-white p-6 rounded-xl space-y-4"
-        >
-          <h2 className="text-2xl font-bold text-center text-[#67463B]">
-            Crear cuenta
-          </h2>
-
-          <div>
-            <label className="block text-sm font-medium text-[#67463B]">
-              Nombre completo
-            </label>
-            <Input
-              placeholder="Tu nombre"
-              {...register("name")}
-              className="mt-1"
-            />
-            {errors.name && (
-              <p className="text-red-500 text-sm mt-1">
-                {errors.name.message}
-              </p>
-            )}
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-[#67463B]">
-              Email
-            </label>
-            <Input
-              type="email"
-              placeholder="correo@ejemplo.com"
-              {...register("email")}
-              className="mt-1"
-            />
-            {errors.email && (
-              <p className="text-red-500 text-sm mt-1">
-                {errors.email.message}
-              </p>
-            )}
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-[#67463B]">
-              Contraseña
-            </label>
-            <div className="relative mt-1">
-              <Input
-                type={showPassword ? "text" : "password"}
-                placeholder="••••••••"
-                {...register("password")}
-                className="pr-10"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword((v) => !v)}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
-              >
-                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-              </button>
+    <div className="min-h-screen flex flex-col items-center bg-[#F9E4CF] px-4 pt-16">
+        <div className="w-full max-w-md">
+          <div className="bg-white rounded-3xl shadow-sm p-8">
+            <div className="text-center mb-8">
+              <h2 className="font-[Comic_Neue] text-2xl font-bold text-[#67463B]">
+                Crear cuenta
+              </h2>
             </div>
-            {errors.password && (
-              <p className="text-red-500 text-sm mt-1">
-                {errors.password.message}
-              </p>
-            )}
-          </div>
 
-          <div>
-            <label className="block text-sm font-medium text-[#67463B]">
-              Confirmar contraseña
-            </label>
-            <div className="relative mt-1">
-              <Input
-                type={showConfirm ? "text" : "password"}
-                placeholder="••••••••"
-                {...register("confirmPassword")}
-                className="pr-10"
-              />
-              <button
-                type="button"
-                onClick={() => setShowConfirm((v) => !v)}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+              {/* Nombre */}
+              <div>
+                <label className="font-[Comic_Neue] block text-sm font-semibold text-[#67463B] mb-2">
+                  Nombre completo
+                </label>
+                <Input
+                  placeholder="Tu nombre"
+                  {...register("name")}
+                  className="font-[Comic_Neue] w-full px-4 py-3 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#E96D87] bg-gray-50"
+                />
+                {errors.name && (
+                  <p className="font-[Comic_Neue] text-red-500 text-sm mt-2 ml-1">
+                    {errors.name.message}
+                  </p>
+                )}
+              </div>
+
+              {/* Email */}
+              <div>
+                <label className="font-[Comic_Neue] block text-sm font-semibold text-[#67463B] mb-2">
+                  Email
+                </label>
+                <Input
+                  type="email"
+                  placeholder="correo@ejemplo.com"
+                  {...register("email")}
+                  className="font-[Comic_Neue] w-full px-4 py-3 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#E96D87] bg-gray-50"
+                />
+                {errors.email && (
+                  <p className="font-[Comic_Neue] text-red-500 text-sm mt-2 ml-1">
+                    {errors.email.message}
+                  </p>
+                )}
+              </div>
+
+              {/* Contraseña */}
+              <div>
+                <label className="font-[Comic_Neue] block text-sm font-semibold text-[#67463B] mb-2">
+                  Contraseña
+                </label>
+                <div className="relative">
+                  <Input
+                    type={showPassword ? "text" : "password"}
+                    placeholder="••••••••"
+                    {...register("password")}
+                    className="font-[Comic_Neue] w-full px-4 py-3 pr-11 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#E96D87] bg-gray-50"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((s) => !s)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-[#E96D87] transition-colors"
+                  >
+                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                  </button>
+                </div>
+                {errors.password && (
+                  <p className="font-[Comic_Neue] text-red-500 text-sm mt-2 ml-1">
+                    {errors.password.message}
+                  </p>
+                )}
+              </div>
+
+              {/* Confirmar Contraseña */}
+              <div>
+                <label className="font-[Comic_Neue] block text-sm font-semibold text-[#67463B] mb-2">
+                  Confirmar contraseña
+                </label>
+                <div className="relative">
+                  <Input
+                    type={showConfirm ? "text" : "password"}
+                    placeholder="••••••••"
+                    {...register("confirmPassword")}
+                    className="font-[Comic_Neue] w-full px-4 py-3 pr-11 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#E96D87] bg-gray-50"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirm((s) => !s)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-[#E96D87] transition-colors"
+                  >
+                    {showConfirm ? <EyeOff size={20} /> : <Eye size={20} />}
+                  </button>
+                </div>
+                {errors.confirmPassword && (
+                  <p className="font-[Comic_Neue] text-red-500 text-sm mt-2 ml-1">
+                    {errors.confirmPassword.message}
+                  </p>
+                )}
+              </div>
+
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                className="font-[Comic_Neue] font-semibold bg-[#E96D87] hover:bg-[#bb6678] text-white rounded-3xl w-full py-3"
               >
-                {showConfirm ? <EyeOff size={18} /> : <Eye size={18} />}
-              </button>
-            </div>
-            {errors.confirmPassword && (
-              <p className="text-red-500 text-sm mt-1">
-                {errors.confirmPassword.message}
-              </p>
-            )}
-          </div>
+                Registrarse
+              </Button>
 
-          <Button
-            type="submit"
-            disabled={isSubmitting}
-            className="w-full bg-[#E96D87] text-white"
-          >
-            Registrarse
-          </Button>
-
-          <div className="text-center text-sm">
-            ¿Ya tienes cuenta?{" "}
-            <Link to="/log-in" className="text-blue-500 hover:underline">
-              Inicia sesión
-            </Link>
+              <div className="text-center text-sm">
+                <p className="font-[Comic_Neue] text-[#67463B]">
+                  ¿Ya tienes cuenta?{" "}
+                  <Link to="/log-in" className="text-[#E96D87] hover:underline font-semibold">
+                    Inicia sesión
+                  </Link>
+                </p>
+              </div>
+            </form>
           </div>
-        </form>
+        </div>
       </div>
     </>
   );

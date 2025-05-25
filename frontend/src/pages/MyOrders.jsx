@@ -1,4 +1,3 @@
-// src/pages/MyOrders.jsx
 import { useEffect, useState } from "react";
 import { getUserOrdersRequest } from "../api/orders";
 import { Card, CardContent } from "../components/ui/card";
@@ -53,19 +52,37 @@ export default function MyOrders() {
     }
   };
 
-  // 1) convertimos a string siempre, para no romper
-  const capitalizeFirstLetter = (str = "") =>
-    str.length > 0
-      ? str.charAt(0).toUpperCase() + str.slice(1)
-      : "";
+  const capitalize = (str = "") =>
+    str ? str.charAt(0).toUpperCase() + str.slice(1) : "";
 
-  // Paginación
-  const indexOfLastOrder = currentPage * ordersPerPage;
-  const indexOfFirstOrder = indexOfLastOrder - ordersPerPage;
-  const currentOrders = orders.slice(indexOfFirstOrder, indexOfLastOrder);
+  const lastIdx = currentPage * ordersPerPage;
+  const firstIdx = lastIdx - ordersPerPage;
+  const currentOrders = orders.slice(firstIdx, lastIdx);
   const totalPages = Math.ceil(orders.length / ordersPerPage);
 
   if (loading) return <Spinner />;
+
+  if (!loading && orders.length === 0) {
+    return (
+      <>
+        <MobileHeader />
+        <div className="min-h-screen bg-[#F9E4CF] flex flex-col justify-center items-center text-center px-4">
+          <h2 className="font-[Comic_Neue] text-2xl font-bold text-[#67463B] mb-4">
+            ¡Aún no hiciste ningún pedido!
+          </h2>
+          <p className="font-[Comic_Neue] text-[#67463B] mb-6">
+            ¿Qué esperás para probar tu primer pastel delicioso? 🍰✨
+          </p>
+          <Button
+            className="bg-[#E96D87] hover:bg-[#d6627a] text-white font-[Comic_Neue] rounded-full px-6 py-2"
+            onClick={() => (window.location.href = "/catalogo")}
+          >
+            Ir al catálogo
+          </Button>
+        </div>
+      </>
+    );
+  }
 
   return (
     <>
@@ -74,84 +91,83 @@ export default function MyOrders() {
         <h2 className="font-[Comic_Neue] text-2xl font-bold mb-6 text-[#67463B] text-center">
           Mis pedidos
         </h2>
-        <div className="space-y-3 max-w-md mx-auto">
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
           {currentOrders.map((order, idx) => {
-            const friendlyNumber =
-              (currentPage - 1) * ordersPerPage + idx + 1;
+            const number = (currentPage - 1) * ordersPerPage + idx + 1;
             return (
               <Card
                 key={order.id}
-                className="bg-[#FFF7E9] border-none shadow-none rounded-xl"
+                className="bg-[#FFF7E9] border-none shadow-lg rounded-xl"
               >
-                <CardContent>
-                  <div className="flex justify-between items-center mb-1">
-                    <div className="font-[Comic_Neue] font-semibold text-[#67463B]">
-                      Pedido #{friendlyNumber}
-                    </div>
-                    <div className="font-[Comic_Neue] font-semibold text-[#67463B]">
-                      ${order.total}
-                    </div>
-                  </div>
-                  <div className="font-[Comic_Neue] text-base text-[#67463B] mb-2">
-                    Fecha: {new Date(order.createdAt).toLocaleDateString()}
-                  </div>
+                <CardContent className="space-y-2">
                   <div className="flex justify-between items-center">
-                    <div
+                    <span className="font-[Comic_Neue] font-semibold text-[#67463B]">
+                      Pedido #{number}
+                    </span>
+                    <span className="font-[Comic_Neue] font-semibold text-[#67463B]">
+                      ${order.total?.toFixed(2)}
+                    </span>
+                  </div>
+                  <p className="font-[Comic_Neue] text-[#67463B]">
+                    Fecha: {new Date(order.createdAt).toLocaleDateString()}
+                  </p>
+                  <div className="flex justify-between items-center">
+                    <span
                       className={`${getStatusColor(
                         order.estado
-                      )} px-3 py-1 rounded-full text-sm font-medium`}
+                      )} px-3 py-1 rounded-full text-sm font-[Comic_Neue]`}
                     >
-                      {capitalizeFirstLetter(order.estado)}
-                    </div>
-
+                      {capitalize(order.estado)}
+                    </span>
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
                         <Button
                           onClick={() => setSelected(order)}
-                          className="bg-[#E96D87] hover:bg-[#d6627a] text-white font-[Comic_Neue] font-semibold px-5 py-1 rounded-full"
+                          className="bg-[#E96D87] hover:bg-[#d6627a] text-white font-[Comic_Neue] font-semibold px-4 py-1 rounded-full"
                         >
                           Detalles
                         </Button>
                       </AlertDialogTrigger>
-
-                      <AlertDialogContent className="bg-[#FCF8EC] p-8 rounded-2xl max-w-lg w-full">
+                      <AlertDialogContent className="bg-[#FCF8EC] p-6 rounded-2xl max-w-md mx-auto">
                         <AlertDialogHeader className="mb-4">
-                          <AlertDialogTitle className="text-xl font-[Comic_Neue] font-bold text-[#67463B] mb-3 text-center">
-                            Detalles Pedido #{friendlyNumber}
+                          <AlertDialogTitle className="text-lg font-[Comic_Neue] font-bold text-[#67463B] mb-2 text-center">
+                            Detalles Pedido #{number}
                           </AlertDialogTitle>
-                          <AlertDialogDescription className="mb-4 font-[Comic_Neue] text-[#67463B] text-center">
-                            Aquí puedes ver la información completa de tu pedido.
+                          <AlertDialogDescription className="font-[Comic_Neue] text-[#67463B] text-center">
+                            Información completa de tu pedido.
                           </AlertDialogDescription>
                         </AlertDialogHeader>
 
-                        <div className="font-[Comic_Neue] text-[#67463B]">
-                          <p className="mb-2">
-                            <strong>Dirección:</strong> {selected?.direccionEnvio}
+                        <div className="font-[Comic_Neue] text-[#67463B] space-y-2">
+                          <p>
+                            <strong>Dirección:</strong>{" "}
+                            {selected?.direccionEnvio}
                           </p>
-                          <p className="mb-3">
-                            <strong>Método de pago:</strong>{" "}
-                            {capitalizeFirstLetter(selected?.metodoPago)}
+                          <p>
+                            <strong>Pago:</strong>{" "}
+                            {capitalize(selected?.metodoPago)}
                           </p>
-                          <ul className="mt-5 space-y-3">
+                          <ul className="mt-4 space-y-2">
                             {selected?.detalles.map((d) => (
                               <li
                                 key={d.productId}
-                                className="flex justify-between border-b border-gray-100 pb-2"
+                                className="flex justify-between border-b border-gray-200 pb-1"
                               >
+                                {d.productName} x{d.cantidad}
                                 <span>
-                                  {d.productName} x{d.cantidad}
+                                  ${(d.precioUnitario * d.cantidad).toFixed(2)}
                                 </span>
-                                <span>${d.precioUnitario * d.cantidad}</span>
                               </li>
                             ))}
                           </ul>
                         </div>
 
                         <AlertDialogFooter className="mt-6">
-                          <div className="flex justify-center w-full">
+                          <div className="flex justify-center">
                             <AlertDialogCancel
                               onClick={() => setSelected(null)}
-                              className="bg-[#E96D87] hover:bg-[#d6627a] text-white rounded-xl px-6 py-2 font-[Comic_Neue] font-semibold"
+                              className="bg-[#E96D87] hover:bg-[#d6627a] text-white rounded-full px-6 py-2 font-[Comic_Neue]"
                             >
                               Cerrar
                             </AlertDialogCancel>
@@ -164,28 +180,25 @@ export default function MyOrders() {
               </Card>
             );
           })}
-
-          {/* Paginación */}
-          {totalPages > 1 && (
-            <div className="flex justify-center mt-6 space-x-2">
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                (number) => (
-                  <button
-                    key={number}
-                    onClick={() => setCurrentPage(number)}
-                    className={`w-8 h-8 rounded-full flex items-center justify-center font-medium ${
-                      currentPage === number
-                        ? "bg-[#E96D87] text-white"
-                        : "bg-white text-[#67463B]"
-                    }`}
-                  >
-                    {number}
-                  </button>
-                )
-              )}
-            </div>
-          )}
         </div>
+
+        {totalPages > 1 && (
+          <div className="flex justify-center mt-8 space-x-3">
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((n) => (
+              <button
+                key={n}
+                onClick={() => setCurrentPage(n)}
+                className={`w-8 h-8 rounded-full flex items-center justify-center font-[Comic_Neue] ${
+                  currentPage === n
+                    ? "bg-[#E96D87] text-white"
+                    : "bg-white text-[#67463B]"
+                }`}
+              >
+                {n}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
     </>
   );

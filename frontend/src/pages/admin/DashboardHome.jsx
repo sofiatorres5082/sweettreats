@@ -1,4 +1,3 @@
-// src/pages/admin/DashboardHome.jsx
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "../../components/ui/card";
 import { Button } from "../../components/ui/button";
@@ -44,12 +43,12 @@ export default function DashboardHome() {
   ];
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="min-h-screen p-6 bg-gradient-to-b from-[#E96D87] to-[#F9A1B0]">
       <header className="text-center">
-        <h1 className="text-3xl font-[Comic_Neue] text-[#67463B]">
+        <h1 className="text-3xl text-white font-[Comic_Neue] text-[#67463B] mb-10">
           🛠️ Panel de Administración
         </h1>
-        <p className="mt-2 text-gray-600">
+        <p className="mt-2 mb-10 text-white font-[Nunito]">
           Accesos rápidos y estadísticas básicas
         </p>
       </header>

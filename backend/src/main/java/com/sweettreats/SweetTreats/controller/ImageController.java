@@ -1,6 +1,6 @@
 package com.sweettreats.SweetTreats.controller;
 
-import com.sweettreats.SweetTreats.service.CloudinaryService;
+import com.sweettreats.SweetTreats.service.CloudinaryServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -14,10 +14,10 @@ import org.springframework.web.multipart.MultipartFile;
 @RequestMapping("/api/images")
 public class ImageController {
 
-    private final CloudinaryService cloudinaryService;
+    private final CloudinaryServiceImpl cloudinaryServiceImpl;
 
-    public ImageController(CloudinaryService cloudinaryService) {
-        this.cloudinaryService = cloudinaryService;
+    public ImageController(CloudinaryServiceImpl cloudinaryServiceImpl) {
+        this.cloudinaryServiceImpl = cloudinaryServiceImpl;
     }
 
     @Operation(
@@ -31,7 +31,7 @@ public class ImageController {
             @Parameter(description = "Archivo de imagen (multipart/form-data)", required = true)
             @RequestParam("file") MultipartFile file
     ) {
-        String url = cloudinaryService.uploadFile(file);
+        String url = cloudinaryServiceImpl.uploadFile(file);
         return ResponseEntity.ok(url);
     }
 }

@@ -396,7 +396,6 @@ export default function ProductsAdmin() {
         </Button>
       </div>
 
-      {/* Modal Crear/Editar */}
       {(creating || editing) && (
         <AlertDialog open>
           <AlertDialogTrigger asChild>
@@ -504,7 +503,6 @@ export default function ProductsAdmin() {
                         </label>
                       )}
 
-                      {/* Input file */}
                       <input
                         type="file"
                         accept="image/jpeg,image/png,image/webp"

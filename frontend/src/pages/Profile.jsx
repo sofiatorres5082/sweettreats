@@ -12,13 +12,22 @@ import MobileHeader from "../components/MobileHeader";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import Spinner from "../components/Spinner";
+import {
+  AlertDialog,
+  AlertDialogTrigger,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from "../components/ui/alert-dialog";
+import { LogOut } from "lucide-react";
 
 const profileSchema = yup.object({
   name: yup.string().required("El nombre es obligatorio"),
-  email: yup
-    .string()
-    .email("Email inválido")
-    .required("El email es obligatorio"),
+  email: yup.string().email("Email inválido").required("El email es obligatorio"),
 });
 
 export default function Profile() {
@@ -27,29 +36,20 @@ export default function Profile() {
   const [isEditing, setEditing] = useState(false);
   const [orders, setOrders] = useState([]);
 
-  const {
-    control,
-    handleSubmit,
-    reset,
-    formState: { errors, isValid },
-  } = useForm({
+  const { control, handleSubmit, reset, formState: { errors, isValid } } = useForm({
     resolver: yupResolver(profileSchema),
     mode: "onBlur",
     defaultValues: { name: "", email: "" },
   });
 
-  // Prepara el formulario con los datos del usuario al entrar en edición
   useEffect(() => {
-    if (isEditing && user) {
-      reset({ name: user.name, email: user.email });
-    }
+    if (isEditing && user) reset({ name: user.name, email: user.email });
   }, [isEditing, user, reset]);
 
-  // Carga los 5 pedidos más recientes
   useEffect(() => {
     if (user) {
       getUserOrdersRequest()
-        .then((res) => {
+        .then(res => {
           const all = Array.isArray(res.data) ? res.data : res.data.content || [];
           setOrders(all.slice(0, 5));
         })
@@ -57,7 +57,7 @@ export default function Profile() {
     }
   }, [user]);
 
-  const onSubmit = async (data) => {
+  const onSubmit = async data => {
     try {
       const res = await updateProfileRequest(data);
       toast.success("Perfil actualizado");
@@ -68,161 +68,153 @@ export default function Profile() {
     }
   };
 
+  const handleConfirmLogout = () => {
+    logout();
+    toast.success('Sesión cerrada');
+    navigate('/');
+  };
+
   if (!user) return <Spinner />;
 
   return (
     <>
       <MobileHeader />
-      <div className="min-h-screen bg-[#F9E4CF] px-4 pt-16 pb-8 space-y-6">
-        <h2 className="font-[Comic_Neue] text-2xl font-bold text-[#67463B] text-center pt-4">
-          Mi perfil
-        </h2>
-
-        {/* Información Personal */}
-        <section className="max-w-md mx-auto bg-white p-6 rounded-xl">
-          <h3 className="font-[Comic_Neue] text-lg font-semibold text-[#67463B] mb-4">
-            Información personal
-          </h3>
-
-          {isEditing ? (
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-              {["name", "email"].map((field) => (
-                <div key={field} className="space-y-2">
-                  <label
-                    htmlFor={field}
-                    className="block font-[Comic_Neue] text-[#67463B]"
-                  >
-                    {field === "name" ? "Nombre:" : "Email:"}
-                  </label>
-                  <Controller
-                    name={field}
-                    control={control}
-                    render={({ field: f }) => (
-                      <Input {...f} id={field} className="w-full" />
+      <div className="bg-[#F9E4CF] min-h-screen py-8 px-4 font-[Comic_Neue]">
+        <div className="max-w-4xl mx-auto grid gap-8 md:grid-cols-2">
+          {/* Perfil + Opciones */}
+          <section className="bg-white rounded-xl p-6 shadow">
+            <h2 className="text-xl font-semibold text-[#67463B] mb-4 text-center">
+              Mi perfil
+            </h2>
+            {isEditing ? (
+              <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                {['name', 'email'].map(field => (
+                  <div key={field} className="space-y-1">
+                    <label htmlFor={field} className="block text-[#67463B]">
+                      {field === 'name' ? 'Nombre:' : 'Email:'}
+                    </label>
+                    <Controller
+                      name={field}
+                      control={control}
+                      render={({ field: f }) => (
+                        <Input {...f} id={field} className="w-full" />
+                      )}
+                    />
+                    {errors[field] && (
+                      <p className="text-red-600 text-sm">{errors[field].message}</p>
                     )}
-                  />
-                  {errors[field] && (
-                    <p className="text-red-600 text-sm">{errors[field].message}</p>
-                  )}
+                  </div>
+                ))}
+                <div className="flex justify-center gap-4 pt-4">
+                  <Button
+                    variant="outline"
+                    onClick={() => setEditing(false)}
+                    className="bg-gray-200 text-gray-700 hover:bg-gray-300 px-6 py-2 rounded-full"
+                  >
+                    Cancelar
+                  </Button>
+                  <Button
+                    type="submit"
+                    disabled={!isValid}
+                    className="bg-[#E96D87] text-white hover:bg-[#ff6680] px-6 py-2 rounded-full"
+                  >
+                    Guardar
+                  </Button>
                 </div>
-              ))}
-
-              <div className="flex justify-center gap-4 mt-4">
-                <Button
-                  variant="outline"
-                  onClick={() => setEditing(false)}
-                  className="bg-gray-200 text-gray-700 hover:bg-gray-300 font-medium rounded-full px-6 py-2"
-                >
-                  Cancelar
-                </Button>
-                <Button
-                  type="submit"
-                  disabled={!isValid}
-                  className="bg-[#FF6B85] hover:bg-[#E96D87] text-white font-medium rounded-full px-6 py-2"
-                >
-                  Guardar Cambios
-                </Button>
-              </div>
-            </form>
-          ) : (
-            <div className="space-y-4">
-              <div className="flex items-baseline">
-                <p className="w-24 font-[Comic_Neue] font-semibold text-[#67463B]">
-                  Nombre:
-                </p>
-                <p className="flex-1">{user.name}</p>
-              </div>
-              <div className="flex items-baseline">
-                <p className="w-24 font-[Comic_Neue] font-semibold text-[#67463B]">
-                  Email:
-                </p>
-                <p className="flex-1">{user.email}</p>
-              </div>
-              <div className="flex justify-center mt-4">
-                <Button
-                  className="bg-[#FF6B85] hover:bg-[#E96D87] text-white font-semibold font-[Comic_Neue] rounded-full px-6 py-2"
-                  onClick={() => setEditing(true)}
-                >
-                  Editar Perfil
-                </Button>
-              </div>
-            </div>
-          )}
-        </section>
-
-        {/* Historial de Pedidos */}
-        <section className="max-w-md mx-auto bg-white p-6 rounded-xl">
-          <h3 className="font-[Comic_Neue] text-lg font-semibold text-[#67463B] mb-4">
-            Historial de pedidos
-          </h3>
-
-          {orders.length > 0 ? (
-            <div className="space-y-3">
-              {orders.map((o, idx) => (
-                <div
-                  key={o.id}
-                  className="bg-[#FF6B85] text-white p-4 rounded-lg"
-                >
-                  <div className="flex justify-between items-center">
-                    <div>
-                      {/* Número amigable en lugar de ID */}
-                      <p className="font-[Comic_Neue] font-bold">
-                        Pedido #{idx + 1}
-                      </p>
-                      <p className="font-[Comic_Neue]">
-                        Fecha:{" "}
-                        {o.createdAt
-                          ? new Date(o.createdAt).toLocaleDateString()
-                          : ""}
-                      </p>
-                    </div>
-                    <p className="font-[Comic_Neue] text-lg">
-                      ${o.total ?? ""}
-                    </p>
+              </form>
+            ) : (
+              <>
+                <div className="space-y-2">
+                  <div className="flex">
+                    <span className="w-24 font-semibold text-[#67463B]">Nombre:</span>
+                    <span>{user.name}</span>
+                  </div>
+                  <div className="flex">
+                    <span className="w-24 font-semibold text-[#67463B]">Email:</span>
+                    <span>{user.email}</span>
                   </div>
                 </div>
-              ))}
+                <div className="flex flex-wrap justify-center gap-4 mt-4">
+                  <Button
+                    className="bg-[#E96D87] text-white hover:bg-[#ff6680] px-6 py-2 rounded-full"
+                    onClick={() => setEditing(true)}
+                  >
+                    Editar Perfil
+                  </Button>
+                  <Button
+                    onClick={() => navigate('/cambiar-contraseña')}
+                    className="bg-[#E96D87] text-white hover:bg-[#ff6680] px-6 py-2 rounded-full"
+                  >
+                    Cambiar Contraseña
+                  </Button>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        className="bg-[#E96D87] text-white hover:bg-[#ff6680] px-6 py-2 rounded-full flex items-center gap-2"
+                        variant=""
+                      >
+                        Cerrar Sesión
+                        <LogOut className="w-4 h-4" />
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent className="bg-[#F9E4CF] text-[#67463B] border-none">
+                      <AlertDialogHeader>
+                        <AlertDialogTitle className="text-lg text-center">
+                          ¿Cerrar sesión?
+                        </AlertDialogTitle>
+                        <AlertDialogDescription className="text-center">
+                          Esta acción cerrará tu sesión y te devolverá al inicio.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <div className="flex justify-center gap-4 w-full mt-4">
+                          <AlertDialogCancel className="rounded-full px-5 py-2 bg-white hover:bg-[#FDE0E7]">
+                            Cancelar
+                          </AlertDialogCancel>
+                          <AlertDialogAction
+                            className="rounded-full px-5 py-2 bg-[#E96D87] text-white hover:bg-[#D86E7A]"
+                            onClick={handleConfirmLogout}
+                          >
+                            Confirmar
+                          </AlertDialogAction>
+                        </div>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
+              </>
+            )}
+          </section>
+
+          {/* Últimos Pedidos */}
+          <section className="bg-white rounded-xl p-6 shadow">
+            <h2 className="text-xl font-semibold text-[#67463B] mb-4 text-center">
+              Últimos pedidos
+            </h2>
+            {orders.length > 0 ? (
+              <div className="space-y-3">
+                {orders.map((o, i) => (
+                  <div key={o.id} className="bg-[#E96D87] text-white p-4 rounded-lg">
+                    <div className="flex justify-between">
+                      <div>
+                        <p className="font-bold">Pedido #{i + 1}</p>
+                        <p>Fecha: {o.createdAt ? new Date(o.createdAt).toLocaleDateString() : ''}</p>
+                      </div>
+                      <p className="font-semibold">${o.total?.toFixed(2)}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-center text-[#67463B]">No tienes pedidos aún.</p>
+            )}
+            <div className="text-center pt-4">
+              <Link to="/mis-pedidos" className="text-[#67463B] underline">
+                Ver todos →
+              </Link>
             </div>
-          ) : (
-            <p className="font-[Comic_Neue] text-center text-[#67463B]">
-              No tienes pedidos aún.
-            </p>
-          )}
-
-          <div className="text-center mt-4">
-            <Link
-              to="/mis-pedidos"
-              className="inline-block text-[#67463B] font-medium font-[Comic_Neue]"
-            >
-              Ver todos mis pedidos →
-            </Link>
-          </div>
-        </section>
-
-        {/* Opciones */}
-        <section className="max-w-md mx-auto bg-white p-6 rounded-xl">
-          <h3 className="font-[Comic_Neue] text-lg font-semibold text-[#67463B] mb-4">
-            Opciones
-          </h3>
-          <div className="flex flex-wrap justify-center gap-3">
-            <Button
-              onClick={() => navigate("/cambiar-contraseña")}
-              className="bg-[#FF6B85] hover:bg-[#E96D87] font-[Comic_Neue] text-white font-medium rounded-full px-6 py-2"
-            >
-              Cambiar Contraseña
-            </Button>
-            <Button
-              onClick={() => {
-                logout();
-                toast.success("Sesión cerrada");
-                navigate("/");
-              }}
-              className="bg-[#FF6B85] hover:bg-[#E96D87] font-[Comic_Neue] text-white font-medium rounded-full px-6 py-2"
-            >
-              Cerrar Sesión
-            </Button>
-          </div>
-        </section>
+          </section>
+        </div>
       </div>
     </>
   );

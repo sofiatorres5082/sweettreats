@@ -2,12 +2,11 @@ package com.sweettreats.SweetTreats.controller;
 
 import com.sweettreats.SweetTreats.dto.*;
 import com.sweettreats.SweetTreats.model.ProductModel;
-import com.sweettreats.SweetTreats.service.ReportsService;
+import com.sweettreats.SweetTreats.service.ReportsServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,9 +16,9 @@ import java.util.List;
 @RequestMapping("/api/reports")
 public class ReportsController {
 
-    private final ReportsService svc;
+    private final ReportsServiceImpl svc;
 
-    public ReportsController(ReportsService s) {
+    public ReportsController(ReportsServiceImpl s) {
         this.svc = s;
     }
 

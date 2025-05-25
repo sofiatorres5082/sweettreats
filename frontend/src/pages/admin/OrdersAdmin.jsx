@@ -1,4 +1,3 @@
-// src/pages/admin/OrdersAdmin.jsx
 import { useEffect, useState } from "react";
 import {
   getAllOrdersRequest,

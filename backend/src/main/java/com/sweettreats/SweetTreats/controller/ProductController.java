@@ -1,7 +1,7 @@
 package com.sweettreats.SweetTreats.controller;
 
 import com.sweettreats.SweetTreats.model.ProductModel;
-import com.sweettreats.SweetTreats.service.ProductService;
+import com.sweettreats.SweetTreats.service.ProductServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -21,8 +21,8 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/products")
 public class ProductController {
-    private final ProductService service;
-    public ProductController(ProductService service) { this.service = service; }
+    private final ProductServiceImpl service;
+    public ProductController(ProductServiceImpl service) { this.service = service; }
 
     @Operation(
             summary     = "Listar productos",

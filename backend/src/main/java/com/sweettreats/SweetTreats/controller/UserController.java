@@ -2,7 +2,7 @@ package com.sweettreats.SweetTreats.controller;
 
 import com.sweettreats.SweetTreats.dto.UserResponse;
 import com.sweettreats.SweetTreats.dto.UserUpdateRequest;
-import com.sweettreats.SweetTreats.service.IUserService;
+import com.sweettreats.SweetTreats.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -21,9 +21,9 @@ import org.springframework.web.bind.annotation.*;
 @PreAuthorize("hasRole('ADMIN')")
 public class UserController {
 
-    private final IUserService userService;
+    private final UserService userService;
 
-    public UserController(IUserService userService) {
+    public UserController(UserService userService) {
         this.userService = userService;
     }
 

@@ -1,4 +1,3 @@
-// src/pages/admin/UsersAdmin.jsx
 import { useEffect, useState } from "react";
 import {
   getUsersRequest,
@@ -104,7 +103,6 @@ export default function UsersAdmin() {
 
   const openEdit = (user) => {
     setEditingUser(user);
-    // extrae solo los enums como strings
     const roleValues = user.roles.map((r) =>
       typeof r === "string" ? r : r.roleEnum
     );
@@ -196,7 +194,7 @@ export default function UsersAdmin() {
                     {new Date(u.updatedAt).toLocaleDateString()}
                   </TableCell>
                   <TableCell className="space-x-2">
-                    {/* editar */}
+
                     <AlertDialog open={editingUser?.id === u.id}>
                       <AlertDialogTrigger asChild>
                         <Button
@@ -305,7 +303,6 @@ export default function UsersAdmin() {
                       </AlertDialogContent>
                     </AlertDialog>
 
-                    {/* eliminar */}
                     <AlertDialog
                       open={deletingUser?.id === u.id}
                       onOpenChange={(open) => !open && setDeletingUser(null)}
@@ -353,7 +350,6 @@ export default function UsersAdmin() {
         </Table>
       </div>
 
-      {/* paginación */}
       <div className="flex justify-center items-center mt-4 space-x-4 text-white font-[Nunito] text-base">
         <Button
           size="sm"

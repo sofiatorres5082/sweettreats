@@ -17,7 +17,7 @@ import {
 import { toast } from "sonner";
 
 export default function MobileMenu() {
-  const { isAuth, logout } = useAuth();
+  const { isAuth, user, logout } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -27,6 +27,8 @@ export default function MobileMenu() {
     });
     navigate("/");
   };
+
+  const isAdmin = user?.roles?.some((r) => r.roleEnum === "ADMIN");
 
   return (
     <Sheet>
@@ -60,7 +62,16 @@ export default function MobileMenu() {
             Sobre nosotros
           </Link>
 
-          {isAuth && (
+          {isAuth && isAdmin && (
+            <Button
+              onClick={() => navigate("/dashboard")}
+              className="w-full text-center font-[Comic_Neue] font-semibold text-[#67463B] bg-[#FCF8EC] border rounded-3xl py-2.5 hover:bg-pink-100 transition"
+            >
+              Dashboard
+            </Button>
+          )}
+
+          {isAuth && !isAdmin && (
             <>
               <Link
                 to="/perfil"
@@ -100,15 +111,15 @@ export default function MobileMenu() {
               </AlertDialogTrigger>
               <AlertDialogContent className="bg-[#FCF8EC] text-[#67463B] border-[#D9B9A1]">
                 <AlertDialogHeader>
-                  <AlertDialogTitle className="text-lg">
+                  <AlertDialogTitle className="text-lg text-center">
                     ¿Cerrar sesión?
                   </AlertDialogTitle>
-                  <AlertDialogDescription>
+                  <AlertDialogDescription className="text-center">
                     Esta acción cerrará tu sesión y te devolverá al inicio.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
-                <AlertDialogFooter className="flex justify-center">
-                  <div className="flex gap-5">
+                <AlertDialogFooter>
+                  <div className="flex justify-center gap-5 w-full">
                     <AlertDialogCancel className="rounded-xl bg-white border hover:bg-pink-100">
                       Cancelar
                     </AlertDialogCancel>

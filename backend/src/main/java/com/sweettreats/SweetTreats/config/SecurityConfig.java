@@ -1,7 +1,6 @@
 package com.sweettreats.SweetTreats.config;
 
 import com.sweettreats.SweetTreats.config.filter.JwtTokenValidator;
-import com.sweettreats.SweetTreats.service.CustomUserDetailsService;
 import com.sweettreats.SweetTreats.util.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;

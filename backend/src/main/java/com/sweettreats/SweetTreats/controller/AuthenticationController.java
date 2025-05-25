@@ -3,8 +3,8 @@ package com.sweettreats.SweetTreats.controller;
 import com.sweettreats.SweetTreats.dto.*;
 import com.sweettreats.SweetTreats.model.UserModel;
 import com.sweettreats.SweetTreats.repository.UserRepository;
-import com.sweettreats.SweetTreats.service.CustomUserDetailsService;
-import com.sweettreats.SweetTreats.service.UserService;
+import com.sweettreats.SweetTreats.service.CustomUserDetailsServiceImpl;
+import com.sweettreats.SweetTreats.service.UserServiceImpl;
 import com.sweettreats.SweetTreats.util.JwtUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -36,7 +36,7 @@ import java.util.stream.Collectors;
 public class AuthenticationController {
 
     @Autowired
-    private CustomUserDetailsService userDetailService;
+    private CustomUserDetailsServiceImpl userDetailService;
 
     @Autowired
     private UserRepository userRepository;
@@ -45,7 +45,7 @@ public class AuthenticationController {
     private JwtUtil jwtUtil;
 
     @Autowired
-    private UserService userService;
+    private UserServiceImpl userServiceImpl;
 
     @Operation(summary = "Registrar nuevo usuario",
             description = "Crea un usuario y devuelve un JWT en cookie HTTP-only")
@@ -161,7 +161,7 @@ public class AuthenticationController {
         UserModel me = userRepository.findUserModelByEmail(authentication.getName())
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-        UserResponse updated = userService.updateProfile(me.getId(), req);
+        UserResponse updated = userServiceImpl.updateProfile(me.getId(), req);
 
         List<SimpleGrantedAuthority> authorities = authentication.getAuthorities().stream()
                 .map(a -> new SimpleGrantedAuthority(a.getAuthority()))
@@ -195,7 +195,7 @@ public class AuthenticationController {
         try {
             UserModel me = userRepository.findUserModelByEmail(authentication.getName())
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado"));
-            userService.changePassword(me.getId(), req);
+            userServiceImpl.changePassword(me.getId(), req);
             return ResponseEntity.ok(Map.of("message", "Contraseña cambiada correctamente"));
         } catch (ResponseStatusException ex) {
             return ResponseEntity

@@ -69,7 +69,6 @@ function CheckoutForm() {
       return navigate("/log-in");
     }
 
-    // si ya completé el pedido, no vuelvas a redirigir
     if (orderDone) return;
 
     const hasValidProducts = cart.some((i) => i.precio > 0 && i.cantidad > 0);

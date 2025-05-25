@@ -6,7 +6,7 @@ import com.sweettreats.SweetTreats.model.OrderEnum;
 import com.sweettreats.SweetTreats.model.UserModel;
 import com.sweettreats.SweetTreats.repository.OrderRepository;
 import com.sweettreats.SweetTreats.repository.UserRepository;
-import com.sweettreats.SweetTreats.service.OrderService;
+import com.sweettreats.SweetTreats.service.OrderServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -28,11 +28,11 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/orders")
 public class OrderController {
-    private final OrderService orderService;
+    private final OrderServiceImpl orderService;
     private final UserRepository userRepository;
     private final OrderRepository orderRepository;
 
-    public OrderController(OrderService orderService,
+    public OrderController(OrderServiceImpl orderService,
                            UserRepository userRepository,
                            OrderRepository orderRepository) {
         this.orderService   = orderService;
