@@ -194,7 +194,6 @@ export default function UsersAdmin() {
                     {new Date(u.updatedAt).toLocaleDateString()}
                   </TableCell>
                   <TableCell className="space-x-2">
-
                     <AlertDialog open={editingUser?.id === u.id}>
                       <AlertDialogTrigger asChild>
                         <Button
@@ -350,9 +349,10 @@ export default function UsersAdmin() {
         </Table>
       </div>
 
-      <div className="flex justify-center items-center mt-4 space-x-4 text-white font-[Nunito] text-base">
+      <div className="flex justify-center items-center mt-4 space-x-4 text-white font-[Nunito] text-base ">
         <Button
           size="sm"
+          className="cursor-pointer"
           disabled={page === 0}
           onClick={() => fetchUsers(page - 1)}
         >
@@ -363,6 +363,7 @@ export default function UsersAdmin() {
         </span>
         <Button
           size="sm"
+          className="cursor-pointer"
           disabled={page + 1 === totalPages}
           onClick={() => fetchUsers(page + 1)}
         >

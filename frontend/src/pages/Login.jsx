@@ -16,7 +16,7 @@ export default function Login() {
   const from = location.state?.from || "/";
 
   const [showPassword, setShowPassword] = useState(false);
-  const [serverError, setServerError] = useState(""); 
+  const [serverError, setServerError] = useState("");
 
   const {
     register,
@@ -30,22 +30,14 @@ export default function Login() {
   const onSubmit = async (data) => {
     setServerError("");
     try {
-      const user = await login(
-        { email: data.email, password: data.password },
-        { withCredentials: true }
-      );
-
-      if (user?.data?.roles?.some((r) => r.roleEnum === "ADMIN")) {
-        navigate("/dashboard");
-      } else {
-        navigate(from);
-      }
+      await login({ email: data.email, password: data.password });
+      navigate(from, { replace: true });
     } catch (err) {
+      // muestra el error bajo el formulario
       const msg =
-        typeof err?.response?.data === "string"
-          ? err.response.data
-          : err?.response?.data?.message || "Credenciales inválidas";
-
+        err.response?.status === 401
+          ? "Credenciales inválidas"
+          : "Error al iniciar sesión";
       setServerError(msg);
     }
   };
@@ -127,6 +119,7 @@ export default function Login() {
                   ¿No tienes cuenta?{" "}
                   <Link
                     to="/sign-up"
+                    state={{ from }}
                     className="text-[#E96D87] hover:underline font-semibold"
                   >
                     Regístrate

@@ -146,7 +146,7 @@ function CheckoutForm() {
             <h2 className="text-[#67463B] font-[Comic_Neue] text-2xl mb-4">
               Datos de Envío
             </h2>
-            {["nombre", "direccion", "telefono", "email"].map((field) => (
+            {["nombre", "direccion", "telefono"].map((field) => (
               <div key={field} className="mb-4">
                 <label htmlFor={field} className="block mb-1 capitalize">
                   {field}

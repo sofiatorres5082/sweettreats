@@ -272,6 +272,7 @@ export default function OrdersAdmin() {
       <div className="flex justify-center items-center mt-4 space-x-4 text-white">
         <Button
           size="sm"
+          className="cursor-pointer"
           disabled={page === 0}
           onClick={() => fetchOrders(page - 1)}
         >
@@ -282,6 +283,7 @@ export default function OrdersAdmin() {
         </span>
         <Button
           size="sm"
+          className="cursor-pointer"
           disabled={page + 1 === totalPages}
           onClick={() => fetchOrders(page + 1)}
         >

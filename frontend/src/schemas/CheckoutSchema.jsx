@@ -10,11 +10,6 @@ export const checkoutSchema = yup.object({
     .matches(/^\d{7,15}$/, "Teléfono inválido (7 a 15 dígitos)")
     .required("El teléfono es obligatorio"),
 
-  email: yup
-    .string()
-    .email("Email inválido")
-    .required("El email es obligatorio"),
-
   tipoTarjeta: yup
     .string()
     .oneOf(["visa", "mastercard"], "Selecciona Visa o Mastercard")

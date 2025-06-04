@@ -8,8 +8,12 @@ export const loginSchema = yup.object({
   password: yup.string().required("La contraseña es obligatoria"),
 });
 
+
 export const registerSchema = yup.object({
-  name: yup.string().required("El nombre es obligatorio"),
+  name: yup
+    .string()
+    .required("El nombre es obligatorio")
+    .matches(/^[A-Za-zÀ-ÿ ]+$/, "Solo letras y espacios"),
   email: yup
     .string()
     .email("Email inválido")

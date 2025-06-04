@@ -1,4 +1,3 @@
-// src/pages/Profile.jsx
 import { useEffect, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -26,8 +25,14 @@ import {
 import { LogOut } from "lucide-react";
 
 const profileSchema = yup.object({
-  name: yup.string().required("El nombre es obligatorio"),
-  email: yup.string().email("Email inválido").required("El email es obligatorio"),
+  name: yup
+    .string()
+    .required("El nombre es obligatorio")
+    .matches(/^[A-Za-zÀ-ÿ ]+$/, "Solo letras y espacios"),
+  email: yup
+    .string()
+    .email("Email inválido")
+    .required("El email es obligatorio"),
 });
 
 export default function Profile() {
@@ -36,7 +41,13 @@ export default function Profile() {
   const [isEditing, setEditing] = useState(false);
   const [orders, setOrders] = useState([]);
 
-  const { control, handleSubmit, reset, formState: { errors, isValid } } = useForm({
+  const {
+    control,
+    handleSubmit,
+    reset,
+    setError,
+    formState: { errors, isValid },
+  } = useForm({
     resolver: yupResolver(profileSchema),
     mode: "onBlur",
     defaultValues: { name: "", email: "" },
@@ -49,29 +60,35 @@ export default function Profile() {
   useEffect(() => {
     if (user) {
       getUserOrdersRequest()
-        .then(res => {
-          const all = Array.isArray(res.data) ? res.data : res.data.content || [];
+        .then((res) => {
+          const all = Array.isArray(res.data)
+            ? res.data
+            : res.data.content || [];
           setOrders(all.slice(0, 5));
         })
         .catch(() => toast.error("No se pudieron cargar tus pedidos"));
     }
   }, [user]);
 
-  const onSubmit = async data => {
+  const onSubmit = async (data) => {
     try {
       const res = await updateProfileRequest(data);
       toast.success("Perfil actualizado");
       setUser(res.data);
       setEditing(false);
-    } catch {
-      toast.error("Error al actualizar perfil");
+    } catch (err) {
+      if (err.response?.status === 409) {
+        setError("email", { type: "server", message: "El correo ya está en uso" });
+      } else {
+        toast.error("Error al actualizar perfil");
+      }
     }
   };
 
   const handleConfirmLogout = () => {
     logout();
-    toast.success('Sesión cerrada');
-    navigate('/');
+    toast.success("Sesión cerrada");
+    navigate("/");
   };
 
   if (!user) return <Spinner />;
@@ -88,9 +105,9 @@ export default function Profile() {
             </h2>
             {isEditing ? (
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-                {['name', 'email'].map(field => (
+                {['name', 'email'].map((field) => (
                   <div key={field} className="space-y-1">
-                    <label htmlFor={field} className="block text-[#67463B]">
+                    <label htmlFor={field} className="block text-[#67463B] capitalize">
                       {field === 'name' ? 'Nombre:' : 'Email:'}
                     </label>
                     <Controller
@@ -142,7 +159,7 @@ export default function Profile() {
                     Editar Perfil
                   </Button>
                   <Button
-                    onClick={() => navigate('/cambiar-contraseña')}
+                    onClick={() => navigate("/cambiar-contraseña")}
                     className="bg-[#E96D87] text-white hover:bg-[#ff6680] px-6 py-2 rounded-full"
                   >
                     Cambiar Contraseña
@@ -151,7 +168,7 @@ export default function Profile() {
                     <AlertDialogTrigger asChild>
                       <Button
                         className="bg-[#E96D87] text-white hover:bg-[#ff6680] px-6 py-2 rounded-full flex items-center gap-2"
-                        variant=""
+                      variant=""
                       >
                         Cerrar Sesión
                         <LogOut className="w-4 h-4" />
@@ -198,7 +215,12 @@ export default function Profile() {
                     <div className="flex justify-between">
                       <div>
                         <p className="font-bold">Pedido #{i + 1}</p>
-                        <p>Fecha: {o.createdAt ? new Date(o.createdAt).toLocaleDateString() : ''}</p>
+                        <p>
+                          Fecha: 
+                          {o.createdAt
+                            ? new Date(o.createdAt).toLocaleDateString()
+                            : ""}
+                        </p>
                       </div>
                       <p className="font-semibold">${o.total?.toFixed(2)}</p>
                     </div>

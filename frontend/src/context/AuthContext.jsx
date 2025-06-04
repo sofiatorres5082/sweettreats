@@ -1,5 +1,10 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { loginRequest, registerRequest, checkAuthRequest, logoutRequest } from "../api/auth";
+import {
+  loginRequest,
+  registerRequest,
+  checkAuthRequest,
+  logoutRequest,
+} from "../api/auth";
 
 export const AuthContext = createContext();
 
@@ -32,7 +37,14 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (userData) => {
     try {
+      // Creamos el usuario
       const res = await registerRequest(userData);
+      // Autenticación automática: iniciamos sesión con las mismas credenciales
+      await loginRequest({ email: userData.email, password: userData.password });
+      // Verificamos estado de sesión
+      const authRes = await checkAuthRequest();
+      setUser(authRes.data);
+      setIsAuth(true);
       return res;
     } catch (err) {
       setErrors(err.response?.data?.message || "Error al registrarse");

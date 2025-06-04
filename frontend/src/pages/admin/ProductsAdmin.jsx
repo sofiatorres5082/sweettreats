@@ -59,7 +59,7 @@ export default function ProductsAdmin() {
   const [deletingId, setDeletingId] = useState(null);
   const [currentImageUrl, setCurrentImageUrl] = useState(null);
   const [keepExistingImage, setKeepExistingImage] = useState(true);
-  const [previewUrl, setPreviewUrl] = useState(null); 
+  const [previewUrl, setPreviewUrl] = useState(null);
 
   const {
     control,
@@ -295,7 +295,7 @@ export default function ProductsAdmin() {
                         src={`${API_URL}${p.imagen}`}
                         alt={p.nombre}
                         className="w-20 h-20"
-                        loading="lazy" 
+                        loading="lazy"
                       />
                     ) : (
                       <span className="text-gray-500">Sin imagen</span>
@@ -381,7 +381,12 @@ export default function ProductsAdmin() {
       </div>
 
       <div className="flex justify-center items-center mt-4 space-x-4 text-white font-[Nunito] text-base">
-        <Button size="sm" disabled={page === 0} onClick={() => fetch(page - 1)}>
+        <Button
+          size="sm"
+          className="cursor-pointer"
+          disabled={page === 0}
+          onClick={() => fetch(page - 1)}
+        >
           ← Anterior
         </Button>
         <span>
@@ -389,6 +394,7 @@ export default function ProductsAdmin() {
         </span>
         <Button
           size="sm"
+          className="cursor-pointer"
           disabled={page + 1 === totalPages}
           onClick={() => fetch(page + 1)}
         >

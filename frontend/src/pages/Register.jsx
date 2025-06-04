@@ -6,12 +6,15 @@ import { useAuth } from "../context/AuthContext";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Eye, EyeOff } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import MobileHeader from "@/components/MobileHeader";
+import { toast } from "sonner";
 
 export default function Register() {
   const { register: signup } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const from = location.state?.from || "/";
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -19,6 +22,8 @@ export default function Register() {
   const {
     register,
     handleSubmit,
+    setError,
+    clearErrors,
     formState: { errors, isSubmitting },
   } = useForm({
     resolver: yupResolver(registerSchema),
@@ -26,34 +31,48 @@ export default function Register() {
   });
 
   const onSubmit = async (data) => {
+    // Limpio viejos errores de email
+    clearErrors("email");
+
     try {
+      // Validación de confirmPassword (gestión extra aunque Yup ya valida)
+      if (data.password !== data.confirmPassword) {
+        setError("confirmPassword", {
+          type: "validate",
+          message: "Las contraseñas no coinciden",
+        });
+        return;
+      }
+
       await signup({
         name: data.name,
         email: data.email,
         password: data.password,
       });
-      navigate("/log-in");
+
+      toast.success("Registro exitoso, por favor inicia sesión");
+      navigate("/log-in", { state: { from }, replace: true });
     } catch (err) {
-      alert(
-        err.response?.status === 409
-          ? "El correo ya está en uso"
-          : "Error al registrarse"
-      );
+      if (err.response?.status === 409) {
+        setError("email", {
+          type: "server",
+          message: "El correo ya está en uso",
+        });
+      } else {
+        toast.error("Error al registrarse");
+      }
     }
   };
 
   return (
     <>
       <MobileHeader />
-    <div className="min-h-screen flex flex-col items-center bg-[#F9E4CF] px-4 pt-16">
+      <div className="min-h-screen flex flex-col items-center bg-[#F9E4CF] px-4 pt-16 pb-16">
         <div className="w-full max-w-md">
           <div className="bg-white rounded-3xl shadow-sm p-8">
-            <div className="text-center mb-8">
-              <h2 className="font-[Comic_Neue] text-2xl font-bold text-[#67463B]">
-                Crear cuenta
-              </h2>
-            </div>
-
+            <h2 className="text-center font-[Comic_Neue] text-2xl font-bold text-[#67463B] mb-8">
+              Crear cuenta
+            </h2>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
               {/* Nombre */}
               <div>
@@ -61,8 +80,8 @@ export default function Register() {
                   Nombre completo
                 </label>
                 <Input
-                  placeholder="Tu nombre"
                   {...register("name")}
+                  placeholder="Tu nombre"
                   className="font-[Comic_Neue] w-full px-4 py-3 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#E96D87] bg-gray-50"
                 />
                 {errors.name && (
@@ -78,9 +97,9 @@ export default function Register() {
                   Email
                 </label>
                 <Input
+                  {...register("email")}
                   type="email"
                   placeholder="correo@ejemplo.com"
-                  {...register("email")}
                   className="font-[Comic_Neue] w-full px-4 py-3 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#E96D87] bg-gray-50"
                 />
                 {errors.email && (
@@ -97,14 +116,14 @@ export default function Register() {
                 </label>
                 <div className="relative">
                   <Input
+                    {...register("password")}
                     type={showPassword ? "text" : "password"}
                     placeholder="••••••••"
-                    {...register("password")}
                     className="font-[Comic_Neue] w-full px-4 py-3 pr-11 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#E96D87] bg-gray-50"
                   />
                   <button
                     type="button"
-                    onClick={() => setShowPassword((s) => !s)}
+                    onClick={() => setShowPassword((v) => !v)}
                     className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-[#E96D87] transition-colors"
                   >
                     {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
@@ -124,14 +143,14 @@ export default function Register() {
                 </label>
                 <div className="relative">
                   <Input
+                    {...register("confirmPassword")}
                     type={showConfirm ? "text" : "password"}
                     placeholder="••••••••"
-                    {...register("confirmPassword")}
                     className="font-[Comic_Neue] w-full px-4 py-3 pr-11 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#E96D87] bg-gray-50"
                   />
                   <button
                     type="button"
-                    onClick={() => setShowConfirm((s) => !s)}
+                    onClick={() => setShowConfirm((v) => !v)}
                     className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-[#E96D87] transition-colors"
                   >
                     {showConfirm ? <EyeOff size={20} /> : <Eye size={20} />}
@@ -154,8 +173,12 @@ export default function Register() {
 
               <div className="text-center text-sm">
                 <p className="font-[Comic_Neue] text-[#67463B]">
-                  ¿Ya tienes cuenta?{" "}
-                  <Link to="/log-in" className="text-[#E96D87] hover:underline font-semibold">
+                  ¿Ya tienes cuenta?{' '}
+                  <Link
+                    to="/log-in"
+                    state={{ from }}
+                    className="text-[#E96D87] hover:underline font-semibold"
+                  >
                     Inicia sesión
                   </Link>
                 </p>
