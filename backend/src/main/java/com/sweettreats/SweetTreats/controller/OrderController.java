@@ -93,6 +93,22 @@ public class OrderController {
         return ResponseEntity.status(HttpStatus.CREATED).body(resp);
     }
 
+    @Operation(summary = "Cancelar pedido (usuario)", description = "Permite que el dueño cancele su pedido si está PENDIENTE")
+    @ApiResponse(responseCode = "200", description = "Pedido cancelado")
+    @ApiResponse(responseCode = "403", description = "No autorizado o no es tu pedido")
+    @ApiResponse(responseCode = "400", description = "No está en estado PENDIENTE")
+    @PutMapping("/{id}/cancel")
+    public ResponseEntity<OrderResponse> cancelOrderByUser(
+            @PathVariable Long id,
+            Authentication auth
+    ) {
+        UserModel user = userRepository.findUserModelByEmail(auth.getName())
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.UNAUTHORIZED, "Usuario no encontrado"));
+        OrderResponse canceled = orderService.cancelOrderByUser(id, user);
+        return ResponseEntity.ok(canceled);
+    }
+
     // ————————————— Admin sólo (paginado list) —————————————
 
     @Operation(
@@ -141,5 +157,6 @@ public class OrderController {
                 id, OrderEnum.valueOf(newState));
         return ResponseEntity.ok(updated);
     }
+
 
 }

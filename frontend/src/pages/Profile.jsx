@@ -98,9 +98,8 @@ export default function Profile() {
       <MobileHeader />
       <div className="bg-[#F9E4CF] min-h-screen py-8 px-4 font-[Comic_Neue]">
         <div className="max-w-4xl mx-auto grid gap-8 md:grid-cols-2">
-          {/* Perfil + Opciones */}
           <section className="bg-white rounded-xl p-6 shadow">
-            <h2 className="text-xl font-semibold text-[#67463B] mb-4 text-center">
+            <h2 className="text-xl font-semibold text-[#67463B] mb-6 text-center">
               Mi perfil
             </h2>
             {isEditing ? (
@@ -126,14 +125,14 @@ export default function Profile() {
                   <Button
                     variant="outline"
                     onClick={() => setEditing(false)}
-                    className="bg-gray-200 text-gray-700 hover:bg-gray-300 px-6 py-2 rounded-full"
+                    className="bg-gray-200 text-gray-700 hover:bg-gray-300 px-6 py-2 rounded-full cursor-pointer"
                   >
                     Cancelar
                   </Button>
                   <Button
                     type="submit"
                     disabled={!isValid}
-                    className="bg-[#E96D87] text-white hover:bg-[#ff6680] px-6 py-2 rounded-full"
+                    className="bg-[#E96D87] text-white hover:bg-[#ff6680] px-6 py-2 rounded-full cursor-pointer"
                   >
                     Guardar
                   </Button>
@@ -141,7 +140,7 @@ export default function Profile() {
               </form>
             ) : (
               <>
-                <div className="space-y-2">
+                <div className="space-y-4 mb-8">
                   <div className="flex">
                     <span className="w-24 font-semibold text-[#67463B]">Nombre:</span>
                     <span>{user.name}</span>
@@ -151,59 +150,67 @@ export default function Profile() {
                     <span>{user.email}</span>
                   </div>
                 </div>
-                <div className="flex flex-wrap justify-center gap-4 mt-4">
-                  <Button
-                    className="bg-[#E96D87] text-white hover:bg-[#ff6680] px-6 py-2 rounded-full"
-                    onClick={() => setEditing(true)}
-                  >
-                    Editar Perfil
-                  </Button>
-                  <Button
-                    onClick={() => navigate("/cambiar-contraseña")}
-                    className="bg-[#E96D87] text-white hover:bg-[#ff6680] px-6 py-2 rounded-full"
-                  >
-                    Cambiar Contraseña
-                  </Button>
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button
-                        className="bg-[#E96D87] text-white hover:bg-[#ff6680] px-6 py-2 rounded-full flex items-center gap-2"
-                      variant=""
-                      >
-                        Cerrar Sesión
-                        <LogOut className="w-4 h-4" />
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent className="bg-[#F9E4CF] text-[#67463B] border-none">
-                      <AlertDialogHeader>
-                        <AlertDialogTitle className="text-lg text-center">
-                          ¿Cerrar sesión?
-                        </AlertDialogTitle>
-                        <AlertDialogDescription className="text-center">
-                          Esta acción cerrará tu sesión y te devolverá al inicio.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <div className="flex justify-center gap-4 w-full mt-4">
-                          <AlertDialogCancel className="rounded-full px-5 py-2 bg-white hover:bg-[#FDE0E7]">
-                            Cancelar
-                          </AlertDialogCancel>
-                          <AlertDialogAction
-                            className="rounded-full px-5 py-2 bg-[#E96D87] text-white hover:bg-[#D86E7A]"
-                            onClick={handleConfirmLogout}
-                          >
-                            Confirmar
-                          </AlertDialogAction>
-                        </div>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
+                
+                <div className="space-y-4">
+                  <div className="flex justify-center">
+                    <Button
+                      className="bg-[#E96D87] text-white hover:bg-[#ff6680] px-8 py-2 rounded-full cursor-pointer w-full max-w-xs"
+                      onClick={() => setEditing(true)}
+                    >
+                      Editar Perfil
+                    </Button>
+                  </div>
+                  
+                  <div className="flex justify-center">
+                    <Button
+                      onClick={() => navigate("/cambiar-contraseña")}
+                      className="bg-[#E96D87] text-white hover:bg-[#ff6680] px-8 py-2 rounded-full cursor-pointer w-full max-w-xs"
+                    >
+                      Cambiar Contraseña
+                    </Button>
+                  </div>
+                  
+                  <div className="flex justify-center pt-2">
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          className="bg-[#E96D87] text-white hover:bg-[#ff6680] px-8 py-2 rounded-full flex items-center justify-center gap-2 cursor-pointer w-full max-w-xs"
+                          variant=""
+                        >
+                          Cerrar Sesión
+                          <LogOut className="w-4 h-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent className="bg-[#F9E4CF] text-[#67463B] border-none">
+                        <AlertDialogHeader>
+                          <AlertDialogTitle className="text-lg text-center">
+                            ¿Cerrar sesión?
+                          </AlertDialogTitle>
+                          <AlertDialogDescription className="text-center">
+                            Esta acción cerrará tu sesión y te devolverá al inicio.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <div className="flex justify-center gap-4 w-full mt-4">
+                            <AlertDialogCancel className="rounded-full px-5 py-2 bg-white hover:bg-[#FDE0E7] cursor-pointer">
+                              Cancelar
+                            </AlertDialogCancel>
+                            <AlertDialogAction
+                              className="rounded-full px-5 py-2 bg-[#E96D87] text-white hover:bg-[#D86E7A] cursor-pointer"
+                              onClick={handleConfirmLogout}
+                            >
+                              Confirmar
+                            </AlertDialogAction>
+                          </div>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
                 </div>
               </>
             )}
           </section>
 
-          {/* Últimos Pedidos */}
           <section className="bg-white rounded-xl p-6 shadow">
             <h2 className="text-xl font-semibold text-[#67463B] mb-4 text-center">
               Últimos pedidos

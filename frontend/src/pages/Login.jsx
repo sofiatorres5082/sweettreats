@@ -33,7 +33,6 @@ export default function Login() {
       await login({ email: data.email, password: data.password });
       navigate(from, { replace: true });
     } catch (err) {
-      // muestra el error bajo el formulario
       const msg =
         err.response?.status === 401
           ? "Credenciales inválidas"
@@ -61,6 +60,8 @@ export default function Login() {
                 </label>
                 <Input
                   type="email"
+                  name="email"
+                  autoComplete="username"
                   placeholder="correo@ejemplo.com"
                   {...register("email")}
                   className="font-[Comic_Neue] w-full px-4 py-3 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#E96D87] focus:border-transparent bg-gray-50"
@@ -80,13 +81,14 @@ export default function Login() {
                   <Input
                     type={showPassword ? "text" : "password"}
                     placeholder="••••••••"
+                    autoComplete="current-password"
                     {...register("password")}
                     className="font-[Comic_Neue] w-full px-4 py-3 pr-11 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-[#E96D87] focus:border-transparent bg-gray-50"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword((v) => !v)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-[#E96D87] transition-colors"
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-[#E96D87] transition-colors cursor-pointer"
                   >
                     {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                   </button>
@@ -109,7 +111,7 @@ export default function Login() {
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="font-[Comic_Neue] font-semibold bg-[#E96D87] hover:bg-[#bb6678] text-white rounded-3xl w-full py-3"
+                className="font-[Comic_Neue] cursor-pointer font-semibold bg-[#E96D87] hover:bg-[#bb6678] text-white rounded-3xl w-full py-3"
               >
                 Entrar
               </Button>

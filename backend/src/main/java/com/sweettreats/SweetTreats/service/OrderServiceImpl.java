@@ -200,6 +200,27 @@ public class OrderServiceImpl implements OrderService {
         return mapToResponse(saved);
     }
 
+    @Transactional
+    public OrderResponse cancelOrderByUser(Long orderId, UserModel user) {
+        OrderModel order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Pedido no encontrado"));
+
+        // Sólo el dueño puede cancelar
+        if (!order.getUsermodel().getId().equals(user.getId())) {
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN, "No puedes cancelar este pedido");
+        }
+        // Sólo si está PENDIENTE
+        if (order.getEstado() != OrderEnum.PENDIENTE) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST, "Solo se puede cancelar un pedido en estado PENDIENTE");
+        }
+
+        order.setEstado(OrderEnum.CANCELADO);
+        OrderModel saved = orderRepository.save(order);
+        return mapToResponse(saved);
+    }
 
     public OrderResponse obtenerPedidoAdminPorId(Long id) {
         OrderModel order = orderRepository.findById(id)

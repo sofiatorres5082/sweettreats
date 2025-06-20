@@ -114,7 +114,7 @@ export default function ChangePassword() {
                     <button
                       type="button"
                       onClick={toggle}
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-[#E96D87] transition-colors"
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-[#E96D87] transition-colors cursor-pointer"
                     >
                       {show ? <EyeOff size={20} /> : <Eye size={20} />}
                     </button>
@@ -131,14 +131,14 @@ export default function ChangePassword() {
                 <Button
                   variant="outline"
                   onClick={() => navigate("/perfil")}
-                  className="font-[Comic_Neue] rounded-3xl bg-gray-200 text-gray-700 hover:bg-gray-300 px-6 py-2"
+                  className="font-[Comic_Neue] rounded-3xl bg-gray-200 text-gray-700 hover:bg-gray-300 px-6 py-2 cursor-pointer"
                 >
                   Cancelar
                 </Button>
                 <Button
                   type="submit"
                   disabled={!isValid}
-                  className="font-[Comic_Neue] bg-[#E96D87] hover:bg-[#d6627a] text-white rounded-3xl px-6 py-2"
+                  className="font-[Comic_Neue] bg-[#E96D87] hover:bg-[#d6627a] text-white rounded-3xl px-6 py-2 cursor-pointer"
                 >
                   Cambiar
                 </Button>

@@ -60,7 +60,8 @@ public class SecurityConfig {
                    // 🛒 PEDIDOS - solo usuarios autenticados con rol USER
                    http.requestMatchers(HttpMethod.POST, "/api/orders").authenticated();
                    http.requestMatchers(HttpMethod.GET, "/api/orders/**").authenticated();
-                   http.requestMatchers(HttpMethod.GET,  "/api/orders/{id:[0-9]+}").authenticated();
+                   http.requestMatchers(HttpMethod.GET, "/api/orders/{id:[0-9]+}").authenticated();
+                   http.requestMatchers(HttpMethod.PUT, "/api/orders/{id:[0-9]+}/cancel").authenticated();
 
                    // 📊 ADMINISTRACIÓN
                    http.requestMatchers(HttpMethod.GET, "/api/orders/admin/**").hasRole("ADMIN");

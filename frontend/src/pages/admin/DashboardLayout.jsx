@@ -1,21 +1,8 @@
 import React from "react";
 import { Outlet, Link, useNavigate, useLocation } from "react-router-dom";
-import { LogOut, Grid } from "lucide-react";
+import { ArrowLeft, Grid } from "lucide-react";
 import { Button } from "../../components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "../../components/ui/sheet";
-import {
-  AlertDialog,
-  AlertDialogTrigger,
-  AlertDialogContent,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogCancel,
-  AlertDialogAction,
-} from "../../components/ui/alert-dialog";
-import { useAuth } from "../../context/AuthContext";
-import { toast } from "sonner";
 
 const links = [
   { to: "/dashboard", label: "Resumen" },
@@ -26,15 +13,10 @@ const links = [
 ];
 
 export default function DashboardLayout() {
-  const { logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
-  const handleLogout = () => {
-    logout();
-    toast.success("Sesión cerrada", {
-      description: "Cerraste sesión exitosamente",
-    });
+  const handleBack = () => {
     navigate("/");
   };
 
@@ -67,41 +49,13 @@ export default function DashboardLayout() {
           ))}
         </nav>
         <div className="mt-auto pt-8">
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button
-                variant="outline"
-                className="w-full flex items-center justify-center gap-2 py-3"
-              >
-                <LogOut className="w-5 h-5" /> Cerrar Sesión
-              </Button>
-            </AlertDialogTrigger>
-
-            <AlertDialogContent className="bg-[#FCF8EC] text-[#67463B] border-none">
-              <AlertDialogHeader>
-                <AlertDialogTitle className="text-lg text-center">
-                  ¿Cerrar sesión?
-                </AlertDialogTitle>
-                <AlertDialogDescription className="text-center">
-                  Esta acción cerrará tu sesión y te devolverá al inicio.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-
-              <AlertDialogFooter>
-                <div className="flex justify-center gap-4 w-full">
-                  <AlertDialogCancel className="rounded-lg px-5 py-2 bg-white hover:bg-[#FDE0E7]">
-                    Cancelar
-                  </AlertDialogCancel>
-                  <AlertDialogAction
-                    className="rounded-lg px-5 py-2 bg-[#E96D87] text-white hover:bg-[#D86E7A]"
-                    onClick={handleLogout}
-                  >
-                    Confirmar
-                  </AlertDialogAction>
-                </div>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+          <Button
+            variant="outline"
+            onClick={handleBack}
+            className="w-full flex items-center justify-center gap-2 py-3"
+          >
+            <ArrowLeft className="w-5 h-5" /> Volver al Inicio
+          </Button>
         </div>
       </aside>
 
@@ -121,38 +75,13 @@ export default function DashboardLayout() {
                 <NavItem key={link.to} {...link} />
               ))}
             </nav>
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="w-full flex items-center justify-center gap-2 py-3"
-                >
-                  <LogOut className="w-5 h-5" /> Cerrar Sesión
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent className="max-w-md bg-[#FCF8EC] text-[#67463B] border-none">
-                <AlertDialogHeader>
-                  <AlertDialogTitle className="text-lg text-center">
-                    ¿Cerrar sesión?
-                  </AlertDialogTitle>
-                  <AlertDialogDescription className="text-center">
-                    Esta acción cerrará tu sesión y te devolverá al inicio.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-
-                <div className="flex justify-center gap-2 mt-4 w-full">
-                  <AlertDialogCancel className="rounded-lg px-5 py-2 bg-white hover:bg-[#FDE0E7]">
-                    Cancelar
-                  </AlertDialogCancel>
-                  <AlertDialogAction
-                    className="rounded-lg px-5 py-2 bg-[#E96D87] text-white hover:bg-[#D86E7A]"
-                    onClick={handleLogout}
-                  >
-                    Confirmar
-                  </AlertDialogAction>
-                </div>
-              </AlertDialogContent>
-            </AlertDialog>
+            <Button
+              variant="outline"
+              onClick={handleBack}
+              className="w-full flex items-center justify-center gap-2 py-3 cursor-pointer"
+            >
+              <ArrowLeft className="w-5 h-5 cursor-pointer" /> Volver al Inicio
+            </Button>
           </SheetContent>
         </Sheet>
       </div>

@@ -38,10 +38,13 @@ const STATE_LABELS = {
   ENTREGADO: "Entregado",
   CANCELADO: "Cancelado",
 };
-const STATE_OPTIONS = Object.entries(STATE_LABELS).map(([value, label]) => ({
-  value,
-  label,
-}));
+
+const validTransitions = {
+  PENDIENTE: ["EN_PROCESO", "CANCELADO"],
+  EN_PROCESO: ["ENTREGADO"],
+  ENTREGADO: [],
+  CANCELADO: [],
+};
 
 export default function OrdersAdmin() {
   const [orders, setOrders] = useState([]);
@@ -124,7 +127,10 @@ export default function OrdersAdmin() {
               </TableRow>
             ) : (
               orders.map((o) => (
-                <TableRow key={o.id} className="hover:bg-gray-50 text-center">
+                <TableRow
+                  key={o.id}
+                  className="hover:bg-gray-50 font-[Nunito] text-base text-center"
+                >
                   <TableCell>{o.id}</TableCell>
                   <TableCell>{o.email}</TableCell>
                   <TableCell>${o.total.toFixed(2)}</TableCell>
@@ -133,7 +139,6 @@ export default function OrdersAdmin() {
                     {new Date(o.createdAt).toLocaleDateString()}
                   </TableCell>
                   <TableCell className="space-x-2">
-                    {/* Ver detalle */}
                     <AlertDialog
                       open={viewingOrder?.id === o.id}
                       onOpenChange={(open) => !open && setViewingOrder(null)}
@@ -141,7 +146,7 @@ export default function OrdersAdmin() {
                       <AlertDialogTrigger asChild>
                         <Button
                           size="sm"
-                          className="bg-[#3690e4] text-white"
+                          className="bg-[#3690e4] text-white cursor-pointer"
                           onClick={() => openView(o.id)}
                         >
                           Ver detalle
@@ -198,7 +203,9 @@ export default function OrdersAdmin() {
                           </div>
                         )}
                         <div className="flex justify-center mt-4">
-                          <AlertDialogCancel>Cerrar</AlertDialogCancel>
+                          <AlertDialogCancel className={"cursor-pointer"}>
+                            Cerrar
+                          </AlertDialogCancel>
                         </div>
                       </AlertDialogContent>
                     </AlertDialog>
@@ -208,7 +215,7 @@ export default function OrdersAdmin() {
                       <AlertDialogTrigger asChild>
                         <Button
                           size="sm"
-                          className="bg-[#E96D87] text-white"
+                          className="bg-[#E96D87] text-white cursor-pointer"
                           onClick={() => openEdit(o)}
                         >
                           Editar
@@ -223,39 +230,61 @@ export default function OrdersAdmin() {
                         <form
                           onSubmit={(e) => {
                             e.preventDefault();
-                            const estado =
+                            const newEstado =
                               e.currentTarget.elements.estado.value;
-                            onEditSubmit({ estado });
+                            onEditSubmit({ estado: newEstado });
                           }}
                           className="p-4 space-y-4"
                         >
                           <label className="block mb-1">Estado</label>
-                          <Select name="estado" defaultValue={o.estado}>
-                            <SelectTrigger className="w-full">
-                              <SelectValue placeholder="Selecciona estado" />
-                            </SelectTrigger>
-                            <SelectContent className="bg-[#FCF8EC] text-[#67463B]">
-                              {STATE_OPTIONS.map((opt) => (
-                                <SelectItem key={opt.value} value={opt.value}>
-                                  {opt.label}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+
+                          {/* Si no hay transiciones válidas, mostramos un select deshabilitado con el estado actual */}
+                          {validTransitions[o.estado].length > 0 ? (
+                            <Select name="estado" defaultValue="">
+                              <SelectTrigger className="w-full">
+                                <SelectValue
+                                  placeholder={STATE_LABELS[o.estado]}
+                                />
+                              </SelectTrigger>
+                              <SelectContent className="bg-[#FCF8EC] text-[#67463B]">
+                                {validTransitions[o.estado].map((opt) => (
+                                  <SelectItem key={opt} value={opt}>
+                                    {STATE_LABELS[opt]}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          ) : (
+                            <Select
+                              name="estado"
+                              disabled
+                              defaultValue={o.estado}
+                            >
+                              <SelectTrigger className="w-full">
+                                <SelectValue>
+                                  {STATE_LABELS[o.estado]}
+                                </SelectValue>
+                              </SelectTrigger>
+                            </Select>
+                          )}
+
                           <div className="flex justify-center space-x-2 mt-4">
                             <AlertDialogCancel
+                              className={"cursor-pointer"}
                               onClick={() => setEditingOrder(null)}
                             >
                               Cancelar
                             </AlertDialogCancel>
-                            <AlertDialogAction asChild>
-                              <button
-                                type="submit"
-                                className="bg-[#E96D87] text-white px-4 py-2 rounded"
-                              >
-                                Guardar
-                              </button>
-                            </AlertDialogAction>
+                            {validTransitions[o.estado].length > 0 && (
+                              <AlertDialogAction asChild>
+                                <button
+                                  type="submit"
+                                  className="bg-[#E96D87] text-white px-4 py-2 rounded cursor-pointer"
+                                >
+                                  Guardar
+                                </button>
+                              </AlertDialogAction>
+                            )}
                           </div>
                         </form>
                       </AlertDialogContent>
@@ -269,23 +298,25 @@ export default function OrdersAdmin() {
       </div>
 
       {/* Paginación */}
-      <div className="flex justify-center items-center mt-4 space-x-4 text-white">
+      <div className="flex justify-center items-center mt-6 space-x-6 text-white font-[Nunito] text-base">
         <Button
           size="sm"
-          className="cursor-pointer"
+          className="cursor-pointer bg-white text-[#E96D87] border-none shadow-md font-[Nunito] px-4 py-2 hover:bg-gray-100 transition"
           disabled={page === 0}
-          onClick={() => fetchOrders(page - 1)}
+          onClick={() => fetchUsers(page - 1)}
         >
           ← Anterior
         </Button>
-        <span>
+
+        <span className="px-3 py-1 bg-[#E96D87] text-white font-semibold shadow-sm">
           Página {page + 1} de {totalPages}
         </span>
+
         <Button
           size="sm"
-          className="cursor-pointer"
+          className="cursor-pointer bg-white text-[#E96D87] border-none shadow-md font-[Nunito] px-4 py-2 hover:bg-gray-100 transition"
           disabled={page + 1 === totalPages}
-          onClick={() => fetchOrders(page + 1)}
+          onClick={() => fetchUsers(page + 1)}
         >
           Siguiente →
         </Button>

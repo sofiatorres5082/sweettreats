@@ -16,6 +16,7 @@ export default function CartMenu() {
   const navigate = useNavigate();
 
   const total = cart.reduce((sum, i) => sum + i.precio * i.cantidad, 0);
+  const totalItems = cart.reduce((sum, i) => sum + i.cantidad, 0);
 
   const handleGoToCheckout = async () => {
     if (cart.some((i) => i.cantidad > i.stock)) {
@@ -36,8 +37,13 @@ export default function CartMenu() {
 
   return (
     <Sheet>
-      <SheetTrigger>
-        <ShoppingCart className="w-6 h-6 text-[#67463B] hover:text-[#E96D87] cursor-pointer" />
+      <SheetTrigger className="relative">
+        <ShoppingCart className="w-6 h-6 text-[#67463B] hover:text-[#E96D87] cursor-pointer transition-colors" />
+        {totalItems > 0 && (
+          <span className="absolute -top-2 -right-2 bg-[#E96D87] text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center min-w-[20px] font-[Comic_Neue]">
+            {totalItems > 99 ? '99+' : totalItems}
+          </span>
+        )}
       </SheetTrigger>
       <SheetContent
         side="right"
@@ -45,7 +51,7 @@ export default function CartMenu() {
       >
         <SheetHeader>
           <SheetTitle className="text-[#67463B] font-[Comic_Neue]">
-            Tu carrito
+            Tu carrito {totalItems > 0 && `(${totalItems})`}
           </SheetTitle>
         </SheetHeader>
 
@@ -78,7 +84,7 @@ export default function CartMenu() {
                         </p>
                         <div className="flex items-center gap-2 mt-1">
                           <Button
-                            className="h-8 w-8 rounded-full border-[#E96D87] text-[#E96D87] hover:bg-[#FEE9ED]"
+                            className="h-8 w-8 rounded-full border-[#E96D87] text-[#E96D87] hover:bg-[#FEE9ED] cursor-pointer"
                             size="icon"
                             variant="outline"
                             onClick={() =>
@@ -94,7 +100,7 @@ export default function CartMenu() {
                             {item.cantidad}
                           </span>
                           <Button
-                            className="h-8 w-8 rounded-full border-[#E96D87] text-[#E96D87] hover:bg-[#FEE9ED]"
+                            className="h-8 w-8 rounded-full border-[#E96D87] text-[#E96D87] hover:bg-[#FEE9ED] cursor-pointer"
                             size="icon"
                             variant="outline"
                             onClick={() => {
@@ -115,7 +121,7 @@ export default function CartMenu() {
                       </div>
                     </div>
                     <Button
-                      className="text-[#E96D87] hover:text-red-600"
+                      className="text-[#E96D87] hover:text-red-600 cursor-pointer"
                       size="icon"
                       variant="ghost"
                       onClick={() =>
@@ -137,13 +143,13 @@ export default function CartMenu() {
               <div className="flex gap-2 mt-4">
                 <Button
                   variant="destructive"
-                  className="flex-1 rounded-2xl bg-[#D64561] hover:bg-[#c13e56] font-[Comic_Neue]"
+                  className="flex-1 rounded-2xl bg-[#D64561] hover:bg-[#c13e56] font-[Comic_Neue] cursor-pointer"
                   onClick={() => dispatch({ type: "CLEAR_CART" })}
                 >
                   Vaciar carrito
                 </Button>
                 <Button
-                  className="flex-1 rounded-2xl bg-[#E96D87] hover:bg-[#d95c74] text-white font-[Comic_Neue]"
+                  className="flex-1 rounded-2xl bg-[#E96D87] hover:bg-[#d95c74] text-white font-[Comic_Neue] cursor-pointer"
                   onClick={handleGoToCheckout}
                 >
                   Pagar

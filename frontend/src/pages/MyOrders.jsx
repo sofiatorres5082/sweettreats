@@ -1,5 +1,7 @@
+// src/pages/MyOrders.jsx
+
 import { useEffect, useState } from "react";
-import { getUserOrdersRequest } from "../api/orders";
+import { getUserOrdersRequest, cancelOrderRequest } from "../api/orders";
 import { Card, CardContent } from "../components/ui/card";
 import { Button } from "../components/ui/button";
 import MobileHeader from "../components/MobileHeader";
@@ -84,6 +86,20 @@ export default function MyOrders() {
     );
   }
 
+  const handleCancel = async (orderId) => {
+    try {
+      await cancelOrderRequest(orderId);
+      toast.success("Pedido cancelado correctamente");
+      setLoading(true);
+      const res = await getUserOrdersRequest();
+      setOrders(res.data);
+    } catch {
+      toast.error("No se pudo cancelar el pedido");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <>
       <MobileHeader />
@@ -124,7 +140,7 @@ export default function MyOrders() {
                       <AlertDialogTrigger asChild>
                         <Button
                           onClick={() => setSelected(order)}
-                          className="bg-[#E96D87] hover:bg-[#d6627a] text-white font-[Comic_Neue] font-semibold px-4 py-1 rounded-full"
+                          className="bg-[#E96D87] hover:bg-[#d6627a] text-white font-[Comic_Neue] font-semibold px-4 py-1 rounded-full cursor-pointer"
                         >
                           Detalles
                         </Button>
@@ -163,11 +179,23 @@ export default function MyOrders() {
                           </ul>
                         </div>
 
+                        {/* Botón “Cancelar pedido” solo si está en PENDIENTE */}
+                        {selected?.estado === "PENDIENTE" && (
+                          <div className="mt-4 flex justify-center">
+                            <Button
+                              onClick={() => handleCancel(selected.id)}
+                              className="bg-red-500 hover:bg-red-600 text-white font-[Comic_Neue] rounded-full px-6 py-2 cursor-pointer"
+                            >
+                              Cancelar pedido
+                            </Button>
+                          </div>
+                        )}
+
                         <AlertDialogFooter className="mt-6">
-                          <div className="flex justify-center">
+                          <div className="flex justify-center gap-4 w-full">
                             <AlertDialogCancel
                               onClick={() => setSelected(null)}
-                              className="bg-[#E96D87] hover:bg-[#d6627a] text-white rounded-full px-6 py-2 font-[Comic_Neue]"
+                              className="bg-[#E96D87] hover:bg-[#d6627a] text-white rounded-full px-6 py-2 font-[Comic_Neue] cursor-pointer"
                             >
                               Cerrar
                             </AlertDialogCancel>
@@ -190,8 +218,8 @@ export default function MyOrders() {
                 onClick={() => setCurrentPage(n)}
                 className={`w-8 h-8 rounded-full flex items-center justify-center font-[Comic_Neue] ${
                   currentPage === n
-                    ? "bg-[#E96D87] text-white"
-                    : "bg-white text-[#67463B]"
+                    ? "bg-[#E96D87] text-white cursor-pointer"
+                    : "bg-white text-[#67463B] cursor-pointer"
                 }`}
               >
                 {n}

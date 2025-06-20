@@ -15,4 +15,5 @@ public interface OrderService {
     OrderResponse obtenerPedidoPorId(UserModel user, Long id);
     Page<OrderResponse> obtenerTodosLosPedidos(Pageable pageable);
     OrderResponse updateOrderStatus(Long id, OrderEnum nuevoEstado);
+    OrderResponse cancelOrderByUser(Long orderId, UserModel user);
 }

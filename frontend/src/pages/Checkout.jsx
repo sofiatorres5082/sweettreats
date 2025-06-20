@@ -239,7 +239,7 @@ function CheckoutForm() {
             <Button
               type="submit"
               disabled={processing || !stripe || !elements || !hasValidProducts}
-              className="mt-6 w-full bg-[#E96D87] rounded-3xl text-white disabled:opacity-50"
+              className="mt-6 w-full bg-[#E96D87] rounded-3xl text-white disabled:opacity-50 cursor-pointer"
             >
               {processing ? "Procesando…" : "Confirmar Pedido"}
             </Button>
@@ -269,7 +269,7 @@ function CheckoutForm() {
           <AlertDialogFooter>
             <div className="flex flex-col items-center space-y-2 mt-4 w-full">
               <AlertDialogAction
-                className="rounded-xl bg-[#E57F95] text-white hover:bg-pink-700 font-[Comic_Neue]"
+                className="rounded-xl bg-[#E57F95] text-white hover:bg-pink-700 font-[Comic_Neue] cursor-pointer"
                 onClick={() => {
                   setOpenSuccess(false);
                   navigate("/catalogo");
@@ -278,7 +278,7 @@ function CheckoutForm() {
                 Seguir comprando
               </AlertDialogAction>
               <AlertDialogCancel
-                className="rounded-xl bg-white border hover:bg-pink-100 font-[Comic_Neue]"
+                className="rounded-xl bg-white border hover:bg-pink-100 font-[Comic_Neue] cursor-pointer"
                 onClick={() => {
                   setOpenSuccess(false);
                   navigate("/mis-pedidos");

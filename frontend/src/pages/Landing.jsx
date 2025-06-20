@@ -80,7 +80,7 @@ export default function Landing() {
         </p>
 
         <Button
-          className="font-[Comic_Neue] font-semibold bg-[#E96D87] hover:bg-[#f08199] text-white rounded-full px-8 py-4 transition-transform hover:scale-105 shadow-md mb-16"
+          className="font-[Comic_Neue] font-semibold bg-[#E96D87] hover:bg-[#f08199] text-white rounded-full px-8 py-4 transition-transform hover:scale-105 shadow-md mb-16 cursor-pointer"
           onClick={() => navigate("/catalogo")}
         >
           Explorar Catálogo

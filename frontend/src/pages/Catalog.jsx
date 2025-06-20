@@ -62,7 +62,7 @@ export default function Catalog() {
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
                 className="
-      font-[Comic_Neue] text-[#67463B] 
+      font-[Comic_Neue] text-[#67463B] cursor-pointer
       bg-white px-3 py-2 mr-2 pr-2
       border border-gray-200 
       rounded-2xl 
@@ -139,7 +139,7 @@ export default function Catalog() {
                           description: `${product.nombre} está esperando por ti ❤️`,
                         })
                       }
-                      className="font-[Comic_Neue] font-semibold bg-[#E96D87] hover:bg-[#bb6678] text-white rounded-3xl w-full"
+                      className="font-[Comic_Neue] font-semibold bg-[#E96D87] hover:bg-[#bb6678] text-white rounded-3xl w-full cursor-pointer"
                       disabled={!inStock}
                     >
                       {inStock ? "Agregar al carrito" : "No disponible"}

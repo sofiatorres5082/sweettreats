@@ -46,7 +46,7 @@ export default function DesktopMenu() {
       {isAuth && user?.roles?.some(r => r.roleEnum === 'ADMIN') && (
         <Button
           variant="outline"
-          className={`${menuItemClass} flex items-center gap-2`} 
+          className={`${menuItemClass} flex items-center gap-2 cursor-pointer`} 
           onClick={() => navigate('/dashboard')}
         >
           Dashboard
@@ -75,7 +75,7 @@ export default function DesktopMenu() {
       ) : (
         <AlertDialog>
           <AlertDialogTrigger asChild>
-            <Button variant="ghost" className={`${menuItemClass} flex items-center gap-2`}>
+            <Button variant="ghost" className={`${menuItemClass} flex items-center gap-2 cursor-pointer`}>
               Cerrar Sesión
               <LogOut className="w-4 h-4" />
             </Button>
@@ -91,11 +91,11 @@ export default function DesktopMenu() {
             </AlertDialogHeader>
             <AlertDialogFooter>
               <div className="flex justify-center gap-4 w-full">
-                <AlertDialogCancel className="rounded-full px-5 py-2 bg-white hover:bg-[#FDE0E7]">
+                <AlertDialogCancel className="rounded-full px-5 py-2 bg-white hover:bg-[#FDE0E7] cursor-pointer">
                   Cancelar
                 </AlertDialogCancel>
                 <AlertDialogAction
-                  className="rounded-full px-5 py-2 bg-[#E96D87] text-white hover:bg-[#D86E7A]"
+                  className="rounded-full px-5 py-2 bg-[#E96D87] text-white hover:bg-[#D86E7A] cursor-pointer"
                   onClick={handleLogout}
                 >
                   Confirmar

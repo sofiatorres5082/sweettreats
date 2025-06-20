@@ -105,8 +105,8 @@ public class ProductServiceImpl implements ProductService {
             if (contentType == null || !contentType.startsWith("image/")) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Archivo no es una imagen");
             }
-            if (file.getSize() > 2 * 1024 * 1024) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Imagen excede 2MB");
+            if (file.getSize() > 5 * 1024 * 1024) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Imagen excede 5MB");
             }
 
             String ext = Optional.ofNullable(file.getOriginalFilename())

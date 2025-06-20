@@ -177,13 +177,14 @@ export default function ProductsAdmin() {
         });
         return;
       }
-      if (file.size > 2 * 1024 * 1024) {
+      const MAX_SIZE = 5 * 1024 * 1024;
+      if (file.size > MAX_SIZE) {
         setError("imagen", {
           type: "manual",
           message: `Imagen demasiado grande (${(
             file.size /
             (1024 * 1024)
-          ).toFixed(2)} MB > 2 MB)`,
+          ).toFixed(2)} MB > 5 MB)`,
         });
         return;
       }
@@ -335,7 +336,7 @@ export default function ProductsAdmin() {
                         </AlertDialogHeader>
                         <div className="flex justify-center space-x-2 mt-4">
                           <AlertDialogCancel
-                            className="cursor-pointer"
+                            className={"cursor-pointer"}
                             onClick={() => setDeletingId(null)}
                           >
                             Cancelar
@@ -380,23 +381,25 @@ export default function ProductsAdmin() {
         </Table>
       </div>
 
-      <div className="flex justify-center items-center mt-4 space-x-4 text-white font-[Nunito] text-base">
+      <div className="flex justify-center items-center mt-6 space-x-6 text-white font-[Nunito] text-base">
         <Button
           size="sm"
-          className="cursor-pointer"
+          className="cursor-pointer bg-white text-[#E96D87] border-none shadow-md font-[Nunito] px-4 py-2 hover:bg-gray-100 transition"
           disabled={page === 0}
-          onClick={() => fetch(page - 1)}
+          onClick={() => fetchUsers(page - 1)}
         >
           ← Anterior
         </Button>
-        <span>
+
+        <span className="px-3 py-1 bg-[#E96D87] text-white font-semibold shadow-sm">
           Página {page + 1} de {totalPages}
         </span>
+
         <Button
           size="sm"
-          className="cursor-pointer"
+          className="cursor-pointer bg-white text-[#E96D87] border-none shadow-md font-[Nunito] px-4 py-2 hover:bg-gray-100 transition"
           disabled={page + 1 === totalPages}
-          onClick={() => fetch(page + 1)}
+          onClick={() => fetchUsers(page + 1)}
         >
           Siguiente →
         </Button>
@@ -536,6 +539,7 @@ export default function ProductsAdmin() {
 
               <div className="flex justify-center space-x-2 mt-4">
                 <AlertDialogCancel
+                  className={"cursor-pointer"}
                   onClick={() => {
                     setCreating(false);
                     setEditing(null);

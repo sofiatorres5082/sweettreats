@@ -348,22 +348,23 @@ export default function UsersAdmin() {
           </TableBody>
         </Table>
       </div>
-
-      <div className="flex justify-center items-center mt-4 space-x-4 text-white font-[Nunito] text-base ">
+      <div className="flex justify-center items-center mt-6 space-x-6 text-white font-[Nunito] text-base">
         <Button
           size="sm"
-          className="cursor-pointer"
+          className="cursor-pointer bg-white text-[#E96D87] border-none shadow-md font-[Nunito] px-4 py-2 hover:bg-gray-100 transition"
           disabled={page === 0}
           onClick={() => fetchUsers(page - 1)}
         >
           ← Anterior
         </Button>
-        <span>
+
+        <span className="px-3 py-1 bg-[#E96D87] text-white font-semibold shadow-sm">
           Página {page + 1} de {totalPages}
         </span>
+
         <Button
           size="sm"
-          className="cursor-pointer"
+          className="cursor-pointer bg-white text-[#E96D87] border-none shadow-md font-[Nunito] px-4 py-2 hover:bg-gray-100 transition"
           disabled={page + 1 === totalPages}
           onClick={() => fetchUsers(page + 1)}
         >

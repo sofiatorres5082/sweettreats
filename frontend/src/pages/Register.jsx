@@ -31,11 +31,9 @@ export default function Register() {
   });
 
   const onSubmit = async (data) => {
-    // Limpio viejos errores de email
     clearErrors("email");
 
     try {
-      // Validación de confirmPassword (gestión extra aunque Yup ya valida)
       if (data.password !== data.confirmPassword) {
         setError("confirmPassword", {
           type: "validate",
@@ -124,7 +122,7 @@ export default function Register() {
                   <button
                     type="button"
                     onClick={() => setShowPassword((v) => !v)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-[#E96D87] transition-colors"
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-[#E96D87] transition-colors cursor-pointer"
                   >
                     {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                   </button>
@@ -151,7 +149,7 @@ export default function Register() {
                   <button
                     type="button"
                     onClick={() => setShowConfirm((v) => !v)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-[#E96D87] transition-colors"
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-[#E96D87] transition-colors cursor-pointer"
                   >
                     {showConfirm ? <EyeOff size={20} /> : <Eye size={20} />}
                   </button>
@@ -166,7 +164,7 @@ export default function Register() {
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="font-[Comic_Neue] font-semibold bg-[#E96D87] hover:bg-[#bb6678] text-white rounded-3xl w-full py-3"
+                className="font-[Comic_Neue] cursor-pointer font-semibold bg-[#E96D87] hover:bg-[#bb6678] text-white rounded-3xl w-full py-3"
               >
                 Registrarse
               </Button>
