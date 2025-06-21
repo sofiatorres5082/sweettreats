@@ -2,7 +2,9 @@
 package com.sweettreats.SweetTreats.service;
 
 import com.sweettreats.SweetTreats.model.ProductModel;
+import com.sweettreats.SweetTreats.model.Status;
 import com.sweettreats.SweetTreats.repository.ProductRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.*;
@@ -31,7 +33,8 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public Page<ProductModel> getAll(int page, int size) {
         Pageable pg = PageRequest.of(page, size, Sort.by("id"));
-        return repo.findAll(pg);
+        // sólo activos
+        return repo.findByStatus(Status.ACTIVE, pg);
     }
 
     @Override
@@ -85,18 +88,23 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public void delete(Long id) {
-        if (!repo.existsById(id)) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Producto no encontrado");
-        }
-        try {
-            repo.deleteById(id);
-        } catch (DataIntegrityViolationException ex) {
-            throw new ResponseStatusException(
-                    HttpStatus.CONFLICT,
-                    "No se puede eliminar el producto porque tiene pedidos asociados"
-            );
-        }
+    public Page<ProductModel> getByStatus(Status status, int page, int size) {
+        Pageable pg = PageRequest.of(page, size, Sort.by("id"));
+        return repo.findByStatus(status, pg);
+    }
+
+    @Transactional
+    public void softDelete(Long id) {
+        ProductModel prod = getById(id);
+        prod.setStatus(Status.INACTIVE);
+        repo.save(prod);
+    }
+
+    @Transactional
+    public ProductModel reactivate(Long id) {
+        ProductModel prod = getById(id);
+        prod.setStatus(Status.ACTIVE);
+        return repo.save(prod);
     }
 
     private String saveImage(MultipartFile file) {

@@ -1,6 +1,7 @@
 package com.sweettreats.SweetTreats.controller;
 
 import com.sweettreats.SweetTreats.model.ProductModel;
+import com.sweettreats.SweetTreats.model.Status;
 import com.sweettreats.SweetTreats.service.ProductServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -25,18 +26,19 @@ public class ProductController {
     public ProductController(ProductServiceImpl service) { this.service = service; }
 
     @Operation(
-            summary     = "Listar productos",
-            description = "Obtiene una página de productos disponibles"
+            summary     = "Listar productos activos",
+            description = "Devuelve una página de productos con estado ACTIVE"
     )
     @ApiResponse(responseCode = "200", description = "Página de productos retornada")
     @GetMapping
-    public ResponseEntity<Page<ProductModel>> list(
+    public ResponseEntity<Page<ProductModel>> listActive(
             @Parameter(description = "Número de página (0-index)", example = "0")
             @RequestParam(defaultValue = "0") int page,
             @Parameter(description = "Tamaño de página", example = "10")
             @RequestParam(defaultValue = "10") int size
     ) {
-        return ResponseEntity.ok(service.getAll(page, size));
+        Page<ProductModel> activos = service.getAll(page, size);
+        return ResponseEntity.ok(activos);
     }
 
     @Operation(
@@ -102,16 +104,26 @@ public class ProductController {
     @ApiResponse(responseCode = "403", description = "Acceso denegado para usuarios no administradores")
     @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> delete(
-            @Parameter(description = "ID del producto", required = true, example = "42") @PathVariable Long id
+    public ResponseEntity<?> inactivate(@PathVariable Long id) {
+        service.softDelete(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/status")
+    public ResponseEntity<Page<ProductModel>> listByStatus(
+            @RequestParam Status status,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
     ) {
-        try {
-            service.delete(id);
-            return ResponseEntity.noContent().build();
-        } catch (ResponseStatusException ex) {
-            return ResponseEntity
-                    .status(ex.getStatusCode())
-                    .body(Map.of("message", ex.getReason()));
-        }
+        Page<ProductModel> pagina = service.getByStatus(status, page, size);
+        return ResponseEntity.ok(pagina);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PutMapping("/{id}/activate")
+    public ResponseEntity<ProductModel> activate(@PathVariable Long id) {
+        ProductModel p = service.reactivate(id);
+        return ResponseEntity.ok(p);
     }
 }

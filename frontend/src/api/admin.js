@@ -45,6 +45,12 @@ export function updateProductRequest(id, formData) {
 
 export const deleteProductRequest = (id) => axios.delete(`/api/products/${id}`);
 
+export const getProductsByStatusRequest = (status, page = 0, size = 10) =>
+  axios.get("/api/products/status", { params: { status, page, size } });
+
+export const reactivateProductRequest = (id) =>
+  axios.put(`/api/products/${id}/activate`);
+
 
 // Reports
 export const salesRequest = (period) =>

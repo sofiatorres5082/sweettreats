@@ -2,6 +2,7 @@
 package com.sweettreats.SweetTreats.service;
 
 import com.sweettreats.SweetTreats.model.ProductModel;
+import com.sweettreats.SweetTreats.model.Status;
 import org.springframework.data.domain.Page;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -10,5 +11,5 @@ public interface ProductService {
     ProductModel getById(Long id);
     ProductModel create(String nombre, Double precio, Integer stock, String descripcion, MultipartFile imagen);
     ProductModel update(Long id, String nombre, Double precio, Integer stock, String descripcion, MultipartFile imagen, Boolean mantenerImagen);
-    void delete(Long id);
+    Page<ProductModel> getByStatus(Status status, int page, int size);
 }

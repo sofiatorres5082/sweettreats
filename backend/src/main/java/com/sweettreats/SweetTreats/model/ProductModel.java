@@ -24,6 +24,10 @@ public class ProductModel {
     private String imagen;
     private Integer stock;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Status status = Status.ACTIVE;
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -39,6 +43,7 @@ public class ProductModel {
     public void prePersist() {
         this.createdAt = LocalDateTime.now();
         this.updatedAt = this.createdAt;
+        this.status = Status.ACTIVE;
     }
 
     @PreUpdate

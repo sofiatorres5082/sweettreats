@@ -2,6 +2,8 @@ package com.sweettreats.SweetTreats.repository;
 
 import com.sweettreats.SweetTreats.dto.ProductStatDto;
 import com.sweettreats.SweetTreats.model.ProductModel;
+import com.sweettreats.SweetTreats.model.Status;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -39,4 +41,6 @@ public interface ProductRepository extends JpaRepository<ProductModel, Long> {
 
     // Bajo stock
     List<ProductModel> findByStockLessThan(int threshold);
+
+    Page<ProductModel> findByStatus(Status status, Pageable pageable);
 }
