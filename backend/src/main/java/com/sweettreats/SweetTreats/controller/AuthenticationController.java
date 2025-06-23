@@ -90,6 +90,11 @@ public class AuthenticationController {
         UserModel user = userRepository.findUserModelByEmail(userRequest.email())
                 .orElseThrow(() -> new UsernameNotFoundException("Usuario no encontrado"));
 
+        if (!user.isEnabled()) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Cuenta desactivada");
+        }
+
+
         UserResponse userResponse = new UserResponse(
                 user.getId(),
                 user.getName(),

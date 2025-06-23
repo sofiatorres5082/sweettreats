@@ -36,7 +36,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Page<UserResponse> getAllUsers(Pageable pageable) {
-        return userRepository.findAll(pageable)
+        return userRepository.findByIsEnabledTrue(pageable)
                 .map(this::toResponse);
     }
 
@@ -88,17 +88,14 @@ public class UserServiceImpl implements UserService {
     public void deleteUser(Long id) {
         UserModel user = userRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado"));
-        try {
-            user.getRoles().clear();
-            userRepository.save(user);
-            userRepository.delete(user);
-        } catch (DataIntegrityViolationException ex) {
-            throw new ResponseStatusException(
-                    HttpStatus.CONFLICT,
-                    "No se puede eliminar el usuario porque tiene datos relacionados"
-            );
-        }
+
+        user.setEnabled(false);
+        user.setAccountNoExpired(false);
+        user.setAccountNoLocked(false);
+        user.setCredentialNoExpired(false);
+        userRepository.save(user);
     }
+
 
     public void changePassword(Long userId, ChangePasswordRequest req) {
         UserModel user = userRepository.findById(userId)

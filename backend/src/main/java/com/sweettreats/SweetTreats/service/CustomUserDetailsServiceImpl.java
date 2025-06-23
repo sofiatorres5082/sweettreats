@@ -138,12 +138,17 @@ public class CustomUserDetailsServiceImpl implements UserDetailsService {
     public Authentication authenticate(String email, String password) {
         UserDetails userDetails = loadUserByUsername(email);
 
+        if (!userDetails.isEnabled()) {
+            throw new BadCredentialsException("La cuenta está desactivada");
+        }
+
         if (!passwordEncoder.matches(password, userDetails.getPassword())) {
             throw new BadCredentialsException("Contraseña incorrecta");
         }
 
         return new UsernamePasswordAuthenticationToken(email, password, userDetails.getAuthorities());
     }
+
 
 }
 
