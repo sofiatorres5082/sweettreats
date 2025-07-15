@@ -2,7 +2,7 @@ package com.sweettreats.SweetTreats.controller;
 
 import com.sweettreats.SweetTreats.dto.*;
 import com.sweettreats.SweetTreats.model.ProductModel;
-import com.sweettreats.SweetTreats.service.ReportsServiceImpl;
+import com.sweettreats.SweetTreats.service.impl.ReportsServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;

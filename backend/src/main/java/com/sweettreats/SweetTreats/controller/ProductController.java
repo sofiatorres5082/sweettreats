@@ -2,7 +2,7 @@ package com.sweettreats.SweetTreats.controller;
 
 import com.sweettreats.SweetTreats.model.ProductModel;
 import com.sweettreats.SweetTreats.model.Status;
-import com.sweettreats.SweetTreats.service.ProductServiceImpl;
+import com.sweettreats.SweetTreats.service.impl.ProductServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -14,9 +14,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.server.ResponseStatusException;
-
-import java.util.Map;
 
 @Tag(name = "Productos", description = "CRUD de productos (público y ADMIN)")
 @RestController

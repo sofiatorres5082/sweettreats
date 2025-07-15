@@ -1,12 +1,12 @@
 // src/main/java/com/sweettreats/SweetTreats/service/ProductService.java
-package com.sweettreats.SweetTreats.service;
+package com.sweettreats.SweetTreats.service.impl;
 
 import com.sweettreats.SweetTreats.model.ProductModel;
 import com.sweettreats.SweetTreats.model.Status;
 import com.sweettreats.SweetTreats.repository.ProductRepository;
+import com.sweettreats.SweetTreats.service.ProductService;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -33,7 +33,6 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public Page<ProductModel> getAll(int page, int size) {
         Pageable pg = PageRequest.of(page, size, Sort.by("id"));
-        // sólo activos
         return repo.findByStatus(Status.ACTIVE, pg);
     }
 

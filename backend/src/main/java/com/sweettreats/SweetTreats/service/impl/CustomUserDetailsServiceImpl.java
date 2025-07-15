@@ -1,4 +1,4 @@
-package com.sweettreats.SweetTreats.service;
+package com.sweettreats.SweetTreats.service.impl;
 
 import com.sweettreats.SweetTreats.dto.AuthCreateUserRequest;
 import com.sweettreats.SweetTreats.dto.AuthLoginRequest;
@@ -8,6 +8,7 @@ import com.sweettreats.SweetTreats.model.RoleModel;
 import com.sweettreats.SweetTreats.model.UserModel;
 import com.sweettreats.SweetTreats.repository.RoleRepository;
 import com.sweettreats.SweetTreats.repository.UserRepository;
+import com.sweettreats.SweetTreats.service.UserDetailsService;
 import com.sweettreats.SweetTreats.util.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -40,7 +41,6 @@ public class CustomUserDetailsServiceImpl implements UserDetailsService {
     @Autowired
     private RoleRepository roleRepository;
 
-    // Metodo que busca un usuario en base de datos
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
 
@@ -66,7 +66,6 @@ public class CustomUserDetailsServiceImpl implements UserDetailsService {
                 );
     }
 
-    // Metodo para crear/registrar un usuario
     @Override
     public AuthResponse createUser(AuthCreateUserRequest createUserRequest) {
         String name = createUserRequest.name();
@@ -119,7 +118,6 @@ public class CustomUserDetailsServiceImpl implements UserDetailsService {
         return new AuthResponse(name, "User created successfully", token, true);
     }
 
-    // Metodo que permite loguearnos
     @Override
     public AuthResponse loginUser(AuthLoginRequest authLoginRequest) {
         String email = authLoginRequest.email();
@@ -133,7 +131,6 @@ public class CustomUserDetailsServiceImpl implements UserDetailsService {
         return new AuthResponse(email, "Inicio de sesión exitoso", token, true);
     }
 
-    // Metodo que permite autenticarnos
     @Override
     public Authentication authenticate(String email, String password) {
         UserDetails userDetails = loadUserByUsername(email);

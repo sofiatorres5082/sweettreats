@@ -6,7 +6,7 @@ import com.sweettreats.SweetTreats.model.OrderEnum;
 import com.sweettreats.SweetTreats.model.UserModel;
 import com.sweettreats.SweetTreats.repository.OrderRepository;
 import com.sweettreats.SweetTreats.repository.UserRepository;
-import com.sweettreats.SweetTreats.service.OrderServiceImpl;
+import com.sweettreats.SweetTreats.service.impl.OrderServiceImpl;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;

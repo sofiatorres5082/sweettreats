@@ -48,7 +48,6 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, Object>> handleDuplicateKeyException(DataIntegrityViolationException ex) {
         String message = "El email ya está registrado.";
 
-        // Opcional: solo si querés chequear más en detalle
         if (ex.getCause() instanceof org.hibernate.exception.ConstraintViolationException) {
             message = "El email ya existe en la base de datos.";
         }

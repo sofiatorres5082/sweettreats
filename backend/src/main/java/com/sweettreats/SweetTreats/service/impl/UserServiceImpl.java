@@ -1,4 +1,4 @@
-package com.sweettreats.SweetTreats.service;
+package com.sweettreats.SweetTreats.service.impl;
 
 import com.sweettreats.SweetTreats.dto.ChangePasswordRequest;
 import com.sweettreats.SweetTreats.dto.ProfileUpdateRequest;
@@ -8,7 +8,7 @@ import com.sweettreats.SweetTreats.model.RoleModel;
 import com.sweettreats.SweetTreats.model.UserModel;
 import com.sweettreats.SweetTreats.repository.RoleRepository;
 import com.sweettreats.SweetTreats.repository.UserRepository;
-import org.springframework.dao.DataIntegrityViolationException;
+import com.sweettreats.SweetTreats.service.UserService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;

@@ -571,7 +571,6 @@ export default function ProductsAdmin() {
                   control={control}
                   render={({ field }) => (
                     <div className="space-y-3">
-                      {/* Vista previa compacta con checkbox integrado */}
                       {previewUrl && (
                         <div className="flex items-center gap-3 p-2 bg-gray-50 rounded-lg border border-[#D9B9A1]">
                           <div className="relative flex-shrink-0">
@@ -596,7 +595,6 @@ export default function ProductsAdmin() {
                             </button>
                           </div>
                           
-                          {/* Checkbox integrado al lado de la imagen */}
                           {editing && (
                             <label className="flex items-center gap-2 text-xs cursor-pointer">
                               <input
@@ -621,7 +619,6 @@ export default function ProductsAdmin() {
                         </div>
                       )}
 
-                      {/* Área de carga más compacta */}
                       <div className="relative">
                         <div
                           className={`border-2 border-dashed rounded-lg p-4 text-center transition-all duration-200 ${

@@ -19,7 +19,6 @@ public interface OrderRepository extends JpaRepository<OrderModel, Long> {
 
     Page<OrderModel> findAll(Pageable pageable);
 
-    // 1) total ventas en periodo
     @Query("""
       SELECT COALESCE(SUM(o.total),0)
       FROM OrderModel o
@@ -27,7 +26,6 @@ public interface OrderRepository extends JpaRepository<OrderModel, Long> {
     """)
     double sumSalesSince(@Param("since") LocalDateTime since);
 
-    // 2) tendencia diaria usando DATE_FORMAT
     @Query("""
       SELECT FUNCTION('date_format', o.createdAt, '%Y-%m-%d'),
              COALESCE(SUM(o.total),0)
@@ -38,7 +36,6 @@ public interface OrderRepository extends JpaRepository<OrderModel, Long> {
     """)
     List<Object[]> sumSalesGroupByDay(@Param("since") LocalDateTime since);
 
-    // 3) ticket promedio en periodo
     @Query("""
       SELECT CASE WHEN COUNT(o)>0 THEN SUM(o.total)/COUNT(o) ELSE 0 END
       FROM OrderModel o

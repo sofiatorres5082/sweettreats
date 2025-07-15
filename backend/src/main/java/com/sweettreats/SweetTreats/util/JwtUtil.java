@@ -24,14 +24,11 @@ public class JwtUtil {
     @Value("$(security.jwt.user.generator)")
     private String userGenerator;
 
-    // Metodo para generar un token
     public String createToken(Authentication authentication){
-        // Defino el algoritmo de encriptacion que voy a usar (HMAC256 es el mas comun)
         Algorithm algorithm = Algorithm.HMAC256(this.privateKey);
 
         String username = authentication.getPrincipal().toString();
 
-        // Obtengo todas las autorizaciones, me lo devuelve como un string y con el collectors joining los separo por comas.
         String authorities = authentication.getAuthorities()
                 .stream()
                 .map(GrantedAuthority::getAuthority)
@@ -42,7 +39,7 @@ public class JwtUtil {
                 .withSubject(username)
                 .withClaim("authorities", authorities)
                 .withIssuedAt(new Date())
-                .withExpiresAt(new Date(System.currentTimeMillis() + 24 * 60 * 60 * 1000)) // 24 horas dura el token
+                .withExpiresAt(new Date(System.currentTimeMillis() + 24 * 60 * 60 * 1000))
                 .withJWTId(UUID.randomUUID().toString())
                 .withNotBefore(new Date(System.currentTimeMillis()))
                 .sign(algorithm);

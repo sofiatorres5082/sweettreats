@@ -37,14 +37,11 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (userData) => {
     try {
-      // Creamos el usuario
       const res = await registerRequest(userData);
-      // Autenticación automática: iniciamos sesión con las mismas credenciales
       await loginRequest({
         email: userData.email,
         password: userData.password,
       });
-      // Verificamos estado de sesión
       const authRes = await checkAuthRequest();
       setUser(authRes.data);
       setIsAuth(true);

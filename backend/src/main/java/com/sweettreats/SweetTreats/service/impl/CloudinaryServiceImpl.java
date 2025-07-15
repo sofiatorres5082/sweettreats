@@ -1,7 +1,8 @@
-package com.sweettreats.SweetTreats.service;
+package com.sweettreats.SweetTreats.service.impl;
 
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
+import com.sweettreats.SweetTreats.service.CloudinaryService;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 

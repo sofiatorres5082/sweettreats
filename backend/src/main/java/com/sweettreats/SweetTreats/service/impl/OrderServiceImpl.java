@@ -1,4 +1,4 @@
-package com.sweettreats.SweetTreats.service;
+package com.sweettreats.SweetTreats.service.impl;
 
 import com.sweettreats.SweetTreats.dto.OrderDetailResponse;
 import com.sweettreats.SweetTreats.dto.OrderRequest;
@@ -6,6 +6,7 @@ import com.sweettreats.SweetTreats.dto.OrderResponse;
 import com.sweettreats.SweetTreats.model.*;
 import com.sweettreats.SweetTreats.repository.OrderRepository;
 import com.sweettreats.SweetTreats.repository.ProductRepository;
+import com.sweettreats.SweetTreats.service.OrderService;
 import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -48,7 +49,6 @@ public class OrderServiceImpl implements OrderService {
                         );
                     }
 
-                    // ↓ Actualizamos el stock aquí
                     prod.setStock(prod.getStock() - item.cantidad());
 
                     OrderDetailModel det = new OrderDetailModel();
@@ -184,19 +184,15 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional
     public OrderResponse updateOrderStatus(Long id, OrderEnum nuevoEstado) {
-        // Buscamos la orden o lanzamos 404
         OrderModel order = orderRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND, "Pedido no encontrado")
                 );
 
-        // Actualizamos el estado
         order.setEstado(nuevoEstado);
 
-        // Guardamos
         OrderModel saved = orderRepository.save(order);
 
-        // Mapeamos a DTO y devolvemos
         return mapToResponse(saved);
     }
 
@@ -206,12 +202,11 @@ public class OrderServiceImpl implements OrderService {
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND, "Pedido no encontrado"));
 
-        // Sólo el dueño puede cancelar
         if (!order.getUsermodel().getId().equals(user.getId())) {
             throw new ResponseStatusException(
                     HttpStatus.FORBIDDEN, "No puedes cancelar este pedido");
         }
-        // Sólo si está PENDIENTE
+
         if (order.getEstado() != OrderEnum.PENDIENTE) {
             throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST, "Solo se puede cancelar un pedido en estado PENDIENTE");

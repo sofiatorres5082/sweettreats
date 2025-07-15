@@ -1,4 +1,3 @@
-// src/main/java/com/sweettreats/SweetTreats/service/IProductService.java
 package com.sweettreats.SweetTreats.service;
 
 import com.sweettreats.SweetTreats.model.ProductModel;

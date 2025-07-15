@@ -1,5 +1,4 @@
-// src/main/java/com/sweettreats/SweetTreats/service/ReportsService.java
-package com.sweettreats.SweetTreats.service;
+package com.sweettreats.SweetTreats.service.impl;
 
 import com.sweettreats.SweetTreats.dto.*;
 import com.sweettreats.SweetTreats.model.ProductModel;

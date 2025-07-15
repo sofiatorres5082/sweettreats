@@ -210,7 +210,6 @@ export default function OrdersAdmin() {
                       </AlertDialogContent>
                     </AlertDialog>
 
-                    {/* Editar estado */}
                     <AlertDialog open={editingOrder?.id === o.id}>
                       <AlertDialogTrigger asChild>
                         <Button
@@ -238,7 +237,6 @@ export default function OrdersAdmin() {
                         >
                           <label className="block mb-1">Estado</label>
 
-                          {/* Si no hay transiciones válidas, mostramos un select deshabilitado con el estado actual */}
                           {validTransitions[o.estado].length > 0 ? (
                             <Select name="estado" defaultValue="">
                               <SelectTrigger className="w-full">
@@ -297,7 +295,6 @@ export default function OrdersAdmin() {
         </Table>
       </div>
 
-      {/* Paginación */}
       <div className="flex justify-center items-center mt-6 space-x-6 text-white font-[Nunito] text-base">
         <Button
           size="sm"
