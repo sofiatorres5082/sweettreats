@@ -29,3 +29,8 @@ uploads/    # Imágenes subidas
 - Ventas mensuales
 - Productos más vendidos
 - Productos con bajo stock
+
+## 🎥 Demo del proyecto
+
+[Ver video](https://drive.google.com/file/d/1OuXmIrRLy5lgALdCQ9qTIqX3Nzm35E6z/view?usp=drive_link)
+
