@@ -3,6 +3,7 @@ import { Outlet, Link, useNavigate, useLocation } from "react-router-dom";
 import { ArrowLeft, Grid } from "lucide-react";
 import { Button } from "../../components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "../../components/ui/sheet";
+import { DialogTitle, DialogDescription } from "@radix-ui/react-dialog";
 
 const links = [
   { to: "/dashboard", label: "Resumen" },
@@ -67,6 +68,12 @@ export default function DashboardLayout() {
             </Button>
           </SheetTrigger>
           <SheetContent side="left" className="bg-[#FCF8EC] p-6 w-72">
+            <div className="sr-only">
+              <DialogTitle>Menú principal</DialogTitle>
+              <DialogDescription>
+                Navegación para acceder a secciones de administrador.
+              </DialogDescription>
+            </div>
             <h1 className="text-2xl font-[Marimpa] text-[#67463B] mb-6 text-center">
               Sweet<span className="text-[#E96D87]">Treats</span>
             </h1>

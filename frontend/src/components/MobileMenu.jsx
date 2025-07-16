@@ -14,6 +14,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "../components/ui/alert-dialog";
+import { DialogTitle, DialogDescription } from "@radix-ui/react-dialog";
 import { toast } from "sonner";
 
 export default function MobileMenu() {
@@ -42,6 +43,12 @@ export default function MobileMenu() {
         side="right"
         className="bg-[#E57F95] border-none shadow-none flex flex-col justify-between px-5 py-6"
       >
+        <div className="sr-only">
+          <DialogTitle>Menú principal</DialogTitle>
+          <DialogDescription>
+            Navegación para acceder a secciones como inicio, catálogo y perfil.
+          </DialogDescription>
+        </div>
         <nav className="flex flex-col gap-4 mt-18">
           <Link
             to="/"

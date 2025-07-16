@@ -11,6 +11,7 @@ import com.sweettreats.SweetTreats.repository.UserRepository;
 import com.sweettreats.SweetTreats.service.UserDetailsService;
 import com.sweettreats.SweetTreats.util.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -21,10 +22,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import org.springframework.web.server.ResponseStatusException;
+
+import java.util.*;
 
 @Service
 public class CustomUserDetailsServiceImpl implements UserDetailsService {
@@ -71,6 +71,16 @@ public class CustomUserDetailsServiceImpl implements UserDetailsService {
         String name = createUserRequest.name();
         String email = createUserRequest.email();
         String password = createUserRequest.password();
+
+        Optional<UserModel> existingUser = userRepository.findUserModelByEmail(email);
+
+        if (existingUser.isPresent()) {
+            if (existingUser.get().isEnabled()) {
+                throw new IllegalArgumentException("El correo ya está en uso");
+            } else {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Este correo pertenece a una cuenta desactivada. Podés recuperar tu cuenta o usar otro correo.");
+            }
+        }
 
         Set<RoleModel> roleModels;
 

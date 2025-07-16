@@ -51,10 +51,21 @@ export default function Register() {
       toast.success("Registro exitoso, por favor inicia sesión");
       navigate("/log-in", { state: { from }, replace: true });
     } catch (err) {
+      const msg = err.response?.data?.message;
+
       if (err.response?.status === 409) {
         setError("email", {
           type: "server",
           message: "El correo ya está en uso",
+        });
+      } else if (
+        err.response?.status === 400 &&
+        msg ===
+          "Este correo pertenece a una cuenta desactivada. Podés recuperar tu cuenta o usar otro correo."
+      ) {
+        setError("email", {
+          type: "server",
+          message: msg,
         });
       } else {
         toast.error("Error al registrarse");
@@ -171,7 +182,7 @@ export default function Register() {
 
               <div className="text-center text-sm">
                 <p className="font-[Comic_Neue] text-[#67463B]">
-                  ¿Ya tienes cuenta?{' '}
+                  ¿Ya tienes cuenta?{" "}
                   <Link
                     to="/log-in"
                     state={{ from }}

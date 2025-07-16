@@ -1,0 +1,75 @@
+@keyframes starFloat {
+  0% {
+    transform: translateY(0) rotate(0deg);
+    opacity: 0.7;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(40px) rotate(180deg);
+    opacity: 0.7;
+  }
+}
+
+@keyframes starPulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(0.8);
+    opacity: 0.6;
+  }
+}
+
+@keyframes starTwinkle {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+
+@keyframes starSpin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes fadeInUp {
+  0% {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-starFloat {
+  animation: starFloat 7s ease-in-out infinite alternate;
+}
+
+.animate-starPulse {
+  animation: starPulse 4s ease-in-out infinite;
+}
+
+.animate-starTwinkle {
+  animation: starTwinkle 3s ease-in-out infinite alternate;
+}
+
+.animate-starSpin {
+  animation: starSpin 8s linear infinite;
+}
+
+.animate-fadeInUp {
+  animation: fadeInUp 1s ease-out forwards;
+}
