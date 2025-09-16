@@ -29,6 +29,7 @@ import {
   AlertDialogCancel,
   AlertDialogTrigger,
 } from "../components/ui/alert-dialog";
+import { getAllPaymentMethodsRequest } from "../api/payments";
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
@@ -41,6 +42,7 @@ function CheckoutForm() {
   const [openSuccess, setOpenSuccess] = useState(false);
   const [orderDone, setOrderDone] = useState(false);
   const [processing, setProcessing] = useState(false);
+  const [paymentMethods, setPaymentMethods] = useState([]);
 
   const {
     control,
@@ -63,6 +65,24 @@ function CheckoutForm() {
     (acc, item) => acc + item.precio * item.cantidad,
     0
   );
+
+  useEffect(() => {
+    const fetchPaymentMethods = async () => {
+      try {
+        const { data } = await getAllPaymentMethodsRequest();
+        setPaymentMethods(data);
+      } catch (err) {
+        console.error(err);
+        toast.error(
+          err.response?.data?.message ||
+            "No se pudieron cargar los métodos de pago"
+        );
+      }
+    };
+
+    fetchPaymentMethods();
+  }, []);
+
   useEffect(() => {
     if (!loading && !isAuth) {
       toast.error("Debes iniciar sesión para continuar");
@@ -108,13 +128,14 @@ function CheckoutForm() {
 
       await createOrderRequest({
         direccionEnvio: data.direccion,
-        metodoPago: data.tipoTarjeta,
+        metodoPagoId: Number(data.tipoTarjeta),
         items: cart.map((item) => ({
           productId: item.id,
           cantidad: item.cantidad,
           precioUnitario: item.precio,
         })),
       });
+
       dispatch({ type: "CLEAR_CART" });
       setOrderDone(true);
       toast.success("🍰 Pedido realizado con éxito");
@@ -199,12 +220,16 @@ function CheckoutForm() {
                     {...field}
                     className="w-full rounded-md border px-3 py-2"
                   >
-                    <option value="">Selecciona</option>
-                    <option value="visa">Visa</option>
-                    <option value="mastercard">Mastercard</option>
+                    <option value="">Selecciona un método de pago</option>
+                    {paymentMethods.map((pm) => (
+                      <option key={pm.id} value={pm.id}>
+                        {pm.nombre}
+                      </option>
+                    ))}
                   </select>
                 )}
               />
+
               {errors.tipoTarjeta && (
                 <p className="text-red-600 text-sm">
                   {errors.tipoTarjeta.message}

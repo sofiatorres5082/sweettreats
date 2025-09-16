@@ -7,6 +7,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @Tag(name = "Métodos de Pago", description = "CRUD de métodos de pago (solo ADMIN)")
 @RestController
 @RequestMapping("/api/payment-methods")
@@ -49,4 +51,11 @@ public class PaymentMethodController {
         service.delete(id);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/all")
+    public ResponseEntity<List<PaymentMethodModel>> getAllNoPage() {
+        List<PaymentMethodModel> methods = service.getAll(0, 1000).getContent(); // trae hasta 1000
+        return ResponseEntity.ok(methods);
+    }
+
 }
