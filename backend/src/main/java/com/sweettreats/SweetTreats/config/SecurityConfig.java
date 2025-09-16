@@ -48,6 +48,7 @@ public class SecurityConfig {
                    http.requestMatchers(HttpMethod.POST, "/auth/log-in").permitAll();
                    http.requestMatchers(HttpMethod.GET, "/api/products/**").permitAll();
                    http.requestMatchers(HttpMethod.GET, "/auth/verify-session").permitAll();
+                   http.requestMatchers(HttpMethod.GET,    "/api/categories/**").permitAll();
                    http.requestMatchers("/uploads/**").permitAll();
 
                    // 🔒 ENDPOINTS AUTENTICADOS (cualquier usuario logueado)
@@ -56,6 +57,7 @@ public class SecurityConfig {
                    http.requestMatchers(HttpMethod.POST, "/auth/logout").authenticated();
                    http.requestMatchers(HttpMethod.POST, "/api/payments/**").authenticated();
                    http.requestMatchers(HttpMethod.PUT,  "/auth/change-password").authenticated();
+                   http.requestMatchers(HttpMethod.GET,    "/api/payment-methods/**").authenticated();
 
                    // 🛒 PEDIDOS - solo usuarios autenticados con rol USER
                    http.requestMatchers(HttpMethod.POST, "/api/orders").authenticated();
@@ -73,6 +75,15 @@ public class SecurityConfig {
                    http.requestMatchers(HttpMethod.GET,    "/api/users/**").hasRole("ADMIN");
                    http.requestMatchers(HttpMethod.PUT,    "/api/users/**").hasRole("ADMIN");
                    http.requestMatchers(HttpMethod.DELETE, "/api/users/**").hasRole("ADMIN");
+
+                   http.requestMatchers(HttpMethod.POST,   "/api/categories/**").hasRole("ADMIN");
+                   http.requestMatchers(HttpMethod.PUT,    "/api/categories/**").hasRole("ADMIN");
+                   http.requestMatchers(HttpMethod.DELETE, "/api/categories/**").hasRole("ADMIN");
+
+                   http.requestMatchers(HttpMethod.POST,   "/api/payment-methods/**").hasRole("ADMIN");
+                   http.requestMatchers(HttpMethod.PUT,    "/api/payment-methods/**").hasRole("ADMIN");
+                   http.requestMatchers(HttpMethod.DELETE, "/api/payment-methods/**").hasRole("ADMIN");
+
 
                    // ❌ CUALQUIER OTRO REQUEST SE RECHAZA
                    http.anyRequest().denyAll();

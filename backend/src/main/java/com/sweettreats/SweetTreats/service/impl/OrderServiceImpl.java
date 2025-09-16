@@ -5,14 +5,16 @@ import com.sweettreats.SweetTreats.dto.OrderRequest;
 import com.sweettreats.SweetTreats.dto.OrderResponse;
 import com.sweettreats.SweetTreats.model.*;
 import com.sweettreats.SweetTreats.repository.OrderRepository;
+import com.sweettreats.SweetTreats.repository.PaymentMethodRepository;
 import com.sweettreats.SweetTreats.repository.ProductRepository;
 import com.sweettreats.SweetTreats.service.OrderService;
 import jakarta.transaction.Transactional;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
-import org.springframework.data.domain.Pageable;
+
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -22,18 +24,29 @@ public class OrderServiceImpl implements OrderService {
 
     private final OrderRepository orderRepository;
     private final ProductRepository productRepository;
+    private final PaymentMethodRepository paymentMethodRepository;
 
-    public OrderServiceImpl(OrderRepository orderRepository, ProductRepository productRepository) {
+    public OrderServiceImpl(OrderRepository orderRepository,
+                            ProductRepository productRepository,
+                            PaymentMethodRepository paymentMethodRepository) {
         this.orderRepository = orderRepository;
         this.productRepository = productRepository;
+        this.paymentMethodRepository = paymentMethodRepository;
     }
+
     @Override
     @Transactional
     public OrderResponse crearPedido(OrderRequest request, UserModel user) {
         OrderModel order = new OrderModel();
         order.setUsermodel(user);
         order.setDireccionEnvio(request.direccionEnvio());
-        order.setMetodoPago(request.metodoPago());
+
+        // buscar entidad de método de pago
+        PaymentMethodModel metodoPago = paymentMethodRepository.findById(request.metodoPagoId())
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Método de pago no encontrado"));
+        order.setMetodoPago(metodoPago);
+
         order.setEstado(OrderEnum.PENDIENTE);
 
         List<OrderDetailModel> detalles = request.items().stream()
@@ -69,53 +82,15 @@ public class OrderServiceImpl implements OrderService {
 
         OrderModel saved = orderRepository.save(order);
 
-        List<OrderDetailResponse> detalleResp = saved.getDetalles().stream()
-                .map(d -> new OrderDetailResponse(
-                        d.getProductModel().getId(),
-                        d.getProductModel().getNombre(),
-                        d.getCantidad(),
-                        d.getPrecioUnitario()
-                ))
-                .collect(Collectors.toList());
-
-        return new OrderResponse(
-                saved.getId(),
-                saved.getUsermodel().getEmail(),
-                saved.getDireccionEnvio(),
-                saved.getMetodoPago(),
-                saved.getTotal(),
-                saved.getEstado(),
-                saved.getCreatedAt(),
-                detalleResp
-        );
+        return mapToResponse(saved);
     }
 
     @Override
     public List<OrderResponse> obtenerPedidosDeUsuario(UserModel user) {
         return orderRepository.findAllByUsermodel(user).stream()
-                .map(order -> {
-                    List<OrderDetailResponse> detalles = order.getDetalles().stream()
-                            .map(d -> new OrderDetailResponse(
-                                    d.getProductModel().getId(),
-                                    d.getProductModel().getNombre(),
-                                    d.getCantidad(),
-                                    d.getPrecioUnitario()
-                            ))
-                            .collect(Collectors.toList());
-                    return new OrderResponse(
-                            order.getId(),
-                            order.getUsermodel().getEmail(),
-                            order.getDireccionEnvio(),
-                            order.getMetodoPago(),
-                            order.getTotal(),
-                            order.getEstado(),
-                            order.getCreatedAt(),
-                            detalles
-                    );
-                })
+                .map(this::mapToResponse)
                 .collect(Collectors.toList());
     }
-
 
     @Override
     public OrderResponse obtenerPedidoPorId(UserModel user, Long id) {
@@ -133,35 +108,6 @@ public class OrderServiceImpl implements OrderService {
                 .map(this::mapToResponse);
     }
 
-    private OrderModel buildOrderEntity(OrderRequest request, UserModel user) {
-        OrderModel order = new OrderModel();
-        order.setUsermodel(user);
-        order.setDireccionEnvio(request.direccionEnvio());
-        order.setMetodoPago(request.metodoPago());
-        order.setEstado(OrderEnum.PENDIENTE);
-
-        List<OrderDetailModel> detalles = request.items().stream().map(item -> {
-            ProductModel prod = productRepository.findById(item.productId())
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Producto no encontrado"));
-            if (item.cantidad() > prod.getStock()) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Stock insuficiente para producto " + prod.getId());
-            }
-            OrderDetailModel det = new OrderDetailModel();
-            det.setOrderModel(order);
-            det.setProductModel(prod);
-            det.setCantidad(item.cantidad());
-            det.setPrecioUnitario(BigDecimal.valueOf(prod.getPrecio()));
-            return det;
-        }).collect(Collectors.toList());
-
-        BigDecimal total = detalles.stream()
-                .map(d -> d.getPrecioUnitario().multiply(BigDecimal.valueOf(d.getCantidad())))
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-        order.setDetalles(detalles);
-        order.setTotal(total);
-        return order;
-    }
-
     private OrderResponse mapToResponse(OrderModel saved) {
         List<OrderDetailResponse> detalleResp = saved.getDetalles().stream()
                 .map(d -> new OrderDetailResponse(
@@ -170,15 +116,17 @@ public class OrderServiceImpl implements OrderService {
                         d.getCantidad(),
                         d.getPrecioUnitario()))
                 .collect(Collectors.toList());
+
         return new OrderResponse(
                 saved.getId(),
                 saved.getUsermodel().getEmail(),
                 saved.getDireccionEnvio(),
-                saved.getMetodoPago(),
+                saved.getMetodoPago() != null ? saved.getMetodoPago().getNombre() : null,
                 saved.getTotal(),
                 saved.getEstado(),
                 saved.getCreatedAt(),
-                detalleResp);
+                detalleResp
+        );
     }
 
     @Override
@@ -190,7 +138,6 @@ public class OrderServiceImpl implements OrderService {
                 );
 
         order.setEstado(nuevoEstado);
-
         OrderModel saved = orderRepository.save(order);
 
         return mapToResponse(saved);
@@ -223,5 +170,4 @@ public class OrderServiceImpl implements OrderService {
                         HttpStatus.NOT_FOUND, "Pedido no encontrado"));
         return mapToResponse(order);
     }
-
 }

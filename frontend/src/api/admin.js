@@ -73,3 +73,35 @@ export const lowStockRequest = () =>
 
 export const noSalesRequest = (sinceDays) =>
   axios.get(`/api/reports/no-sales?sinceDays=${sinceDays}`);
+
+// Categories (Admin)
+export const getCategoriesRequest = (page = 0, size = 10) =>
+  axios.get("/api/categories", { params: { page, size } });
+
+export const getCategoryRequest = (id) =>
+  axios.get(`/api/categories/${id}`);
+
+export const createCategoryRequest = (nombre) =>
+  axios.post("/api/categories", null, { params: { nombre } });
+
+export const updateCategoryRequest = (id, nombre) =>
+  axios.put(`/api/categories/${id}`, null, { params: { nombre } });
+
+export const deleteCategoryRequest = (id) =>
+  axios.delete(`/api/categories/${id}`);
+
+// Payment Methods (Admin)
+export const getPaymentMethodsRequest = (page = 0, size = 10) =>
+  axios.get("/api/payment-methods", { params: { page, size } });
+
+export const getPaymentMethodRequest = (id) =>
+  axios.get(`/api/payment-methods/${id}`);
+
+export const createPaymentMethodRequest = (nombre) =>
+  axios.post("/api/payment-methods", null, { params: { nombre } });
+
+export const updatePaymentMethodRequest = (id, nombre) =>
+  axios.put(`/api/payment-methods/${id}`, null, { params: { nombre } });
+
+export const deletePaymentMethodRequest = (id) =>
+  axios.delete(`/api/payment-methods/${id}`);

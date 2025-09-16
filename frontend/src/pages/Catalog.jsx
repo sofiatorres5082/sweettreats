@@ -3,6 +3,7 @@ import { Card, CardContent } from "../components/ui/card";
 import { Button } from "../components/ui/button";
 import MobileHeader from "../components/MobileHeader";
 import { getProductsRequest } from "../api/products";
+import { getCategoriesRequest } from "../api/categories";
 import CartMenu from "../components/CartMenu";
 import { useCart } from "../context/CartContext";
 import { toast } from "sonner";
@@ -12,25 +13,48 @@ const API_URL = import.meta.env.VITE_API_URL || "";
 
 export default function Catalog() {
   const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [sortBy, setSortBy] = useState("nombre");
+  const [categoryId, setCategoryId] = useState("all");
   const { dispatch } = useCart();
 
   useEffect(() => {
     (async () => {
       try {
-        const res = await getProductsRequest();
-        const data = res.data;
-        setProducts(Array.isArray(data) ? data : data.content);
-      } catch {
-        toast.error("No se pudieron cargar los productos");
+        // ==== Productos ====
+        const resProducts = await getProductsRequest();
+        const dataProducts = resProducts?.data || [];
+        setProducts(
+          Array.isArray(dataProducts)
+            ? dataProducts
+            : dataProducts?.content || []
+        );
+
+        // ==== Categorías ====
+        const resCategories = await getCategoriesRequest();
+        const dataCategories = resCategories?.data || [];
+        setCategories(
+          Array.isArray(dataCategories)
+            ? dataCategories
+            : dataCategories?.content || []
+        );
+      } catch (error) {
+        console.error(error);
+        toast.error("No se pudieron cargar los productos o categorías");
+        setProducts([]);
+        setCategories([]);
       } finally {
         setLoading(false);
       }
     })();
   }, []);
 
-  const sortedProducts = [...products].sort((a, b) => {
+  const filteredProducts = products.filter((p) =>
+    categoryId === "all" ? true : p.categoria?.id === Number(categoryId)
+  );
+
+  const sortedProducts = [...filteredProducts].sort((a, b) => {
     switch (sortBy) {
       case "nombre":
         return a.nombre.localeCompare(b.nombre);
@@ -48,35 +72,45 @@ export default function Catalog() {
       <MobileHeader />
 
       <div className="min-h-screen bg-[#F9E4CF] px-4 pt-16 pb-8">
-        <div className="flex mb-5 max-w-6xl mx-auto justify-between items-center">
+        <div className="flex mb-5 max-w-6xl mx-auto justify-between items-center gap-4">
           <div className="flex items-center space-x-2">
-            <div className="flex flex-col md:flex-row md:items-center gap-2">
-              <label
-                htmlFor="sort"
-                className="font-[Comic_Neue] text-[#67463B]"
-              >
-                Ordenar por:
-              </label>
-              <select
-                id="sort"
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-                className="
-      font-[Comic_Neue] text-[#67463B] cursor-pointer
-      bg-white px-3 py-2 mr-2 pr-2
-      border border-gray-200 
-      rounded-2xl 
-      focus:outline-none focus:ring-2 focus:ring-[#E96D87] focus:border-transparent
-      transition 
-      ease-in-out duration-200
-    "
-              >
-                <option value="nombre">Nombre (A → Z)</option>
-                <option value="precio">Precio (menor → mayor)</option>
-                <option value="stock">Stock (mayor → menor)</option>
-              </select>
-            </div>
+            <label
+              htmlFor="category"
+              className="font-[Comic_Neue] text-[#67463B]"
+            >
+              Categoría:
+            </label>
+            <select
+              id="category"
+              value={categoryId}
+              onChange={(e) => setCategoryId(e.target.value)}
+              className="font-[Comic_Neue] text-[#67463B] cursor-pointer bg-white px-3 py-2 border border-gray-200 rounded-2xl"
+            >
+              <option value="all">Todas</option>
+              {categories.map((cat) => (
+                <option key={cat.id} value={cat.id}>
+                  {cat.nombre}
+                </option>
+              ))}
+            </select>
           </div>
+
+          <div className="flex items-center space-x-2">
+            <label htmlFor="sort" className="font-[Comic_Neue] text-[#67463B]">
+              Ordenar por:
+            </label>
+            <select
+              id="sort"
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              className="font-[Comic_Neue] text-[#67463B] cursor-pointer bg-white px-3 py-2 border border-gray-200 rounded-2xl"
+            >
+              <option value="nombre">Nombre (A → Z)</option>
+              <option value="precio">Precio (menor → mayor)</option>
+              <option value="stock">Stock (mayor → menor)</option>
+            </select>
+          </div>
+
           <CartMenu />
         </div>
 

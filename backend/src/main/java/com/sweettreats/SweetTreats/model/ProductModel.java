@@ -28,16 +28,22 @@ public class ProductModel {
     @Column(nullable = false)
     private Status status = Status.ACTIVE;
 
+    @ManyToOne
+    @JoinColumn(name = "categoria_id")
+    private CategoryModel categoria;
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    public ProductModel(String nombre, String descripcion, double precio, String imagen, int stock) {
+    public ProductModel(String nombre, String descripcion, Double precio, String imagen, Integer stock, CategoryModel categoria) {
         this.nombre = nombre;
         this.descripcion = descripcion;
         this.precio = precio;
         this.imagen = imagen;
         this.stock = stock;
+        this.categoria = categoria;
     }
+
 
     @PrePersist
     public void prePersist() {

@@ -5,6 +5,6 @@ import java.util.List;
 
 public record OrderRequest(
         String direccionEnvio,
-        String metodoPago,
+        Long metodoPagoId,
         List<OrderItem> items
 ) {}

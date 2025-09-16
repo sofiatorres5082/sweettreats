@@ -26,8 +26,6 @@ public class OrderModel {
 
     private String direccionEnvio;
 
-    private String metodoPago;
-
     @Enumerated(EnumType.STRING)
     private OrderEnum estado;
 
@@ -36,6 +34,10 @@ public class OrderModel {
 
     @OneToMany(mappedBy = "orderModel", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderDetailModel> detalles;
+
+    @ManyToOne
+    @JoinColumn(name = "metodo_pago_id")
+    private PaymentMethodModel metodoPago;
 
     @PrePersist
     public void prePersist() {
