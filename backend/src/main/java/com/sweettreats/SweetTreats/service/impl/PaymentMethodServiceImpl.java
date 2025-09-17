@@ -1,5 +1,6 @@
 package com.sweettreats.SweetTreats.service.impl;
 
+import com.sweettreats.SweetTreats.dto.PaymentMethodDTO;
 import com.sweettreats.SweetTreats.model.PaymentMethodModel;
 import com.sweettreats.SweetTreats.repository.PaymentMethodRepository;
 import com.sweettreats.SweetTreats.service.PaymentMethodService;
@@ -8,6 +9,9 @@ import org.springframework.data.domain.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class PaymentMethodServiceImpl implements PaymentMethodService {
@@ -49,5 +53,13 @@ public class PaymentMethodServiceImpl implements PaymentMethodService {
     public void delete(Long id) {
         PaymentMethodModel existing = getById(id);
         repo.delete(existing);
+    }
+
+    @Override
+    public List<PaymentMethodDTO> getAllPaymentMethods() {
+        return repo.findAll()
+                .stream()
+                .map(pm -> new PaymentMethodDTO(pm.getId(), pm.getNombre()))
+                .collect(Collectors.toList());
     }
 }

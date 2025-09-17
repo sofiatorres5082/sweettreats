@@ -1,7 +1,8 @@
 package com.sweettreats.SweetTreats.controller;
 
+import com.sweettreats.SweetTreats.dto.PaymentMethodDTO;
 import com.sweettreats.SweetTreats.model.PaymentMethodModel;
-import com.sweettreats.SweetTreats.service.impl.PaymentMethodServiceImpl;
+import com.sweettreats.SweetTreats.service.PaymentMethodService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
@@ -15,9 +16,9 @@ import java.util.List;
 @RequestMapping("/api/payment-methods")
 public class PaymentMethodController {
 
-    private final PaymentMethodServiceImpl service;
+    private final PaymentMethodService service;
 
-    public PaymentMethodController(PaymentMethodServiceImpl service) {
+    public PaymentMethodController(PaymentMethodService service) {
         this.service = service;
     }
 
@@ -61,9 +62,8 @@ public class PaymentMethodController {
 
     // 🌐 Endpoint público para clientes
     @GetMapping("/all")
-    public ResponseEntity<List<PaymentMethodModel>> getAllNoPage() {
-        List<PaymentMethodModel> methods = service.getAll(0, 1000).getContent(); // trae hasta 1000
+    public ResponseEntity<List<PaymentMethodDTO>> getAllNoPage() {
+        List<PaymentMethodDTO> methods = service.getAllPaymentMethods(); // devuelve DTO
         return ResponseEntity.ok(methods);
     }
-
 }

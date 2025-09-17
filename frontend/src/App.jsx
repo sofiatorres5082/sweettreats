@@ -23,6 +23,9 @@ const ProductsAdmin = lazy(() => import("./pages/admin/ProductsAdmin"));
 const OrdersAdmin = lazy(() => import("./pages/admin/OrdersAdmin"));
 const ReportsAdmin = lazy(() => import("./pages/admin/ReportsAdmin"));
 const CategoriesAdmin = lazy(() => import("./pages/admin/CategoriesAdmin"));
+const PaymentMethodsPage = lazy(() =>
+  import("./pages/admin/PaymentMethodsPage")
+);
 
 function App() {
   return (
@@ -125,6 +128,14 @@ function App() {
               element={
                 <Suspense fallback={<Spinner />}>
                   <CategoriesAdmin />
+                </Suspense>
+              }
+            />
+            <Route
+              path="payment-methods"
+              element={
+                <Suspense fallback={<Spinner />}>
+                  <PaymentMethodsPage />
                 </Suspense>
               }
             />

@@ -88,10 +88,30 @@ public class SweetTreatsApplication {
 				fruit = categoryRepository.save(CategoryModel.builder().nombre("Fruit").build());
 			} else {
 				List<CategoryModel> savedCategories = categoryRepository.findAll();
-				cakes = savedCategories.stream().filter(c -> c.getNombre().equals("Cakes")).findFirst().orElseThrow();
-				cheesecakes = savedCategories.stream().filter(c -> c.getNombre().equals("Cheesecakes")).findFirst().orElseThrow();
-				chocolate = savedCategories.stream().filter(c -> c.getNombre().equals("Chocolate")).findFirst().orElseThrow();
-				fruit = savedCategories.stream().filter(c -> c.getNombre().equals("Fruit")).findFirst().orElseThrow();
+				cakes = savedCategories.stream()
+						.filter(c -> c.getNombre().equals("Cakes"))
+						.findFirst()
+						.orElseGet(() -> categoryRepository.save(CategoryModel.builder().nombre("Cakes").build()));
+				cakes = savedCategories.stream()
+						.filter(c -> c.getNombre().equals("Cakes"))
+						.findFirst()
+						.orElseGet(() -> categoryRepository.save(CategoryModel.builder().nombre("Cakes").build()));
+
+				cheesecakes = savedCategories.stream()
+						.filter(c -> c.getNombre().equals("Cheesecakes"))
+						.findFirst()
+						.orElseGet(() -> categoryRepository.save(CategoryModel.builder().nombre("Cheesecakes").build()));
+
+				chocolate = savedCategories.stream()
+						.filter(c -> c.getNombre().equals("Chocolate"))
+						.findFirst()
+						.orElseGet(() -> categoryRepository.save(CategoryModel.builder().nombre("Chocolate").build()));
+
+				fruit = savedCategories.stream()
+						.filter(c -> c.getNombre().equals("Fruit"))
+						.findFirst()
+						.orElseGet(() -> categoryRepository.save(CategoryModel.builder().nombre("Fruit").build()));
+
 			}
 
 			// ==== Productos ====

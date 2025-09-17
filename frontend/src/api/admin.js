@@ -91,6 +91,9 @@ export const deleteCategoryRequest = (id) =>
   axios.delete(`/api/categories/${id}`);
 
 // Payment Methods (Admin)
+export const getAllPaymentMethodsRequest = () =>
+  axios.get("/api/payment-methods/all");
+
 export const getPaymentMethodsRequest = (page = 0, size = 10) =>
   axios.get("/api/payment-methods", { params: { page, size } });
 

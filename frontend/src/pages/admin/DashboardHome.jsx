@@ -7,6 +7,7 @@ import {
   BarChart2Icon,
   UsersIcon,
   LayersIcon,
+  CreditCardIcon, 
 } from "lucide-react";
 
 export default function DashboardHome() {
@@ -47,6 +48,13 @@ export default function DashboardHome() {
       description: "Gestionar categorías de productos",
       onClick: () => navigate("/dashboard/categories"),
       color: "from-[#FDE2E4] to-[#FAD2E1]",
+    },
+    {
+      title: "Métodos de Pago", 
+      icon: <CreditCardIcon size={32} />,
+      description: "Gestionar métodos de pago",
+      onClick: () => navigate("/dashboard/payment-methods"),
+      color: "from-[#D0F4DE] to-[#A9DEF9]",
     },
   ];
 
