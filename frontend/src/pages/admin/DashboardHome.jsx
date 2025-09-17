@@ -6,6 +6,7 @@ import {
   ShoppingCartIcon,
   BarChart2Icon,
   UsersIcon,
+  LayersIcon,
 } from "lucide-react";
 
 export default function DashboardHome() {
@@ -39,6 +40,13 @@ export default function DashboardHome() {
       description: "Métricas y tendencias",
       onClick: () => navigate("/dashboard/reports"),
       color: "from-[#FFAEBC] to-[#A0CED9]",
+    },
+    {
+      title: "Categorías",
+      icon: <LayersIcon size={32} />,
+      description: "Gestionar categorías de productos",
+      onClick: () => navigate("/dashboard/categories"),
+      color: "from-[#FDE2E4] to-[#FAD2E1]",
     },
   ];
 

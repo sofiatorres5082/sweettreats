@@ -11,6 +11,8 @@ const links = [
   { to: "/dashboard/products", label: "Productos" },
   { to: "/dashboard/orders", label: "Pedidos" },
   { to: "/dashboard/reports", label: "Reportes" },
+  { to: "/dashboard/categories", label: "Categorías" },
+  { to: "/dashboard/payment-methods", label: "Métodos de Pago" },
 ];
 
 export default function DashboardLayout() {
@@ -36,6 +38,7 @@ export default function DashboardLayout() {
 
   return (
     <div className="flex h-screen">
+      {/* Sidebar grande */}
       <aside className="hidden md:flex flex-col w-72 bg-[#FCF8EC] p-6">
         <h1
           className="text-4xl font-[Marimpa] text-center text-[#67463B] mb-6 tracking-wide"
@@ -60,6 +63,7 @@ export default function DashboardLayout() {
         </div>
       </aside>
 
+      {/* Sidebar mobile */}
       <div className="md:hidden fixed top-4 left-4 z-20">
         <Sheet>
           <SheetTrigger asChild>
@@ -93,6 +97,7 @@ export default function DashboardLayout() {
         </Sheet>
       </div>
 
+      {/* Contenido */}
       <main className="flex-1 overflow-auto bg-[#FFF6ED] md:pl-10">
         <Outlet />
       </main>

@@ -84,7 +84,6 @@ public class SecurityConfig {
                    http.requestMatchers(HttpMethod.PUT,    "/api/payment-methods/**").hasRole("ADMIN");
                    http.requestMatchers(HttpMethod.DELETE, "/api/payment-methods/**").hasRole("ADMIN");
 
-
                    // ❌ CUALQUIER OTRO REQUEST SE RECHAZA
                    http.anyRequest().denyAll();
                })
