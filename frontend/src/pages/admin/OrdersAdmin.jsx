@@ -3,6 +3,7 @@ import {
   getAllOrdersRequest,
   getOrderAdminByIdRequest,
   updateOrderStatusRequest,
+  getAllPaymentMethodsRequest,
 } from "../../api/admin";
 import {
   Table,
@@ -18,7 +19,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogDescription,
-  AlertDialogFooter,
   AlertDialogAction,
   AlertDialogCancel,
 } from "../../components/ui/alert-dialog";
@@ -48,15 +48,37 @@ const validTransitions = {
 
 export default function OrdersAdmin() {
   const [orders, setOrders] = useState([]);
+  const [paymentMethods, setPaymentMethods] = useState([]);
   const [page, setPage] = useState(0);
   const [size] = useState(10);
   const [totalPages, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
-
   const [viewingOrder, setViewingOrder] = useState(null);
   const [editingOrder, setEditingOrder] = useState(null);
 
-  async function fetchOrders(p = 0) {
+  // --- Fetch inicial ---
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const { data: methods } = await getAllPaymentMethodsRequest();
+        setPaymentMethods(Array.isArray(methods) ? methods : []);
+        await fetchOrders(0);
+      } catch {
+        toast.error("Error al cargar datos iniciales");
+      }
+    };
+    loadData();
+  }, []);
+
+  // --- Helpers ---
+  const getPaymentMethodName = (order) => {
+    // Primero chequeamos si metodoPago existe
+    if (!order.metodoPago) return "Desconocido";
+    return order.metodoPago.nombre || "Desconocido";
+  };
+
+  // --- Fetch orders ---
+  const fetchOrders = async (p = 0) => {
     setLoading(true);
     try {
       const { data } = await getAllOrdersRequest(p, size);
@@ -68,12 +90,9 @@ export default function OrdersAdmin() {
     } finally {
       setLoading(false);
     }
-  }
+  };
 
-  useEffect(() => {
-    fetchOrders(0);
-  }, []);
-
+  // --- Abrir detalle ---
   const openView = async (id) => {
     try {
       const { data } = await getOrderAdminByIdRequest(id);
@@ -83,9 +102,8 @@ export default function OrdersAdmin() {
     }
   };
 
-  const openEdit = (order) => {
-    setEditingOrder(order);
-  };
+  // --- Abrir edición ---
+  const openEdit = (order) => setEditingOrder(order);
 
   const onEditSubmit = async ({ estado }) => {
     try {
@@ -113,17 +131,18 @@ export default function OrdersAdmin() {
               <TableCell>Total</TableCell>
               <TableCell>Estado</TableCell>
               <TableCell>Fecha</TableCell>
+              <TableCell>Método de pago</TableCell>
               <TableCell>Acciones</TableCell>
             </TableRow>
           </TableHeader>
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={6}>Cargando…</TableCell>
+                <TableCell colSpan={7}>Cargando…</TableCell>
               </TableRow>
             ) : orders.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6}>No hay pedidos.</TableCell>
+                <TableCell colSpan={7}>No hay pedidos.</TableCell>
               </TableRow>
             ) : (
               orders.map((o) => (
@@ -138,7 +157,10 @@ export default function OrdersAdmin() {
                   <TableCell>
                     {new Date(o.createdAt).toLocaleDateString()}
                   </TableCell>
+                  <TableCell>{o.metodoPago || "Desconocido"}</TableCell>
+
                   <TableCell className="space-x-2">
+                    {/* Ver detalle */}
                     <AlertDialog
                       open={viewingOrder?.id === o.id}
                       onOpenChange={(open) => !open && setViewingOrder(null)}
@@ -161,6 +183,7 @@ export default function OrdersAdmin() {
                             {new Date(o.createdAt).toLocaleString()}
                           </AlertDialogDescription>
                         </AlertDialogHeader>
+
                         {viewingOrder?.detalles && (
                           <div className="p-4 space-y-4">
                             <p>
@@ -168,8 +191,10 @@ export default function OrdersAdmin() {
                               {viewingOrder.direccionEnvio}
                             </p>
                             <p>
-                              <strong>Pago:</strong> {viewingOrder.metodoPago}
+                              <strong>Pago:</strong>{" "}
+                              {viewingOrder.metodoPago || "Desconocido"}
                             </p>
+
                             <Table>
                               <TableHeader>
                                 <TableRow className="bg-[#E96D87] text-white">
@@ -197,19 +222,22 @@ export default function OrdersAdmin() {
                                 ))}
                               </TableBody>
                             </Table>
+
                             <p className="text-right font-bold">
                               Total: ${viewingOrder.total.toFixed(2)}
                             </p>
                           </div>
                         )}
+
                         <div className="flex justify-center mt-4">
-                          <AlertDialogCancel className={"cursor-pointer"}>
+                          <AlertDialogCancel className="cursor-pointer">
                             Cerrar
                           </AlertDialogCancel>
                         </div>
                       </AlertDialogContent>
                     </AlertDialog>
 
+                    {/* Editar estado */}
                     <AlertDialog open={editingOrder?.id === o.id}>
                       <AlertDialogTrigger asChild>
                         <Button
@@ -268,7 +296,7 @@ export default function OrdersAdmin() {
 
                           <div className="flex justify-center space-x-2 mt-4">
                             <AlertDialogCancel
-                              className={"cursor-pointer"}
+                              className="cursor-pointer"
                               onClick={() => setEditingOrder(null)}
                             >
                               Cancelar
@@ -295,12 +323,13 @@ export default function OrdersAdmin() {
         </Table>
       </div>
 
+      {/* Paginación */}
       <div className="flex justify-center items-center mt-6 space-x-6 text-white font-[Nunito] text-base">
         <Button
           size="sm"
-          className="cursor-pointer bg-white text-[#E96D87] border-none shadow-md font-[Nunito] px-4 py-2 hover:bg-gray-100 transition"
+          className="cursor-pointer bg-white text-[#E96D87] border-none shadow-md px-4 py-2 hover:bg-gray-100 transition"
           disabled={page === 0}
-          onClick={() => fetchUsers(page - 1)}
+          onClick={() => fetchOrders(page - 1)}
         >
           ← Anterior
         </Button>
@@ -311,9 +340,9 @@ export default function OrdersAdmin() {
 
         <Button
           size="sm"
-          className="cursor-pointer bg-white text-[#E96D87] border-none shadow-md font-[Nunito] px-4 py-2 hover:bg-gray-100 transition"
+          className="cursor-pointer bg-white text-[#E96D87] border-none shadow-md px-4 py-2 hover:bg-gray-100 transition"
           disabled={page + 1 === totalPages}
-          onClick={() => fetchUsers(page + 1)}
+          onClick={() => fetchOrders(page + 1)}
         >
           Siguiente →
         </Button>
