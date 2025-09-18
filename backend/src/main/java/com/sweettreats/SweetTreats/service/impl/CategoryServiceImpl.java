@@ -21,7 +21,7 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public Page<CategoryModel> getAll(int page, int size) {
         Pageable pg = PageRequest.of(page, size, Sort.by("id"));
-        return repo.findAll(pg);
+        return repo.findByActivoTrue(pg); // solo categorías activas
     }
 
     @Override
@@ -44,10 +44,11 @@ public class CategoryServiceImpl implements CategoryService {
         return repo.save(existing);
     }
 
-    @Transactional
     @Override
+    @Transactional
     public void delete(Long id) {
         CategoryModel existing = getById(id);
-        repo.delete(existing);
+        existing.setActivo(false);
+        repo.save(existing);
     }
 }

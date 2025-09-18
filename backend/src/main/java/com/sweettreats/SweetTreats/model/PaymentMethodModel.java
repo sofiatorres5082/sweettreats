@@ -22,4 +22,6 @@ public class PaymentMethodModel {
 
     @OneToMany(mappedBy = "metodoPago", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderModel> pedidos;
+
+    private Boolean activo = true;
 }

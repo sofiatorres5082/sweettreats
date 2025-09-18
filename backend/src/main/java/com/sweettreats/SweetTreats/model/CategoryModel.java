@@ -21,6 +21,8 @@ public class CategoryModel {
 
     private String nombre;
 
+    private Boolean activo = true;
+
     @OneToMany(mappedBy = "categoria", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
     private List<ProductModel> productos;

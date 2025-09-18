@@ -81,38 +81,35 @@ public class SweetTreatsApplication {
 			CategoryModel chocolate;
 			CategoryModel fruit;
 
+			// ==== Categorías ====
 			if (categoryRepository.count() == 0) {
-				cakes = categoryRepository.save(CategoryModel.builder().nombre("Cakes").build());
-				cheesecakes = categoryRepository.save(CategoryModel.builder().nombre("Cheesecakes").build());
-				chocolate = categoryRepository.save(CategoryModel.builder().nombre("Chocolate").build());
-				fruit = categoryRepository.save(CategoryModel.builder().nombre("Fruit").build());
+				cakes = categoryRepository.save(CategoryModel.builder().nombre("Cakes").activo(true).build());
+				cheesecakes = categoryRepository.save(CategoryModel.builder().nombre("Cheesecakes").activo(true).build());
+				chocolate = categoryRepository.save(CategoryModel.builder().nombre("Chocolate").activo(true).build());
+				fruit = categoryRepository.save(CategoryModel.builder().nombre("Fruit").activo(true).build());
 			} else {
 				List<CategoryModel> savedCategories = categoryRepository.findAll();
 				cakes = savedCategories.stream()
 						.filter(c -> c.getNombre().equals("Cakes"))
 						.findFirst()
-						.orElseGet(() -> categoryRepository.save(CategoryModel.builder().nombre("Cakes").build()));
-				cakes = savedCategories.stream()
-						.filter(c -> c.getNombre().equals("Cakes"))
-						.findFirst()
-						.orElseGet(() -> categoryRepository.save(CategoryModel.builder().nombre("Cakes").build()));
+						.orElseGet(() -> categoryRepository.save(CategoryModel.builder().nombre("Cakes").activo(true).build()));
 
 				cheesecakes = savedCategories.stream()
 						.filter(c -> c.getNombre().equals("Cheesecakes"))
 						.findFirst()
-						.orElseGet(() -> categoryRepository.save(CategoryModel.builder().nombre("Cheesecakes").build()));
+						.orElseGet(() -> categoryRepository.save(CategoryModel.builder().nombre("Cheesecakes").activo(true).build()));
 
 				chocolate = savedCategories.stream()
 						.filter(c -> c.getNombre().equals("Chocolate"))
 						.findFirst()
-						.orElseGet(() -> categoryRepository.save(CategoryModel.builder().nombre("Chocolate").build()));
+						.orElseGet(() -> categoryRepository.save(CategoryModel.builder().nombre("Chocolate").activo(true).build()));
 
 				fruit = savedCategories.stream()
 						.filter(c -> c.getNombre().equals("Fruit"))
 						.findFirst()
-						.orElseGet(() -> categoryRepository.save(CategoryModel.builder().nombre("Fruit").build()));
-
+						.orElseGet(() -> categoryRepository.save(CategoryModel.builder().nombre("Fruit").activo(true).build()));
 			}
+
 
 			// ==== Productos ====
 			if (productRepository.count() == 0) {
@@ -130,9 +127,9 @@ public class SweetTreatsApplication {
 
 			// ==== Métodos de Pago ====
 			if (paymentMethodRepository.count() == 0) {
-				PaymentMethodModel cash = PaymentMethodModel.builder().nombre("Efectivo").build();
-				PaymentMethodModel card = PaymentMethodModel.builder().nombre("Tarjeta").build();
-				PaymentMethodModel mercadopago = PaymentMethodModel.builder().nombre("MercadoPago").build();
+				PaymentMethodModel cash = PaymentMethodModel.builder().nombre("Efectivo").activo(true).build();
+				PaymentMethodModel card = PaymentMethodModel.builder().nombre("Tarjeta").activo(true).build();
+				PaymentMethodModel mercadopago = PaymentMethodModel.builder().nombre("MercadoPago").activo(true).build();
 
 				paymentMethodRepository.saveAll(List.of(cash, card, mercadopago));
 			}

@@ -25,7 +25,7 @@ public class PaymentMethodServiceImpl implements PaymentMethodService {
     @Override
     public Page<PaymentMethodModel> getAll(int page, int size) {
         Pageable pg = PageRequest.of(page, size, Sort.by("id"));
-        return repo.findAll(pg);
+        return repo.findAllByActivoTrue(pg); // método nuevo en repository
     }
 
     @Override
@@ -52,12 +52,13 @@ public class PaymentMethodServiceImpl implements PaymentMethodService {
     @Override
     public void delete(Long id) {
         PaymentMethodModel existing = getById(id);
-        repo.delete(existing);
+        existing.setActivo(false); // solo marcamos como inactivo
+        repo.save(existing);
     }
 
     @Override
     public List<PaymentMethodDTO> getAllPaymentMethods() {
-        return repo.findAll()
+        return repo.findAllByActivoTrue()
                 .stream()
                 .map(pm -> new PaymentMethodDTO(pm.getId(), pm.getNombre()))
                 .collect(Collectors.toList());
