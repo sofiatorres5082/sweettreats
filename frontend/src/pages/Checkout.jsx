@@ -34,7 +34,7 @@ import { getAllPaymentMethodsRequest } from "../api/payments";
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
 function CheckoutForm() {
-  const { cart, dispatch } = useCart();
+  const { cart, clearCart } = useCart();
   const { isAuth, loading } = useAuth();
   const navigate = useNavigate();
   const stripe = useStripe();
@@ -62,7 +62,7 @@ function CheckoutForm() {
   });
 
   const total = cart.reduce(
-    (acc, item) => acc + item.precio * item.cantidad,
+    (acc, item) => acc + item.precioUnitario * item.cantidad,
     0
   );
 
@@ -91,14 +91,22 @@ function CheckoutForm() {
 
     if (orderDone) return;
 
-    const hasValidProducts = cart.some((i) => i.precio > 0 && i.cantidad > 0);
-    if (!hasValidProducts) {
+    const hasValidProducts = cart.length > 0 && cart.some((i) => i.precioUnitario > 0 && i.cantidad > 0);
+    
+    console.log("Validación del carrito:", {
+      cartLength: cart.length,
+      hasValidProducts,
+      orderDone,
+      openSuccess
+    });
+
+    if (!hasValidProducts && !orderDone && !openSuccess) {
       toast.error(
         "El carrito debe tener al menos un producto válido para continuar"
       );
       navigate("/catalogo");
     }
-  }, [loading, isAuth, cart, navigate, orderDone]);
+  }, [loading, isAuth, cart, navigate, orderDone, openSuccess]);
 
   if (loading) {
     return <Spinner />;
@@ -107,6 +115,7 @@ function CheckoutForm() {
   const onSubmit = async (data) => {
     setProcessing(true);
     try {
+      // Procesar pago con Stripe (siempre, ya que todos son tarjetas)
       const {
         data: { clientSecret },
       } = await createPaymentIntent(total * 100);
@@ -121,28 +130,33 @@ function CheckoutForm() {
           },
         },
       });
+
       if (error) {
         toast.error(`Error al procesar el pago: ${error.message}`);
         return;
       }
 
+      // Crear la orden
       await createOrderRequest({
         direccionEnvio: data.direccion,
         metodoPagoId: Number(data.tipoTarjeta),
         items: cart.map((item) => ({
-          productId: item.id,
+          productId: item.productId,
           cantidad: item.cantidad,
-          precioUnitario: item.precio,
+          precioUnitario: item.precioUnitario,
         })),
       });
 
-      dispatch({ type: "CLEAR_CART" });
       setOrderDone(true);
       toast.success("🍰 Pedido realizado con éxito");
       setOpenSuccess(true);
+      
     } catch (err) {
       console.error(err);
-      toast.error("Hubo un error al procesar el pedido");
+      const errorMessage = err.response?.data?.message || 
+                          err.response?.data?.error || 
+                          "Hubo un error al procesar el pedido";
+      toast.error(errorMessage);
     } finally {
       setProcessing(false);
     }
@@ -152,8 +166,8 @@ function CheckoutForm() {
     console.warn("Errores de validación:", formErrors);
   };
 
-  const hasValidProducts = cart.some(
-    (item) => item.precio > 0 && item.cantidad > 0
+  const hasValidProducts = cart.length > 0 && cart.some(
+    (item) => item.precioUnitario > 0 && item.cantidad > 0
   );
 
   return (
@@ -167,15 +181,28 @@ function CheckoutForm() {
             <h2 className="text-[#67463B] font-[Comic_Neue] text-2xl mb-4">
               Datos de Envío
             </h2>
-            {["nombre", "direccion", "telefono"].map((field) => (
+            {["nombre", "direccion", "telefono", "email"].map((field) => (
               <div key={field} className="mb-4">
                 <label htmlFor={field} className="block mb-1 capitalize">
-                  {field}
+                  {field === "email" ? "Email" : field}
                 </label>
                 <Controller
                   name={field}
                   control={control}
-                  render={({ field }) => <Input id={field} {...field} />}
+                  render={({ field }) => (
+                    <Input 
+                      id={field.name} 
+                      type={field.name === "email" ? "email" : "text"}
+                      placeholder={
+                        field.name === "direccion" 
+                          ? "Calle 123, Ciudad, Código Postal, Provincia" 
+                          : field.name === "email"
+                          ? "tu-email@ejemplo.com"
+                          : ""
+                      }
+                      {...field} 
+                    />
+                  )}
                 />
                 {errors[field] && (
                   <p className="text-red-600 text-sm">
@@ -185,9 +212,39 @@ function CheckoutForm() {
               </div>
             ))}
 
+            <h2 className="text-[#67463B] font-[Comic_Neue] text-2xl mt-6 mb-4">
+              Información de Pago
+            </h2>
+            
+            <div className="mb-4">
+              <label className="block mb-1">Tipo de Tarjeta</label>
+              <Controller
+                name="tipoTarjeta"
+                control={control}
+                render={({ field }) => (
+                  <select
+                    {...field}
+                    className="w-full rounded-md border px-3 py-2"
+                  >
+                    <option value="">Selecciona el tipo de tarjeta</option>
+                    {paymentMethods.map((pm) => (
+                      <option key={pm.id} value={pm.id}>
+                        {pm.nombre}
+                      </option>
+                    ))}
+                  </select>
+                )}
+              />
+              {errors.tipoTarjeta && (
+                <p className="text-red-600 text-sm">
+                  {errors.tipoTarjeta.message}
+                </p>
+              )}
+            </div>
+
             <div className="mb-4">
               <label htmlFor="nombreTitular" className="block mb-1">
-                Titular de la tarjeta
+                Nombre del titular
               </label>
               <Controller
                 name="nombreTitular"
@@ -207,41 +264,26 @@ function CheckoutForm() {
               )}
             </div>
 
-            <h2 className="text-[#67463B] font-[Comic_Neue] text-2xl mt-6 mb-4">
-              Pago
-            </h2>
-            <div className="mb-4">
-              <label className="block mb-1">Tipo de Tarjeta</label>
-              <Controller
-                name="tipoTarjeta"
-                control={control}
-                render={({ field }) => (
-                  <select
-                    {...field}
-                    className="w-full rounded-md border px-3 py-2"
-                  >
-                    <option value="">Selecciona un método de pago</option>
-                    {paymentMethods.map((pm) => (
-                      <option key={pm.id} value={pm.id}>
-                        {pm.nombre}
-                      </option>
-                    ))}
-                  </select>
-                )}
-              />
-
-              {errors.tipoTarjeta && (
-                <p className="text-red-600 text-sm">
-                  {errors.tipoTarjeta.message}
-                </p>
-              )}
-            </div>
-
             <div className="mb-4">
               <label className="block mb-1">Datos de la tarjeta</label>
-              <div className="border rounded-md p-3">
-                <CardElement />
+              <div className="border rounded-md p-3 bg-white">
+                <CardElement 
+                  options={{
+                    style: {
+                      base: {
+                        fontSize: '16px',
+                        color: '#424770',
+                        '::placeholder': {
+                          color: '#aab7c4',
+                        },
+                      },
+                    },
+                  }}
+                />
               </div>
+              <p className="text-xs text-gray-500 mt-1">
+                Ingresa el número, fecha de vencimiento y código de seguridad
+              </p>
             </div>
           </div>
 
@@ -249,32 +291,74 @@ function CheckoutForm() {
             <h2 className="text-[#67463B] font-[Comic_Neue] text-2xl mb-4">
               Resumen del Pedido
             </h2>
-            {cart.map((item) => (
-              <div key={item.id} className="flex justify-between mb-2">
-                <span>
-                  {item.nombre} x{item.cantidad}
-                </span>
-                <span>${item.precio * item.cantidad}</span>
+            
+            <div className="bg-white rounded-lg p-4 shadow-sm mb-4">
+              {cart.map((item) => (
+                <div key={item.productId} className="flex justify-between items-center mb-3 pb-3 border-b border-gray-100 last:border-b-0">
+                  <div className="flex items-center gap-3">
+                    <img 
+                      src={item.imagen} 
+                      alt={item.nombre}
+                      className="w-12 h-12 rounded-lg object-cover"
+                      onError={(e) => {
+                        e.target.src = "/placeholder.png";
+                      }}
+                    />
+                    <div>
+                      <span className="font-medium text-sm">{item.nombre}</span>
+                      <div className="text-xs text-gray-500">
+                        Cantidad: {item.cantidad}
+                      </div>
+                    </div>
+                  </div>
+                  <span className="font-medium">
+                    ${(item.precioUnitario * item.cantidad).toFixed(2)}
+                  </span>
+                </div>
+              ))}
+              
+              <div className="border-t pt-3 mt-3">
+                <div className="flex justify-between items-center text-lg font-semibold text-[#67463B]">
+                  <span>Total:</span>
+                  <span>${total.toFixed(2)}</span>
+                </div>
               </div>
-            ))}
-            <div className="border-t mt-4 pt-4 flex justify-between text-lg">
-              <span>Total:</span>
-              <span>${total}</span>
             </div>
+
+            <div className="text-xs text-gray-500 mb-4 p-3 bg-blue-50 rounded-md">
+              <p>✅ Pago seguro con encriptación SSL</p>
+              <p>🚚 Envío a domicilio incluido</p>
+              <p>📱 Recibirás confirmación por email</p>
+            </div>
+            
             <Button
               type="submit"
               disabled={processing || !stripe || !elements || !hasValidProducts}
-              className="mt-6 w-full bg-[#E96D87] rounded-3xl text-white disabled:opacity-50 cursor-pointer"
+              className="w-full bg-[#E96D87] hover:bg-[#d95c74] rounded-3xl text-white font-[Comic_Neue] py-3 disabled:opacity-50"
             >
-              {processing ? "Procesando…" : "Confirmar Pedido"}
+              {processing ? (
+                <div className="flex items-center justify-center gap-2">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                  Procesando pago...
+                </div>
+              ) : (
+                `Pagar $${total.toFixed(2)}`
+              )}
             </Button>
+
+            <p className="text-xs text-center text-gray-500 mt-2">
+              Al confirmar, aceptas nuestros términos y condiciones
+            </p>
           </div>
         </div>
       </form>
 
-      {(processing || !stripe || !elements) && (
-        <div className="fixed inset-0 bg-white bg-opacity-50 flex items-center justify-center z-50">
-          <Spinner />
+      {processing && (
+        <div className="fixed inset-0 bg-[#FFF6ED] bg-opacity-80 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 flex items-center gap-3 shadow-lg border border-[#E96D87]/20">
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#E96D87]"></div>
+            <span className="font-[Comic_Neue] text-[#67463B]">Procesando tu pago...</span>
+          </div>
         </div>
       )}
 
@@ -288,14 +372,15 @@ function CheckoutForm() {
               ¡Pedido realizado con éxito!
             </AlertDialogTitle>
             <AlertDialogDescription className="mt-2 text-center">
-              Gracias por tu compra. ¿Qué deseas hacer ahora?
+              Gracias por tu compra. Recibirás un email con los detalles de tu pedido.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <div className="flex flex-col items-center space-y-2 mt-4 w-full">
               <AlertDialogAction
-                className="rounded-xl bg-[#E57F95] text-white hover:bg-pink-700 font-[Comic_Neue] cursor-pointer"
-                onClick={() => {
+                className="rounded-xl bg-[#E57F95] text-white hover:bg-pink-700 font-[Comic_Neue] cursor-pointer w-full"
+                onClick={async () => {
+                  await clearCart();
                   setOpenSuccess(false);
                   navigate("/catalogo");
                 }}
@@ -303,8 +388,9 @@ function CheckoutForm() {
                 Seguir comprando
               </AlertDialogAction>
               <AlertDialogCancel
-                className="rounded-xl bg-white border hover:bg-pink-100 font-[Comic_Neue] cursor-pointer"
-                onClick={() => {
+                className="rounded-xl bg-white border hover:bg-pink-100 font-[Comic_Neue] cursor-pointer w-full"
+                onClick={async () => {
+                  await clearCart();
                   setOpenSuccess(false);
                   navigate("/mis-pedidos");
                 }}

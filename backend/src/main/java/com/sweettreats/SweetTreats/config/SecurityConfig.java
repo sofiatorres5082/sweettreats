@@ -58,6 +58,7 @@ public class SecurityConfig {
                    http.requestMatchers(HttpMethod.POST, "/api/payments/**").authenticated();
                    http.requestMatchers(HttpMethod.PUT,  "/auth/change-password").authenticated();
                    http.requestMatchers(HttpMethod.GET,    "/api/payment-methods/**").authenticated();
+                   http.requestMatchers("/api/cart/**").authenticated();
 
                    // 🛒 PEDIDOS - solo usuarios autenticados con rol USER
                    http.requestMatchers(HttpMethod.POST, "/api/orders").authenticated();

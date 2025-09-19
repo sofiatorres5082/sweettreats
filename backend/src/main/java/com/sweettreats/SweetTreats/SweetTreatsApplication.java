@@ -127,9 +127,9 @@ public class SweetTreatsApplication {
 
 			// ==== Métodos de Pago ====
 			if (paymentMethodRepository.count() == 0) {
-				PaymentMethodModel cash = PaymentMethodModel.builder().nombre("Efectivo").activo(true).build();
-				PaymentMethodModel card = PaymentMethodModel.builder().nombre("Tarjeta").activo(true).build();
-				PaymentMethodModel mercadopago = PaymentMethodModel.builder().nombre("MercadoPago").activo(true).build();
+				PaymentMethodModel cash = PaymentMethodModel.builder().nombre("Visa").activo(true).build();
+				PaymentMethodModel card = PaymentMethodModel.builder().nombre("MasterCard").activo(true).build();
+				PaymentMethodModel mercadopago = PaymentMethodModel.builder().nombre("American Express").activo(true).build();
 
 				paymentMethodRepository.saveAll(List.of(cash, card, mercadopago));
 			}
