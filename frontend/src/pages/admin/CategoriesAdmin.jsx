@@ -23,6 +23,7 @@ import {
   AlertDialogCancel,
 } from "../../components/ui/alert-dialog";
 import { Button } from "../../components/ui/button";
+import { Input } from "../../components/ui/input";
 import { toast } from "sonner";
 
 export default function CategoriesAdmin() {
@@ -33,7 +34,7 @@ export default function CategoriesAdmin() {
   const [loading, setLoading] = useState(true);
 
   const [newCategory, setNewCategory] = useState("");
-  const [editingCategory, setEditingCategory] = useState(null);
+  const [editing, setEditing] = useState(null);
 
   async function fetchCategories(p = 0) {
     setLoading(true);
@@ -69,7 +70,7 @@ export default function CategoriesAdmin() {
     try {
       await updateCategoryRequest(id, nombre);
       toast.success("Categoría actualizada");
-      setEditingCategory(null);
+      setEditing(null);
       fetchCategories(page);
     } catch {
       toast.error("Error al actualizar categoría");
@@ -94,8 +95,7 @@ export default function CategoriesAdmin() {
 
       {/* Crear nueva */}
       <div className="flex items-center gap-2 mb-6">
-        <input
-          type="text"
+        <Input
           value={newCategory}
           onChange={(e) => setNewCategory(e.target.value)}
           placeholder="Nombre de categoría"
@@ -136,58 +136,79 @@ export default function CategoriesAdmin() {
                 >
                   <TableCell>{c.id}</TableCell>
                   <TableCell>
-                    {editingCategory?.id === c.id ? (
-                      <input
-                        type="text"
+                    {editing?.id === c.id ? (
+                      <Input
                         defaultValue={c.nombre}
-                        onBlur={(e) =>
-                          handleUpdate(c.id, e.target.value.trim())
+                        onChange={(e) =>
+                          setEditing({ ...editing, nombre: e.target.value })
                         }
-                        className="border rounded px-2 py-1 w-full"
                       />
                     ) : (
                       c.nombre
                     )}
                   </TableCell>
                   <TableCell className="space-x-2">
-                    <Button
-                      size="sm"
-                      className="bg-[#3690e4] text-white cursor-pointer"
-                      onClick={() => setEditingCategory(c)}
-                    >
-                      Editar
-                    </Button>
-
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
+                    {editing?.id === c.id ? (
+                      <>
                         <Button
                           size="sm"
-                          className="bg-red-500 text-white cursor-pointer"
+                          onClick={() => handleUpdate(c.id, editing.nombre)}
+                          className="bg-[#3690e4] text-white cursor-pointer"
                         >
-                          Eliminar
+                          Guardar
                         </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent className="bg-[#FCF8EC] text-[#67463B] border-[#D9B9A1]">
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>
-                            ¿Eliminar {c.nombre}?
-                          </AlertDialogTitle>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel className="cursor-pointer">
-                            Cancelar
-                          </AlertDialogCancel>
-                          <AlertDialogAction asChild>
-                            <button
-                              onClick={() => handleDelete(c.id)}
-                              className="bg-red-500 text-white px-4 py-2 rounded cursor-pointer"
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setEditing(null)}
+                          className="cursor-pointer"
+                        >
+                          Cancelar
+                        </Button>
+                      </>
+                    ) : (
+                      <>
+                        <Button
+                          size="sm"
+                          className="bg-[#E96D87] text-white cursor-pointer"
+                          onClick={() => setEditing(c)}
+                        >
+                          Editar
+                        </Button>
+
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button
+                              size="sm"
+                              className="bg-red-500 text-white cursor-pointer"
                             >
                               Eliminar
-                            </button>
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent className="bg-[#FCF8EC] text-[#67463B] border-[#D9B9A1]">
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>
+                                ¿Eliminar {c.nombre}?
+                              </AlertDialogTitle>
+                            </AlertDialogHeader>
+                            <p className="text-sm text-gray-600">
+                              Esta acción no se puede deshacer.
+                            </p>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel className="cursor-pointer">
+                                Cancelar
+                              </AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() => handleDelete(c.id)}
+                                className="bg-red-500 text-white cursor-pointer"
+                              >
+                                Confirmar
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </>
+                    )}
                   </TableCell>
                 </TableRow>
               ))
