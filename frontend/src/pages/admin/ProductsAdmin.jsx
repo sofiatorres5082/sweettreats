@@ -5,6 +5,7 @@ import {
   createProductRequest,
   updateProductRequest,
   deleteProductRequest,
+  getCategoriesRequest,
 } from "../../api/admin";
 import {
   Table,
@@ -44,12 +45,14 @@ const schema = yup.object({
     .min(0, "Stock no puede ser negativo")
     .required("Stock obligatorio"),
   descripcion: yup.string().optional(),
+  categoriaId: yup.number().nullable().optional(),
 });
 
 const API_URL = import.meta.env.VITE_API_URL || "";
 
 export default function ProductsAdmin() {
   const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [page, setPage] = useState(0);
   const [size] = useState(10);
   const [totalPages, setTotal] = useState(0);
@@ -73,9 +76,7 @@ export default function ProductsAdmin() {
     trigger,
     setError,
   } = useForm({
-    resolver: yupResolver(schema, {
-      context: { creating, keepExistingImage },
-    }),
+    resolver: yupResolver(schema),
     mode: "onChange",
     defaultValues: {
       nombre: "",
@@ -83,11 +84,12 @@ export default function ProductsAdmin() {
       stock: "",
       descripcion: "",
       imagen: null,
+      categoriaId: null,
     },
   });
 
   const fetch = async (p = 0) => {
-    setLoading(true); 
+    setLoading(true);
     try {
       const res = await getProductsByStatusRequest(status, p, size);
       setProducts(res.data.content);
@@ -96,12 +98,22 @@ export default function ProductsAdmin() {
     } catch (err) {
       console.error("Error al obtener productos por estado:", err);
     } finally {
-      setLoading(false); 
+      setLoading(false);
+    }
+  };
+
+  const fetchCategories = async () => {
+    try {
+      const res = await getCategoriesRequest(0, 100);
+      setCategories(res.data.content || []);
+    } catch (err) {
+      console.error("Error al cargar categorías:", err);
     }
   };
 
   useEffect(() => {
     fetch(0);
+    fetchCategories();
   }, [status]);
 
   const handleStatusChange = (e) => {
@@ -239,7 +251,6 @@ export default function ProductsAdmin() {
       setKeepExistingImage(true);
 
       const originalImagePath = product.imagen || null;
-
       const imageUrl = product.imagen ? `${API_URL}${product.imagen}` : null;
       setCurrentImageUrl(originalImagePath);
       setPreviewUrl(imageUrl);
@@ -251,6 +262,7 @@ export default function ProductsAdmin() {
         stock: product.stock,
         descripcion: product.descripcion || "",
         imagen: null,
+        categoriaId: product.categoria?.id || null,
       });
 
       setTimeout(() => {
@@ -268,6 +280,7 @@ export default function ProductsAdmin() {
         stock: "",
         descripcion: "",
         imagen: null,
+        categoriaId: null,
       });
     }
   };
@@ -286,7 +299,7 @@ export default function ProductsAdmin() {
     e.preventDefault();
     e.stopPropagation();
     setDragActive(false);
-    
+
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       const file = e.dataTransfer.files[0];
       if (["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
@@ -340,6 +353,9 @@ export default function ProductsAdmin() {
     formData.append("mantenerImagen", keepExistingImage.toString());
     if (data.imagen && data.imagen.length > 0) {
       formData.append("imagen", data.imagen[0]);
+    }
+    if (data.categoriaId) {
+      formData.append("categoriaId", data.categoriaId);
     }
 
     try {
@@ -423,6 +439,7 @@ export default function ProductsAdmin() {
               <TableCell>Nombre</TableCell>
               <TableCell>Precio</TableCell>
               <TableCell>Stock</TableCell>
+              <TableCell>Categoría</TableCell>
               <TableCell>Imagen</TableCell>
               <TableCell>Acciones</TableCell>
             </TableRow>
@@ -430,11 +447,11 @@ export default function ProductsAdmin() {
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={6}>Cargando…</TableCell>
+                <TableCell colSpan={7}>Cargando…</TableCell>
               </TableRow>
             ) : products.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6}>No hay productos.</TableCell>
+                <TableCell colSpan={7}>No hay productos.</TableCell>
               </TableRow>
             ) : (
               products.map((p) => (
@@ -446,6 +463,15 @@ export default function ProductsAdmin() {
                   <TableCell>{p.nombre}</TableCell>
                   <TableCell>${p.precio.toFixed(2)}</TableCell>
                   <TableCell>{p.stock}</TableCell>
+                  <TableCell>
+                    {p.categoria ? (
+                      <span className="px-2 py-1 bg-[#E96D87]/10 text-[#E96D87] rounded text-xs">
+                        {p.categoria.nombre}
+                      </span>
+                    ) : (
+                      <span className="text-gray-400 text-xs">Sin categoría</span>
+                    )}
+                  </TableCell>
                   <TableCell>
                     {p.imagen ? (
                       <ImageWithSkeleton
@@ -561,6 +587,36 @@ export default function ProductsAdmin() {
                         setTimeout(() => trigger("descripcion"), 100);
                       }}
                     />
+                  )}
+                />
+              </div>
+
+              <div>
+                <Controller
+                  name="categoriaId"
+                  control={control}
+                  render={({ field }) => (
+                    <div className="space-y-1">
+                      <label className="text-sm text-[#67463B] font-medium">
+                        Categoría (opcional)
+                      </label>
+                      <select
+                        {...field}
+                        value={field.value || ""}
+                        onChange={(e) => {
+                          const val = e.target.value === "" ? null : Number(e.target.value);
+                          field.onChange(val);
+                        }}
+                        className="w-full border border-[#D9B9A1] rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#E96D87] bg-white text-sm"
+                      >
+                        <option value="">Sin categoría</option>
+                        {categories.map((cat) => (
+                          <option key={cat.id} value={cat.id}>
+                            {cat.nombre}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
                   )}
                 />
               </div>

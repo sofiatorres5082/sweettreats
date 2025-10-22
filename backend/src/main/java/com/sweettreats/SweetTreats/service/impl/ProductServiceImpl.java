@@ -1,8 +1,9 @@
-// src/main/java/com/sweettreats/SweetTreats/service/ProductService.java
 package com.sweettreats.SweetTreats.service.impl;
 
+import com.sweettreats.SweetTreats.model.CategoryModel;
 import com.sweettreats.SweetTreats.model.ProductModel;
 import com.sweettreats.SweetTreats.model.Status;
+import com.sweettreats.SweetTreats.repository.CategoryRepository;
 import com.sweettreats.SweetTreats.repository.ProductRepository;
 import com.sweettreats.SweetTreats.service.ProductService;
 import jakarta.transaction.Transactional;
@@ -22,12 +23,14 @@ import java.util.UUID;
 public class ProductServiceImpl implements ProductService {
 
     private final ProductRepository repo;
+    private final CategoryRepository categoryRepo;
 
     @Value("${app.upload.dir}")
     private String uploadDir;
 
-    public ProductServiceImpl(ProductRepository repo) {
+    public ProductServiceImpl(ProductRepository repo, CategoryRepository categoryRepo) {
         this.repo = repo;
+        this.categoryRepo = categoryRepo;
     }
 
     @Override
@@ -47,13 +50,20 @@ public class ProductServiceImpl implements ProductService {
                                Double precio,
                                Integer stock,
                                String descripcion,
-                               MultipartFile imagen) {
+                               MultipartFile imagen,
+                               Long categoriaId) {
 
         ProductModel product = new ProductModel();
         product.setNombre(nombre);
         product.setPrecio(precio);
         product.setStock(stock);
         product.setDescripcion(descripcion);
+
+        if (categoriaId != null) {
+            CategoryModel categoria = categoryRepo.findById(categoriaId)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Categoría no encontrada"));
+            product.setCategoria(categoria);
+        }
 
         if (imagen != null && !imagen.isEmpty()) {
             product.setImagen(saveImage(imagen));
@@ -69,13 +79,22 @@ public class ProductServiceImpl implements ProductService {
                                Integer stock,
                                String descripcion,
                                MultipartFile imagen,
-                               Boolean mantenerImagen) {
+                               Boolean mantenerImagen,
+                               Long categoriaId) {
 
         ProductModel existing = getById(id);
         existing.setNombre(nombre);
         existing.setPrecio(precio);
         existing.setStock(stock);
         existing.setDescripcion(descripcion);
+
+        if (categoriaId != null) {
+            CategoryModel categoria = categoryRepo.findById(categoriaId)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Categoría no encontrada"));
+            existing.setCategoria(categoria);
+        } else {
+            existing.setCategoria(null);
+        }
 
         if (imagen != null && !imagen.isEmpty()) {
             existing.setImagen(saveImage(imagen));

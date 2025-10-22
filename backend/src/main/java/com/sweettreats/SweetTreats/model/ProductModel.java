@@ -1,5 +1,6 @@
 package com.sweettreats.SweetTreats.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -30,6 +31,7 @@ public class ProductModel {
 
     @ManyToOne
     @JoinColumn(name = "categoria_id")
+    @JsonIgnoreProperties("productos")
     private CategoryModel categoria;
 
     private LocalDateTime createdAt;

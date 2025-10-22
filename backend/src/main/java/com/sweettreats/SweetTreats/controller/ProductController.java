@@ -65,9 +65,10 @@ public class ProductController {
             @Parameter(description = "Precio del producto", required = true)  @RequestParam Double precio,
             @Parameter(description = "Stock inicial", required = true)       @RequestParam Integer stock,
             @Parameter(description = "Descripción (opcional)")              @RequestParam(required = false) String descripcion,
-            @Parameter(description = "Imagen del producto (opcional)")      @RequestPart(required = false) MultipartFile imagen
+            @Parameter(description = "Imagen del producto (opcional)")      @RequestPart(required = false) MultipartFile imagen,
+            @Parameter(description = "ID de la categoría (opcional)")       @RequestParam(required = false) Long categoriaId
     ) {
-        ProductModel saved = service.create(nombre, precio, stock, descripcion, imagen);
+        ProductModel saved = service.create(nombre, precio, stock, descripcion, imagen, categoriaId);
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
 
@@ -86,9 +87,10 @@ public class ProductController {
             @Parameter(description = "Nuevo stock", required = true)                    @RequestParam Integer stock,
             @Parameter(description = "Nueva descripción (opcional)")                    @RequestParam(required = false) String descripcion,
             @Parameter(description = "Nueva imagen (opcional)")                        @RequestPart(required = false) MultipartFile imagen,
-            @Parameter(description = "Mantener imagen existente", example = "true")      @RequestParam(name="mantenerImagen", defaultValue = "true") boolean mantenerImagen
+            @Parameter(description = "Mantener imagen existente", example = "true")      @RequestParam(name="mantenerImagen", defaultValue = "true") boolean mantenerImagen,
+            @Parameter(description = "ID de la categoría (opcional)")                   @RequestParam(required = false) Long categoriaId
     ) {
-        ProductModel updated = service.update(id, nombre, precio, stock, descripcion, imagen, mantenerImagen);
+        ProductModel updated = service.update(id, nombre, precio, stock, descripcion, imagen, mantenerImagen, categoriaId);
         return ResponseEntity.ok(updated);
     }
 
