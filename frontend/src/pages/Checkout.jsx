@@ -30,6 +30,7 @@ import {
   AlertDialogTrigger,
 } from "../components/ui/alert-dialog";
 import { getAllPaymentMethodsRequest } from "../api/payments";
+import { validateCardLocally } from "../services/cardValidationService";
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
@@ -43,6 +44,13 @@ function CheckoutForm() {
   const [orderDone, setOrderDone] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [paymentMethods, setPaymentMethods] = useState([]);
+  const [useLocalValidation, setUseLocalValidation] = useState(false);
+  const [cardData, setCardData] = useState({
+    number: "",
+    expMonth: "",
+    expYear: "",
+    cvv: "",
+  });
 
   const {
     control,
@@ -92,13 +100,6 @@ function CheckoutForm() {
     if (orderDone) return;
 
     const hasValidProducts = cart.length > 0 && cart.some((i) => i.precioUnitario > 0 && i.cantidad > 0);
-    
-    console.log("Validación del carrito:", {
-      cartLength: cart.length,
-      hasValidProducts,
-      orderDone,
-      openSuccess
-    });
 
     if (!hasValidProducts && !orderDone && !openSuccess) {
       toast.error(
@@ -112,10 +113,8 @@ function CheckoutForm() {
     return <Spinner />;
   }
 
-  const onSubmit = async (data) => {
-    setProcessing(true);
+  const processPaymentWithStripe = async (data) => {
     try {
-      // Procesar pago con Stripe (siempre, ya que todos son tarjetas)
       const {
         data: { clientSecret },
       } = await createPaymentIntent(total * 100);
@@ -132,7 +131,60 @@ function CheckoutForm() {
       });
 
       if (error) {
-        toast.error(`Error al procesar el pago: ${error.message}`);
+        throw new Error(error.message);
+      }
+
+      return { success: true };
+    } catch (error) {
+      console.error("Error en Stripe:", error);
+      return { success: false, error: error.message };
+    }
+  };
+
+  const processPaymentLocally = (data) => {
+    // Validar tarjeta con algoritmo de Luhn
+    const validation = validateCardLocally(cardData);
+
+    if (!validation.isValid) {
+      return {
+        success: false,
+        errors: validation.errors,
+      };
+    }
+
+    // Si la validación local es exitosa
+    toast.info(`Tarjeta ${validation.cardType} validada localmente (modo offline)`);
+    return { success: true };
+  };
+
+  const onSubmit = async (data) => {
+    setProcessing(true);
+    try {
+      let paymentResult;
+
+      // Intentar primero con Stripe si está disponible
+      if (!useLocalValidation && stripe && elements) {
+        toast.info("Procesando pago con Stripe...");
+        paymentResult = await processPaymentWithStripe(data);
+
+        // Si Stripe falla (sin internet u otro error), usar validación local
+        if (!paymentResult.success) {
+          toast.warning("Stripe no disponible. Usando validación local...");
+          setUseLocalValidation(true);
+          paymentResult = processPaymentLocally(data);
+        }
+      } else {
+        // Usar validación local directamente
+        toast.info("Validando tarjeta localmente...");
+        paymentResult = processPaymentLocally(data);
+      }
+
+      if (!paymentResult.success) {
+        if (paymentResult.errors) {
+          paymentResult.errors.forEach((error) => toast.error(error));
+        } else {
+          toast.error(`Error al procesar el pago: ${paymentResult.error}`);
+        }
         return;
       }
 
@@ -150,12 +202,12 @@ function CheckoutForm() {
       setOrderDone(true);
       toast.success("🍰 Pedido realizado con éxito");
       setOpenSuccess(true);
-      
     } catch (err) {
       console.error(err);
-      const errorMessage = err.response?.data?.message || 
-                          err.response?.data?.error || 
-                          "Hubo un error al procesar el pedido";
+      const errorMessage =
+        err.response?.data?.message ||
+        err.response?.data?.error ||
+        "Hubo un error al procesar el pedido";
       toast.error(errorMessage);
     } finally {
       setProcessing(false);
@@ -166,9 +218,9 @@ function CheckoutForm() {
     console.warn("Errores de validación:", formErrors);
   };
 
-  const hasValidProducts = cart.length > 0 && cart.some(
-    (item) => item.precioUnitario > 0 && item.cantidad > 0
-  );
+  const hasValidProducts =
+    cart.length > 0 &&
+    cart.some((item) => item.precioUnitario > 0 && item.cantidad > 0);
 
   return (
     <>
@@ -190,17 +242,17 @@ function CheckoutForm() {
                   name={field}
                   control={control}
                   render={({ field }) => (
-                    <Input 
-                      id={field.name} 
+                    <Input
+                      id={field.name}
                       type={field.name === "email" ? "email" : "text"}
                       placeholder={
-                        field.name === "direccion" 
-                          ? "Calle 123, Ciudad, Código Postal, Provincia" 
+                        field.name === "direccion"
+                          ? "Calle 123, Ciudad, Código Postal, Provincia"
                           : field.name === "email"
                           ? "tu-email@ejemplo.com"
                           : ""
                       }
-                      {...field} 
+                      {...field}
                     />
                   )}
                 />
@@ -215,7 +267,7 @@ function CheckoutForm() {
             <h2 className="text-[#67463B] font-[Comic_Neue] text-2xl mt-6 mb-4">
               Información de Pago
             </h2>
-            
+
             <div className="mb-4">
               <label className="block mb-1">Tipo de Tarjeta</label>
               <Controller
@@ -264,40 +316,138 @@ function CheckoutForm() {
               )}
             </div>
 
-            <div className="mb-4">
-              <label className="block mb-1">Datos de la tarjeta</label>
-              <div className="border rounded-md p-3 bg-white">
-                <CardElement 
-                  options={{
-                    style: {
-                      base: {
-                        fontSize: '16px',
-                        color: '#424770',
-                        '::placeholder': {
-                          color: '#aab7c4',
+            {/* Mostrar CardElement de Stripe o inputs manuales según el modo */}
+            {!useLocalValidation && stripe && elements ? (
+              <div className="mb-4">
+                <label className="block mb-1">Datos de la tarjeta</label>
+                <div className="border rounded-md p-3 bg-white">
+                  <CardElement
+                    options={{
+                      style: {
+                        base: {
+                          fontSize: "16px",
+                          color: "#424770",
+                          "::placeholder": {
+                            color: "#aab7c4",
+                          },
                         },
                       },
-                    },
-                  }}
-                />
+                    }}
+                  />
+                </div>
+                <p className="text-xs text-gray-500 mt-1">
+                  Ingresa el número, fecha de vencimiento y código de seguridad
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setUseLocalValidation(true)}
+                  className="text-xs text-blue-600 hover:underline mt-2"
+                >
+                  ¿Sin internet? Usar validación local
+                </button>
               </div>
-              <p className="text-xs text-gray-500 mt-1">
-                Ingresa el número, fecha de vencimiento y código de seguridad
-              </p>
-            </div>
+            ) : (
+              <div className="mb-4 space-y-3">
+                <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3 mb-3">
+                  <p className="text-xs text-yellow-800">
+                    🔒 Modo validación local (sin conexión a internet)
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block mb-1 text-sm">
+                    Número de tarjeta
+                  </label>
+                  <Input
+                    type="text"
+                    placeholder="1234 5678 9012 3456"
+                    maxLength="19"
+                    value={cardData.number}
+                    onChange={(e) => {
+                      const value = e.target.value
+                        .replace(/\D/g, "")
+                        .replace(/(.{4})/g, "$1 ")
+                        .trim();
+                      setCardData({ ...cardData, number: value });
+                    }}
+                  />
+                </div>
+
+                <div className="grid grid-cols-3 gap-2">
+                  <div>
+                    <label className="block mb-1 text-sm">Mes</label>
+                    <Input
+                      type="text"
+                      placeholder="MM"
+                      maxLength="2"
+                      value={cardData.expMonth}
+                      onChange={(e) =>
+                        setCardData({
+                          ...cardData,
+                          expMonth: e.target.value.replace(/\D/g, ""),
+                        })
+                      }
+                    />
+                  </div>
+                  <div>
+                    <label className="block mb-1 text-sm">Año</label>
+                    <Input
+                      type="text"
+                      placeholder="AA"
+                      maxLength="2"
+                      value={cardData.expYear}
+                      onChange={(e) =>
+                        setCardData({
+                          ...cardData,
+                          expYear: e.target.value.replace(/\D/g, ""),
+                        })
+                      }
+                    />
+                  </div>
+                  <div>
+                    <label className="block mb-1 text-sm">CVV</label>
+                    <Input
+                      type="text"
+                      placeholder="123"
+                      maxLength="4"
+                      value={cardData.cvv}
+                      onChange={(e) =>
+                        setCardData({
+                          ...cardData,
+                          cvv: e.target.value.replace(/\D/g, ""),
+                        })
+                      }
+                    />
+                  </div>
+                </div>
+
+                {stripe && elements && (
+                  <button
+                    type="button"
+                    onClick={() => setUseLocalValidation(false)}
+                    className="text-xs text-blue-600 hover:underline mt-2"
+                  >
+                    Volver a Stripe
+                  </button>
+                )}
+              </div>
+            )}
           </div>
 
           <div>
             <h2 className="text-[#67463B] font-[Comic_Neue] text-2xl mb-4">
               Resumen del Pedido
             </h2>
-            
+
             <div className="bg-white rounded-lg p-4 shadow-sm mb-4">
               {cart.map((item) => (
-                <div key={item.productId} className="flex justify-between items-center mb-3 pb-3 border-b border-gray-100 last:border-b-0">
+                <div
+                  key={item.productId}
+                  className="flex justify-between items-center mb-3 pb-3 border-b border-gray-100 last:border-b-0"
+                >
                   <div className="flex items-center gap-3">
-                    <img 
-                      src={item.imagen} 
+                    <img
+                      src={item.imagen}
                       alt={item.nombre}
                       className="w-12 h-12 rounded-lg object-cover"
                       onError={(e) => {
@@ -305,7 +455,9 @@ function CheckoutForm() {
                       }}
                     />
                     <div>
-                      <span className="font-medium text-sm">{item.nombre}</span>
+                      <span className="font-medium text-sm">
+                        {item.nombre}
+                      </span>
                       <div className="text-xs text-gray-500">
                         Cantidad: {item.cantidad}
                       </div>
@@ -316,7 +468,7 @@ function CheckoutForm() {
                   </span>
                 </div>
               ))}
-              
+
               <div className="border-t pt-3 mt-3">
                 <div className="flex justify-between items-center text-lg font-semibold text-[#67463B]">
                   <span>Total:</span>
@@ -330,10 +482,10 @@ function CheckoutForm() {
               <p>🚚 Envío a domicilio incluido</p>
               <p>📱 Recibirás confirmación por email</p>
             </div>
-            
+
             <Button
               type="submit"
-              disabled={processing || !stripe || !elements || !hasValidProducts}
+              disabled={processing || !hasValidProducts}
               className="w-full bg-[#E96D87] hover:bg-[#d95c74] rounded-3xl text-white font-[Comic_Neue] py-3 disabled:opacity-50"
             >
               {processing ? (
@@ -357,7 +509,9 @@ function CheckoutForm() {
         <div className="fixed inset-0 bg-[#FFF6ED] bg-opacity-80 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 flex items-center gap-3 shadow-lg border border-[#E96D87]/20">
             <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#E96D87]"></div>
-            <span className="font-[Comic_Neue] text-[#67463B]">Procesando tu pago...</span>
+            <span className="font-[Comic_Neue] text-[#67463B]">
+              Procesando tu pago...
+            </span>
           </div>
         </div>
       )}
@@ -372,7 +526,8 @@ function CheckoutForm() {
               ¡Pedido realizado con éxito!
             </AlertDialogTitle>
             <AlertDialogDescription className="mt-2 text-center">
-              Gracias por tu compra. Recibirás un email con los detalles de tu pedido.
+              Gracias por tu compra. Recibirás un email con los detalles de tu
+              pedido.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
